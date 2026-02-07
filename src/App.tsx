@@ -16,6 +16,12 @@ import Diet from "./pages/app/Diet";
 import Library from "./pages/app/Library";
 import Products from "./pages/app/Products";
 import Faq from "./pages/app/Faq";
+import AdminLogin from "./pages/AdminLogin";
+import AdminShell from "./pages/AdminShell";
+import Dashboard from "./pages/admin/Dashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import Subscriptions from "./pages/admin/Subscriptions";
+import Funnel from "./pages/admin/Funnel";
 
 const queryClient = new QueryClient();
 
@@ -37,7 +43,14 @@ const App = () => (
             <Route path="dieta" element={<Diet />} />
             <Route path="biblioteca" element={<Library />} />
             <Route path="produtos" element={<Products />} />
-            <Route path="faq" element={<Faq />} />
+          <Route path="faq" element={<Faq />} />
+          </Route>
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminShell />}>
+            <Route index element={<Dashboard />} />
+            <Route path="usuarios" element={<AdminUsers />} />
+            <Route path="assinaturas" element={<Subscriptions />} />
+            <Route path="funil" element={<Funnel />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
