@@ -73,18 +73,6 @@ const Login = () => {
               required
             />
           </div>
-          <div>
-            <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="mt-1 rounded-xl h-12"
-              required
-            />
-          </div>
           <Button type="submit" className="w-full rounded-2xl h-14 text-base font-semibold shadow-elegant">
             {isLogin ? 'Entrar' : 'Criar acesso'}
           </Button>
