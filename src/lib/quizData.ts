@@ -21,6 +21,15 @@ export interface QuizQuestion {
 
 export const quizQuestions: QuizQuestion[] = [
   {
+    id: 'idade',
+    type: 'slider',
+    title: 'Qual a sua idade?',
+    subtitle: 'Precisamos saber para calcular a idade real da sua pele',
+    sliderMin: 16,
+    sliderMax: 65,
+    sliderUnit: ' anos',
+  },
+  {
     id: 'objetivo',
     type: 'cards-emoji',
     title: 'Qual o seu principal objetivo?',
