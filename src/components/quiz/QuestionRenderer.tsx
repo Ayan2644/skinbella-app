@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import type { QuizQuestion } from '@/lib/quizData';
-import { Camera, Upload } from 'lucide-react';
+import { Camera, Upload, ScanFace } from 'lucide-react';
 
 interface QuestionRendererProps {
   question: QuizQuestion;
@@ -157,32 +157,123 @@ function SliderQuestion({ question, value, onChange }: QuestionRendererProps) {
   );
 }
 
-/* ── Selfie ── */
+/* ── Selfie with face scanner ── */
 function SelfieQuestion({ value, onChange }: { value: any; onChange: (v: string) => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisStep, setAnalysisStep] = useState(0);
+  const [analysisDone, setAnalysisDone] = useState(!!value);
+
+  const analysisLabels = [
+    'Detectando rosto...',
+    'Analisando textura da pele...',
+    'Mapeando poros e manchas...',
+    'Avaliando hidratação...',
+    'Medindo linhas de expressão...',
+    'Análise concluída ✓',
+  ];
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const url = e.target?.result as string;
       setPreview(url);
-      onChange(url);
+      setAnalyzing(true);
+      setAnalysisStep(0);
+      setAnalysisDone(false);
+      // don't call onChange yet — wait for "analysis" to finish
+      setTimeout(() => {
+        onChange(url);
+      }, 100);
     };
     reader.readAsDataURL(file);
   };
 
+  // Fake analysis animation
+  useEffect(() => {
+    if (!analyzing) return;
+    if (analysisStep >= analysisLabels.length - 1) {
+      const t = setTimeout(() => {
+        setAnalyzing(false);
+        setAnalysisDone(true);
+      }, 800);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => setAnalysisStep((s) => s + 1), 1200);
+    return () => clearTimeout(t);
+  }, [analyzing, analysisStep]);
+
   return (
     <div className="flex flex-col items-center gap-4">
       {preview ? (
-        <div className="relative w-64 h-64 rounded-2xl overflow-hidden border-2 border-primary/30">
+        <div className="relative w-72 h-80 rounded-2xl overflow-hidden border-2 border-primary/40 shadow-elegant">
+          {/* Photo */}
           <img src={preview} alt="Selfie" className="w-full h-full object-cover" />
-          <button
-            onClick={() => { setPreview(null); onChange(''); }}
-            className="absolute bottom-3 right-3 px-4 py-1.5 rounded-xl bg-card/90 text-xs font-semibold text-card-foreground backdrop-blur-sm border border-border/50"
-          >
-            Refazer
-          </button>
+
+          {/* Scanner overlay */}
+          {analyzing && (
+            <div className="absolute inset-0">
+              {/* Scan line */}
+              <div className="absolute left-0 right-0 h-0.5 animate-scan-line"
+                style={{ background: 'linear-gradient(90deg, transparent, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)), transparent)' }}
+              />
+              {/* Face oval guide */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-44 h-56 border-2 border-primary/50 rounded-[50%] animate-pulse" />
+              </div>
+              {/* Corner markers */}
+              <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-primary/70 rounded-tl-lg" />
+              <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-primary/70 rounded-tr-lg" />
+              <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-primary/70 rounded-bl-lg" />
+              <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-primary/70 rounded-br-lg" />
+              {/* Grid lines */}
+              <div className="absolute inset-0 opacity-[0.08]"
+                style={{
+                  backgroundImage: 'linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)',
+                  backgroundSize: '24px 24px',
+                }}
+              />
+              {/* Detection dots */}
+              <div className="absolute top-[30%] left-[35%] w-2 h-2 rounded-full bg-accent animate-pulse-soft" />
+              <div className="absolute top-[30%] right-[35%] w-2 h-2 rounded-full bg-accent animate-pulse-soft" style={{ animationDelay: '0.3s' }} />
+              <div className="absolute top-[50%] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary animate-pulse-soft" style={{ animationDelay: '0.6s' }} />
+              <div className="absolute top-[65%] left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-accent animate-pulse-soft" style={{ animationDelay: '0.9s' }} />
+            </div>
+          )}
+
+          {/* Status bar */}
+          {(analyzing || analysisDone) && (
+            <div className="absolute bottom-0 left-0 right-0 bg-foreground/80 backdrop-blur-md px-4 py-3">
+              <div className="flex items-center gap-2 mb-1.5">
+                <ScanFace className={`w-4 h-4 ${analysisDone ? 'text-green-400' : 'text-accent animate-pulse'}`} />
+                <span className="text-xs font-semibold text-white">
+                  {analysisDone ? 'Análise concluída ✓' : analysisLabels[analysisStep]}
+                </span>
+              </div>
+              {analyzing && (
+                <div className="w-full h-1 rounded-full bg-white/20 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700 ease-out"
+                    style={{
+                      width: `${((analysisStep + 1) / analysisLabels.length) * 100}%`,
+                      background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))',
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Refazer button */}
+          {analysisDone && (
+            <button
+              onClick={() => { setPreview(null); setAnalysisDone(false); onChange(''); }}
+              className="absolute top-3 right-3 px-3 py-1.5 rounded-xl bg-card/90 text-xs font-semibold text-card-foreground backdrop-blur-sm border border-border/50"
+            >
+              Refazer
+            </button>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-3 w-full">
