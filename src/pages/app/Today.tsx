@@ -6,6 +6,7 @@ import { useRef } from 'react';
 import skincareBowlImg from '@/assets/skincare-bowl.jpg';
 import rotinaManhaBgImg from '@/assets/rotina-manha-bg.jpg';
 import womanPortraitImg from '@/assets/woman-portrait.jpg';
+import streakBgImg from '@/assets/streak-bg.jpg';
 import avatarImg from '@/assets/avatar-woman.jpg';
 
 /* Small circular progress for checklist */
@@ -130,25 +131,24 @@ const Today = () => {
 
       {/* ── Streak ── */}
       <button onClick={() => navigate('/app/checklist')} className="w-full text-left group">
-        <div className="app-card flex items-center gap-4 !py-4 !px-5 !pr-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              <Flame className="w-4 h-4 text-destructive" />
-              <p className="text-sm font-semibold text-foreground">Streak</p>
+        <div className="relative overflow-hidden rounded-2xl shadow-card border border-border/20 transition-all duration-300 group-hover:shadow-soft">
+          <img src={streakBgImg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="relative z-10 flex items-center gap-3 py-5 px-5 pr-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Flame className="w-4 h-4 text-destructive" />
+                <p className="text-sm font-semibold text-foreground">Streak</p>
+              </div>
+              <p className="text-xs text-muted-foreground mb-2">
+                {streak} {streak === 1 ? 'dia seguido' : 'dias seguidos'}
+              </p>
+              <div className="w-3/4 h-2.5 rounded-full bg-primary/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${streakPct}%` }}
+                />
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mb-2">
-              {streak} {streak === 1 ? 'dia seguido' : 'dias seguidos'}
-            </p>
-            {/* Progress bar */}
-            <div className="w-full h-2.5 rounded-full bg-primary/10 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-500"
-                style={{ width: `${streakPct}%` }}
-              />
-            </div>
-          </div>
-          <div className="w-[72px] h-[72px] rounded-2xl overflow-hidden shrink-0 shadow-card">
-            <img src={womanPortraitImg} alt="Streak" className="w-full h-full object-cover" />
           </div>
         </div>
       </button>
