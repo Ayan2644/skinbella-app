@@ -15,8 +15,7 @@ export interface SkinProfile {
 }
 
 export function generateProfile(answers: Record<string, any>): SkinProfile {
-  const baseAge = 28;
-  let ageOffset = 0;
+  const realAge = answers.idade ?? 28;
   const sono = answers.sono ?? 5;
   const agua = answers.agua ?? 5;
   const sol = answers.sol ?? 'media';
@@ -27,21 +26,22 @@ export function generateProfile(answers: Record<string, any>): SkinProfile {
   const protetor = answers.protetor ?? 'as_vezes';
   const tipoPele = answers.tipo_pele ?? 'mista';
 
-  if (sono < 4) ageOffset += 3;
-  else if (sono < 7) ageOffset += 1;
-  if (agua < 4) ageOffset += 2;
-  else if (agua < 7) ageOffset += 1;
-  if (sol === 'alta') ageOffset += 3;
-  else if (sol === 'media') ageOffset += 1;
-  if (estresse === 'alto') ageOffset += 2;
-  if (alimentacao === 'ruim') ageOffset += 2;
-  else if (alimentacao === 'ok') ageOffset += 1;
-  if (acucar === 'frequente') ageOffset += 2;
-  if (skincare === 'nunca') ageOffset += 2;
-  if (protetor === 'nunca') ageOffset += 3;
-  else if (protetor === 'as_vezes') ageOffset += 1;
+  // Skin age is always real age + 3 to 5 years
+  // Use habits to determine where in the 3-5 range
+  let habitScore = 0;
+  if (sono < 4) habitScore += 2; else if (sono < 7) habitScore += 1;
+  if (agua < 4) habitScore += 1;
+  if (sol === 'alta') habitScore += 2; else if (sol === 'media') habitScore += 1;
+  if (estresse === 'alto') habitScore += 1;
+  if (alimentacao === 'ruim') habitScore += 1;
+  if (acucar === 'frequente') habitScore += 1;
+  if (skincare === 'nunca') habitScore += 1;
+  if (protetor === 'nunca') habitScore += 2; else if (protetor === 'as_vezes') habitScore += 1;
+  // habitScore max ~12, map to 3-5 range
+  const offset = Math.min(5, Math.max(3, 3 + Math.round((habitScore / 12) * 2)));
+  const skinAge = realAge + offset;
 
-  const skinAge = baseAge + ageOffset;
+  const ageOffset = offset;
 
   const rand = (base: number, variance: number) => Math.min(100, Math.max(20, base + Math.floor(Math.random() * variance - variance / 2)));
   const baseScore = Math.max(30, 85 - ageOffset * 3);
