@@ -1,29 +1,33 @@
-import { quizQuestions } from '@/lib/quizData';
+import { quizQuestions } from "@/lib/quizData";
 
 interface HeroResultProps {
   skinAge: number;
-  scores: {
-    hidratacao: number;
-    textura: number;
-  };
+  scores: { hidratacao: number; textura: number };
 }
 
 function ScoreCard({ label, value }: { label: string; value: number }) {
+  const getColor = (v: number) => {
+    if (v >= 70) return "text-success";
+    if (v >= 40) return "text-accent";
+    return "text-destructive";
+  };
+
   return (
-    <div className="bg-card rounded-2xl border border-border/20 p-3 shadow-card text-center">
-      <span className="text-[22px] font-bold text-foreground font-['Playfair_Display']">{value}</span>
-      <span className="text-[11px] text-muted-foreground block mt-0.5">{label}</span>
+    <div className="bg-card rounded-3xl border border-border/20 px-4 py-3 text-center shadow-card">
+      <p className={`text-[28px] font-bold ${getColor(value)} font-['Playfair_Display'] leading-none`}>{value}%</p>
+      <p className="text-[11px] text-muted-foreground mt-1 font-medium tracking-wide">{label}</p>
     </div>
   );
 }
 
 export default function HeroResult({ skinAge, scores }: HeroResultProps) {
   return (
-    <section className="text-center pt-6 pb-1 px-5">
+    <section className="text-center pt-6 pb-2 px-5">
       <p className="text-[10px] font-semibold tracking-[0.28em] uppercase text-muted-foreground mb-3">Seu resultado</p>
 
+      {/* Age circle */}
       <div
-        className="w-[118px] h-[118px] mx-auto mb-3 rounded-full flex flex-col items-center justify-center shadow-card border border-border/20"
+        className="w-[118px] h-[118px] mx-auto mb-3 rounded-full flex flex-col items-center justify-center shadow-elegant border border-border/20"
         style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--secondary) / 0.45))" }}
       >
         <span className="text-[44px] font-bold text-foreground font-['Playfair_Display'] leading-none">{skinAge}</span>

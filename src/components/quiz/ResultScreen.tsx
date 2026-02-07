@@ -1,13 +1,13 @@
-import { Button } from '@/components/ui/button';
-import { RotateCcw, ArrowRight } from 'lucide-react';
-import HeroResult from '@/components/quiz/result/HeroResult';
-import MeaningCard from '@/components/quiz/result/MeaningCard';
-import ProjectionCard from '@/components/quiz/result/ProjectionCard';
-import ProtocolBrandCard from '@/components/quiz/result/ProtocolBrandCard';
-import LockedReportCard from '@/components/quiz/result/LockedReportCard';
-import OfferCard from '@/components/quiz/result/OfferCard';
-import Testimonials from '@/components/quiz/result/Testimonials';
-import MiniFAQ from '@/components/quiz/result/MiniFAQ';
+import { Button } from "@/components/ui/button";
+import { RotateCcw, ArrowRight } from "lucide-react";
+import HeroResult from "./result/HeroResult";
+import MeaningCard from "./result/MeaningCard";
+import ProjectionCard from "./result/ProjectionCard";
+import ProtocolBrandCard from "./result/ProtocolBrandCard";
+import LockedReportCard from "./result/LockedReportCard";
+import OfferCard from "./result/OfferCard";
+import Testimonials from "./result/Testimonials";
+import MiniFAQ from "./result/MiniFAQ";
 
 interface ResultScreenProps {
   profile: any;
@@ -19,10 +19,13 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="app-frame relative safe-bottom animate-fade-in-up">
+    <div className="min-h-screen bg-background flex justify-center">
+      {/* PHONE FRAME */}
+      <div className="relative w-full max-w-[420px] min-h-screen bg-background flex flex-col animate-fade-in-up pb-28">
+        {/* HERO */}
         <HeroResult skinAge={profile.skinAge} scores={profile.scores} />
 
+        {/* CONTENT */}
         <div className="w-full space-y-6 mt-4">
           <MeaningCard skinAge={profile.skinAge} />
           <ProjectionCard skinAge={profile.skinAge} />
@@ -32,6 +35,7 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
           <Testimonials />
           <MiniFAQ />
 
+          {/* REDO */}
           <div className="px-5 pb-4">
             <Button variant="ghost" onClick={onRedo} className="w-full rounded-2xl h-11 text-muted-foreground text-sm">
               <RotateCcw className="w-4 h-4 mr-2" />
@@ -40,9 +44,9 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
           </div>
         </div>
 
-        {/* sticky preso no frame */}
+        {/* STICKY CTA - PRESO NO FRAME */}
         <div className="fixed bottom-0 left-0 right-0 z-50">
-          <div className="app-frame bg-background/95 backdrop-blur-md border-t border-border/30 px-5 py-3">
+          <div className="mx-auto w-full max-w-[420px] bg-background/95 backdrop-blur-md border-t border-border/30 px-5 py-3">
             <div className="flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-semibold text-foreground truncate">
