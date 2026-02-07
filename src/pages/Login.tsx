@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { storage } from '@/lib/storage';
+import { ADMIN_CREDENTIALS } from '@/lib/adminData';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles } from 'lucide-react';
 
@@ -17,15 +18,17 @@ const Login = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
-    storage.login(name.trim(), email.trim());
 
-    if (!storage.getProfile()) {
+    const isAdmin = email.trim() === ADMIN_CREDENTIALS.email && name.trim() === ADMIN_CREDENTIALS.password;
+    storage.login(name.trim(), email.trim(), isAdmin);
+
+    if (!isAdmin && !storage.getProfile()) {
       toast({ title: 'Faça o quiz primeiro', description: 'Complete a análise para acessar seu painel.' });
       navigate('/');
       return;
     }
 
-    toast({ title: 'Bem-vinda ao SkinBella! ✨', description: 'Seu painel está pronto.' });
+    toast({ title: isAdmin ? 'Bem-vindo, Admin! 🛡️' : 'Bem-vinda ao SkinBella! ✨', description: isAdmin ? 'Acesso administrativo ativado.' : 'Seu painel está pronto.' });
     navigate('/app');
   };
 
