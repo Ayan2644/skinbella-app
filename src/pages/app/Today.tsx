@@ -1,10 +1,25 @@
 import { storage } from '@/lib/storage';
 import { useNavigate } from 'react-router-dom';
-import { Sun, Moon, CheckSquare, Flame, Camera, ChevronRight, Sparkles, Droplets, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Sun, Moon, CheckSquare, Flame, Camera, ChevronRight, Sparkles, Droplets } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useRef } from 'react';
-import { Progress } from '@/components/ui/progress';
+import { useRef } from 'react';
+import routineMorningImg from '@/assets/routine-morning.jpg';
+import streakImg from '@/assets/streak-lifestyle.jpg';
+import skincareImg from '@/assets/skincare-products.jpg';
+
+const SmallCircleProgress = ({ value, total }: { value: number; total: number }) => {
+  const size = 36;
+  const stroke = 3;
+  const radius = (size - stroke) / 2;
+  const circ = 2 * Math.PI * radius;
+  const offset = circ - (value / total) * circ;
+  return (
+    <svg width={size} height={size} className="progress-ring">
+      <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
+      <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="hsl(var(--primary))" strokeWidth={stroke} strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset} className="progress-ring__circle" />
+    </svg>
+  );
+};
 
 const Today = () => {
   const profile = storage.getProfile();
@@ -32,109 +47,118 @@ const Today = () => {
   };
 
   return (
-    <section className="space-y-5">
-      {/* Greeting */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">
-          Olá, {auth?.name ?? 'linda'} ✨
-        </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Este é seu painel de cuidados diários</p>
+    <section className="space-y-4">
+      {/* Greeting with avatar */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-[1.6rem] font-bold text-foreground leading-tight">
+            Olá, {auth?.name ?? 'linda'} ✨
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Este é seu painel de cuidados diários</p>
+        </div>
+        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-accent/30 shadow-soft shrink-0">
+          <img src={skincareImg} alt="" className="w-full h-full object-cover" />
+        </div>
       </div>
 
       {/* Skin Age Hero */}
       {profile && (
-        <button onClick={() => navigate('/app/relatorio')} className="w-full">
-          <div className="app-card gradient-porcelain relative overflow-hidden group">
+        <button onClick={() => navigate('/app/relatorio')} className="w-full text-left">
+          <div className="relative overflow-hidden rounded-2xl gradient-warm-rich p-5 shadow-soft border border-border/10">
             <div className="flex items-center justify-between">
-              <div className="text-left">
-                <p className="text-[11px] font-semibold uppercase tracking-widest text-accent-foreground/60 mb-1">Idade da pele</p>
-                <p className="text-4xl font-bold text-accent-foreground">{profile.skinAge} <span className="text-lg font-normal">anos</span></p>
-                <p className="text-xs text-accent-foreground/60 mt-1.5 flex items-center gap-1">
-                  Ver diagnóstico completo <ChevronRight className="w-3 h-3" />
-                </p>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/50 mb-1">Idade da pele</p>
+                <p className="text-4xl font-bold text-foreground leading-none">{profile.skinAge} <span className="text-base font-normal text-foreground/50">anos</span></p>
               </div>
-              <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center">
-                <Sparkles className="w-7 h-7 text-accent" />
+              <div className="w-20 h-20 rounded-full overflow-hidden border-[3px] border-card/80 shadow-elegant">
+                <img src={skincareImg} alt="Skincare" className="w-full h-full object-cover" />
               </div>
             </div>
           </div>
         </button>
       )}
 
-      {/* Quick Actions Grid */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Checklist */}
-        <button onClick={() => navigate('/app/checklist')} className="app-card text-left group">
-          <div className="flex items-center justify-between mb-3">
-            <CheckSquare className="w-5 h-5 text-primary" />
-            <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-              {doneCount}/{totalCount}
-            </span>
+      {/* Checklist do dia */}
+      <button onClick={() => navigate('/app/checklist')} className="w-full text-left">
+        <div className="app-card flex items-center gap-4 !py-4">
+          <div className="relative">
+            <SmallCircleProgress value={doneCount} total={totalCount} />
+            <CheckSquare className="w-4 h-4 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ transform: 'translate(-50%, -50%) rotate(90deg)' }} />
           </div>
-          <p className="text-sm font-semibold text-foreground mb-2">Checklist do dia</p>
-          <Progress value={(doneCount / totalCount) * 100} className="h-1.5" />
-        </button>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-foreground">Checklist do dia</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{doneCount}/{totalCount} tarefas cumpridas</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+        </div>
+      </button>
 
-        {/* Morning Routine */}
-        <button onClick={() => navigate('/app/rotina')} className="app-card text-left group">
-          <div className="flex items-center justify-between mb-3">
-            <Sun className="w-5 h-5 text-accent" />
-            {morningDone && <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">✓</span>}
+      {/* Rotina Manhã */}
+      <button onClick={() => navigate('/app/rotina')} className="w-full text-left">
+        <div className="app-card flex items-center gap-4 !py-4 !pr-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <Sun className="w-4 h-4 text-accent" />
+              <p className="text-sm font-semibold text-foreground">Rotina Manhã</p>
+            </div>
+            {morningDone ? (
+              <span className="inline-block text-[10px] font-semibold bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">Concluída ✓</span>
+            ) : (
+              <span className="inline-block text-[10px] font-medium bg-accent/10 text-accent px-2.5 py-0.5 rounded-full">Fazer rotina</span>
+            )}
           </div>
-          <p className="text-sm font-semibold text-foreground">Rotina Manhã</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{morningDone ? 'Concluída' : 'Pendente'}</p>
-        </button>
+          <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 shadow-card">
+            <img src={routineMorningImg} alt="Rotina" className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </button>
 
-        {/* Night Routine */}
-        <button onClick={() => navigate('/app/rotina')} className="app-card text-left group">
-          <div className="flex items-center justify-between mb-3">
-            <Moon className="w-5 h-5 text-primary" />
-            {nightDone && <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">✓</span>}
+      {/* Rotina Noite */}
+      <button onClick={() => navigate('/app/rotina')} className="w-full text-left">
+        <div className="app-card flex items-center gap-4 !py-4 !pr-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <Moon className="w-4 h-4 text-primary" />
+              <p className="text-sm font-semibold text-foreground">Rotina Noite</p>
+            </div>
+            {nightDone ? (
+              <span className="inline-block text-[10px] font-semibold bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">Concluída ✓</span>
+            ) : (
+              <span className="inline-block text-[10px] font-medium bg-muted text-muted-foreground px-2.5 py-0.5 rounded-full">Fazer rotina</span>
+            )}
           </div>
-          <p className="text-sm font-semibold text-foreground">Rotina Noite</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{nightDone ? 'Concluída' : 'Pendente'}</p>
-        </button>
+          <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 shadow-card bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+            <Moon className="w-7 h-7 text-primary/40" />
+          </div>
+        </div>
+      </button>
 
-        {/* Streak */}
-        <div className="app-card text-left">
-          <div className="flex items-center justify-between mb-3">
-            <Flame className="w-5 h-5 text-destructive" />
+      {/* Streak */}
+      <div className="app-card flex items-center gap-4 !py-4 !pr-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <Flame className="w-4 h-4 text-destructive" />
+            <p className="text-sm font-semibold text-foreground">Streak</p>
           </div>
-          <p className="text-sm font-semibold text-foreground">Streak</p>
-          <p className="text-2xl font-bold text-foreground mt-0.5">{streak} <span className="text-xs font-normal text-muted-foreground">dias</span></p>
+          <p className="text-xs text-muted-foreground">{streak} {streak === 1 ? 'dia seguido' : 'dias seguidos'}</p>
+        </div>
+        <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 shadow-card">
+          <img src={streakImg} alt="Streak" className="w-full h-full object-cover" />
         </div>
       </div>
 
-      {/* Quick Links */}
-      <div className="space-y-2">
-        <button onClick={() => navigate('/app/nutrientes')} className="app-card w-full flex items-center gap-4 !p-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Droplets className="w-5 h-5 text-primary" />
+      {/* Selfie */}
+      <button onClick={() => fileRef.current?.click()} className="w-full text-left">
+        <div className="app-card flex items-center gap-4 !py-4">
+          <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
+            <Camera className="w-4 h-4 text-muted-foreground" />
           </div>
-          <div className="text-left flex-1">
-            <p className="text-sm font-semibold text-foreground">Nutrientes essenciais</p>
-            <p className="text-xs text-muted-foreground">Veja o que sua pele precisa</p>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-foreground">Registrar selfie semanal</p>
           </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
-        </button>
-
-        <button onClick={() => navigate('/app/produtos')} className="app-card w-full flex items-center gap-4 !p-4">
-          <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-accent" />
-          </div>
-          <div className="text-left flex-1">
-            <p className="text-sm font-semibold text-foreground">Produtos recomendados</p>
-            <p className="text-xs text-muted-foreground">Seleção para seu perfil</p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
-        </button>
-      </div>
-
-      {/* Selfie CTA */}
-      <Button onClick={() => fileRef.current?.click()} variant="outline" className="w-full rounded-2xl h-12 border-dashed border-2 border-border hover:border-primary/30 hover:bg-primary/5 transition-all">
-        <Camera className="w-4 h-4 mr-2 text-primary" />
-        <span className="text-sm font-medium">Registrar selfie semanal</span>
-      </Button>
+          <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
+        </div>
+      </button>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleSelfie} />
     </section>
   );
