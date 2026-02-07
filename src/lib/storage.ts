@@ -26,10 +26,11 @@ export const storage = {
   saveProfile: (p: unknown) => set(KEYS.profile, p),
   getProfile: () => get<any>(KEYS.profile),
 
-  login: (name: string, email: string) => set(KEYS.auth, { name, email, loggedIn: true }),
+  login: (name: string, email: string, isAdmin = false) => set(KEYS.auth, { name, email, loggedIn: true, isAdmin }),
   logout: () => localStorage.removeItem(KEYS.auth),
-  getAuth: () => get<{ name: string; email: string; loggedIn: boolean }>(KEYS.auth),
+  getAuth: () => get<{ name: string; email: string; loggedIn: boolean; isAdmin?: boolean }>(KEYS.auth),
   isLoggedIn: () => get<{ loggedIn: boolean }>(KEYS.auth)?.loggedIn ?? false,
+  isAdmin: () => get<{ isAdmin?: boolean }>(KEYS.auth)?.isAdmin ?? false,
 
   saveChecklist: (items: { id: string; label: string; done: boolean }[]) => set(KEYS.checklist, items),
   getChecklist: () => get<{ id: string; label: string; done: boolean }[]>(KEYS.checklist),
