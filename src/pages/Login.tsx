@@ -11,16 +11,17 @@ import { Sparkles } from 'lucide-react';
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
+    if (!email.trim() || !password.trim()) return;
 
-    const isAdmin = email.trim() === ADMIN_CREDENTIALS.email && name.trim() === ADMIN_CREDENTIALS.password;
-    storage.login(name.trim(), email.trim(), isAdmin);
+    const isAdmin = email.trim() === ADMIN_CREDENTIALS.email && password.trim() === ADMIN_CREDENTIALS.password;
+    const displayName = email.trim().split('@')[0];
+    storage.login(displayName, email.trim(), isAdmin);
 
     if (!isAdmin && !storage.getProfile()) {
       toast({ title: 'Faça o quiz primeiro', description: 'Complete a análise para acessar seu painel.' });
@@ -49,12 +50,25 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name" className="text-sm font-medium text-foreground">Nome</Label>
+            <Label htmlFor="email" className="text-sm font-medium text-foreground">Email</Label>
             <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Seu nome"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
+              className="mt-1 rounded-xl h-12"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="password" className="text-sm font-medium text-foreground">Senha</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
               className="mt-1 rounded-xl h-12"
               required
             />
