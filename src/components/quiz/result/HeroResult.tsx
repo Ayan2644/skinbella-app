@@ -1,3 +1,22 @@
+import { quizQuestions } from '@/lib/quizData';
+
+interface HeroResultProps {
+  skinAge: number;
+  scores: {
+    hidratacao: number;
+    textura: number;
+  };
+}
+
+function ScoreCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="bg-card rounded-2xl border border-border/20 p-3 shadow-card text-center">
+      <span className="text-[22px] font-bold text-foreground font-['Playfair_Display']">{value}</span>
+      <span className="text-[11px] text-muted-foreground block mt-0.5">{label}</span>
+    </div>
+  );
+}
+
 export default function HeroResult({ skinAge, scores }: HeroResultProps) {
   return (
     <section className="text-center pt-6 pb-1 px-5">
