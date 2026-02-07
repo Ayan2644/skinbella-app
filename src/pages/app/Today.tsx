@@ -4,6 +4,7 @@ import { Sun, Moon, CheckSquare, Flame, Camera, ChevronRight, Sparkles } from 'l
 import { useToast } from '@/hooks/use-toast';
 import { useRef } from 'react';
 import skincareBowlImg from '@/assets/skincare-bowl.jpg';
+import rotinaManha2Img from '@/assets/rotina-manha-2.jpg';
 import womanPortraitImg from '@/assets/woman-portrait.jpg';
 import avatarImg from '@/assets/avatar-woman.jpg';
 
@@ -107,24 +108,24 @@ const Today = () => {
 
       {/* ── Rotina Manhã ── */}
       <button onClick={() => navigate('/app/rotina')} className="w-full text-left group">
-        <div className="app-card flex items-center gap-4 !py-4 !px-5 !pr-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              <Sun className="w-4 h-4 text-accent" />
-              <p className="text-sm font-semibold text-foreground">Rotina Manhã</p>
+        <div className="relative overflow-hidden rounded-2xl shadow-card border border-border/20 transition-all duration-300 group-hover:shadow-soft">
+          <img src={rotinaManha2Img} alt="Rotina Manhã" className="w-full h-auto block" />
+          <div className="absolute inset-0 flex items-center px-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <Sun className="w-4 h-4 text-accent" />
+                <p className="text-sm font-semibold text-foreground">Rotina Manhã</p>
+              </div>
+              {morningDone ? (
+                <span className="inline-block text-[10px] font-semibold bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">
+                  Concluída ✓
+                </span>
+              ) : (
+                <span className="inline-block text-[10px] font-medium bg-accent/10 text-accent px-2.5 py-0.5 rounded-full">
+                  Fazer rotina
+                </span>
+              )}
             </div>
-            {morningDone ? (
-              <span className="inline-block text-[10px] font-semibold bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">
-                Concluída ✓
-              </span>
-            ) : (
-              <span className="inline-block text-[10px] font-medium bg-accent/10 text-accent px-2.5 py-0.5 rounded-full">
-                Fazer rotina
-              </span>
-            )}
-          </div>
-          <div className="w-[72px] h-[72px] rounded-2xl overflow-hidden shrink-0 shadow-card">
-            <img src={skincareBowlImg} alt="Rotina" className="w-full h-full object-cover" />
           </div>
         </div>
       </button>
