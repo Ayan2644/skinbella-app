@@ -4,7 +4,7 @@ import { Sun, Moon, CheckSquare, Flame, Camera, ChevronRight, Sparkles } from 'l
 import { useToast } from '@/hooks/use-toast';
 import { useRef } from 'react';
 import skincareBowlImg from '@/assets/skincare-bowl.jpg';
-import rotinaManha2Img from '@/assets/rotina-manha-2.jpg';
+import rotinaManhaBgImg from '@/assets/rotina-manha-bg.jpg';
 import womanPortraitImg from '@/assets/woman-portrait.jpg';
 import avatarImg from '@/assets/avatar-woman.jpg';
 
@@ -108,22 +108,22 @@ const Today = () => {
 
       {/* ── Rotina Manhã ── */}
       <button onClick={() => navigate('/app/rotina')} className="w-full text-left group">
-        <div className="relative overflow-hidden rounded-2xl shadow-card border border-border/20 transition-all duration-300 group-hover:shadow-soft gradient-warm-rich flex items-center gap-3 py-4 px-5 pr-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="w-4 h-4 text-accent" />
-              <p className="text-sm font-semibold text-foreground">Rotina Manhã</p>
+        <div className="relative overflow-hidden rounded-2xl shadow-card border border-border/20 transition-all duration-300 group-hover:shadow-soft">
+          <img src={rotinaManhaBgImg} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="relative z-10 flex items-center gap-3 py-5 px-5 pr-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-4 h-4 text-accent" />
+                <p className="text-sm font-semibold text-foreground">Rotina Manhã</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground mb-2">Meta diária</p>
+              <div className="w-3/4 h-2 rounded-full bg-primary/15 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: morningDone ? '100%' : '30%' }}
+                />
+              </div>
             </div>
-            <p className="text-[11px] text-muted-foreground mb-2">Meta diária</p>
-            <div className="w-full h-2 rounded-full bg-primary/15 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-primary transition-all duration-500"
-                style={{ width: morningDone ? '100%' : '30%' }}
-              />
-            </div>
-          </div>
-          <div className="w-[68px] h-[68px] rounded-2xl overflow-hidden shrink-0">
-            <img src={skincareBowlImg} alt="Rotina" className="w-full h-full object-cover" />
           </div>
         </div>
       </button>
