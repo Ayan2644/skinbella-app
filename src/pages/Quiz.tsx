@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import QuizProgress from '@/components/quiz/QuizProgress';
 import QuestionRenderer from '@/components/quiz/QuestionRenderer';
+import ResultScreen from '@/components/quiz/ResultScreen';
 import { quizQuestions } from '@/lib/quizData';
 import { generateProfile } from '@/lib/skinEngine';
 import { storage } from '@/lib/storage';
 import heroImage from '@/assets/hero-skinbella.jpg';
-import { Sparkles, Lock, RotateCcw, Shield, Star, Users, ArrowRight } from 'lucide-react';
+import { Sparkles, Shield, ArrowRight } from 'lucide-react';
 
 type Phase = 'intro' | 'quiz' | 'processing' | 'result';
 
@@ -182,129 +183,6 @@ function ProcessingScreen() {
             } as any}
           />
         </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Result Screen ── */
-function ResultScreen({ profile, onRedo, onAccess }: { profile: any; onRedo: () => void; onAccess: () => void }) {
-  if (!profile) return null;
-
-  return (
-    <div className="min-h-screen bg-background flex flex-col animate-fade-in-up">
-      {/* Hero result */}
-      <div className="text-center pt-12 pb-6 px-6">
-        <p className="text-xs font-semibold tracking-[0.2em] uppercase text-primary mb-4">Resultado da análise</p>
-        <div className="w-28 h-28 mx-auto mb-4 rounded-full flex items-center justify-center shadow-elegant"
-          style={{ background: 'linear-gradient(145deg, hsl(var(--accent) / 0.15), hsl(var(--secondary)))' }}>
-          <span className="text-4xl font-bold text-foreground font-['Playfair_Display']">{profile.skinAge}</span>
-        </div>
-        <h2 className="text-2xl font-bold text-foreground font-['Playfair_Display'] mb-1">
-          Idade da sua pele: {profile.skinAge} anos
-        </h2>
-        <p className="text-sm text-muted-foreground">Baseado na análise de {quizQuestions.length} fatores</p>
-      </div>
-
-      {/* Score cards */}
-      <div className="px-5 max-w-lg mx-auto w-full">
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <ScoreCard label="Hidratação" value={profile.scores.hidratacao} />
-          <ScoreCard label="Textura" value={profile.scores.textura} />
-        </div>
-
-        {/* Locked content */}
-        <div className="rounded-2xl border-2 border-dashed border-accent/40 bg-accent/5 p-5 mb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-              <Lock className="w-5 h-5 text-accent" />
-            </div>
-            <div>
-              <h3 className="font-bold text-foreground text-[15px]">Relatório completo bloqueado</h3>
-              <p className="text-xs text-muted-foreground">Desbloqueie seu plano personalizado</p>
-            </div>
-          </div>
-          <ul className="space-y-2 mb-4">
-            {['Plano de skincare personalizado', 'Dieta anti-envelhecimento', 'Rotina matinal e noturna', 'Checklist diário', 'Nutrientes recomendados'].map((item) => (
-              <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Social proof */}
-        <div className="rounded-2xl bg-card border border-border/40 p-5 mb-6">
-          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary mb-3 text-center">
-            O que dizem nossas usuárias
-          </p>
-          <div className="space-y-3">
-            <TestimonialCard
-              name="Ana C."
-              text="Minha pele mudou completamente em 30 dias seguindo o plano!"
-              stars={5}
-            />
-            <TestimonialCard
-              name="Mariana S."
-              text="O diagnóstico foi super preciso. Nunca me cuidei tão bem!"
-              stars={5}
-            />
-          </div>
-          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <Users className="w-3.5 h-3.5" />
-            <span>+12.400 mulheres já fizeram a análise</span>
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className="flex flex-col gap-3 pb-10">
-          <Button onClick={onAccess} className="rounded-2xl h-14 text-base font-semibold shadow-elegant">
-            <Sparkles className="w-5 h-5 mr-2" />
-            Desbloquear meu plano completo
-          </Button>
-          <Button variant="ghost" onClick={onRedo} className="rounded-2xl h-12 text-muted-foreground">
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Refazer quiz
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Helper Components ── */
-function ScoreCard({ label, value }: { label: string; value: number }) {
-  const getColor = (v: number) => {
-    if (v >= 70) return 'text-success';
-    if (v >= 40) return 'text-accent';
-    return 'text-destructive';
-  };
-
-  return (
-    <div className="rounded-2xl bg-card border border-border/40 p-4 text-center shadow-soft">
-      <p className={`text-3xl font-bold ${getColor(value)} font-['Playfair_Display']`}>{value}%</p>
-      <p className="text-xs text-muted-foreground mt-1 font-medium">{label}</p>
-    </div>
-  );
-}
-
-function TestimonialCard({ name, text, stars }: { name: string; text: string; stars: number }) {
-  return (
-    <div className="flex gap-3 items-start">
-      <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-foreground flex-shrink-0">
-        {name.charAt(0)}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-sm font-semibold text-foreground">{name}</span>
-          <div className="flex gap-0.5">
-            {Array.from({ length: stars }).map((_, i) => (
-              <Star key={i} className="w-3 h-3 fill-accent text-accent" />
-            ))}
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground leading-relaxed">"{text}"</p>
       </div>
     </div>
   );
