@@ -2,15 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @layer base {
   :root {
     --background: 35 25% 97%;
     --foreground: 220 10% 18%;
 
-    --card: 35 20% 99%;
+    --card: 0 0% 100%;
     --card-foreground: 220 10% 18%;
 
-    --popover: 35 20% 99%;
+    --popover: 0 0% 100%;
     --popover-foreground: 220 10% 18%;
 
     --primary: 155 25% 38%;
@@ -46,6 +48,9 @@
     --surface: 35 18% 95%;
     --porcelain: 42 55% 62%;
     --porcelain-foreground: 220 10% 12%;
+
+    --success: 155 40% 45%;
+    --success-foreground: 0 0% 100%;
   }
 
   .dark {
@@ -79,6 +84,8 @@
     --surface: 220 12% 12%;
     --porcelain: 42 45% 55%;
     --porcelain-foreground: 0 0% 100%;
+    --success: 155 35% 40%;
+    --success-foreground: 0 0% 100%;
   }
 }
 
@@ -90,20 +97,37 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
   }
+  h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+  }
 }
 
 @layer utilities {
   .shadow-elegant {
-    box-shadow: 0 4px 20px -4px hsl(220 10% 18% / 0.08);
+    box-shadow: 0 4px 24px -6px hsl(220 10% 18% / 0.08);
   }
   .shadow-card {
-    box-shadow: 0 2px 12px -2px hsl(220 10% 18% / 0.06);
+    box-shadow: 0 1px 8px -2px hsl(220 10% 18% / 0.05);
+  }
+  .shadow-card-hover {
+    box-shadow: 0 8px 30px -8px hsl(220 10% 18% / 0.1);
   }
   .gradient-porcelain {
-    background: linear-gradient(135deg, hsl(42 55% 62% / 0.15), hsl(155 25% 38% / 0.08));
+    background: linear-gradient(135deg, hsl(42 55% 62% / 0.12), hsl(155 25% 38% / 0.06));
   }
   .gradient-hero {
     background: linear-gradient(180deg, hsl(35 25% 97%), hsl(30 25% 93%));
+  }
+  .gradient-sage {
+    background: linear-gradient(135deg, hsl(155 25% 38% / 0.08), hsl(155 25% 38% / 0.02));
+  }
+  .gradient-warm {
+    background: linear-gradient(135deg, hsl(42 55% 62% / 0.1), hsl(30 25% 88% / 0.3));
+  }
+  .text-gradient-primary {
+    background: linear-gradient(135deg, hsl(155 25% 38%), hsl(155 30% 45%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 }
 
@@ -121,6 +145,29 @@
     @apply bg-card rounded-2xl shadow-card p-5 border border-border/30;
   }
   .app-card {
-    @apply bg-card rounded-2xl shadow-card p-5 border border-border/30 transition-all duration-200 hover:shadow-elegant;
+    @apply bg-card rounded-2xl shadow-card p-5 border border-border/30 transition-all duration-300;
   }
+  .app-card:hover {
+    @apply shadow-card-hover;
+  }
+
+  /* Circular progress ring */
+  .progress-ring {
+    transform: rotate(-90deg);
+  }
+  .progress-ring__circle {
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
 }
