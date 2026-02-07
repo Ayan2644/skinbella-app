@@ -1,4 +1,4 @@
-import { quizQuestions } from '@/lib/quizData';
+import { quizQuestions } from "@/lib/quizData";
 
 interface HeroResultProps {
   skinAge: number;
@@ -11,8 +11,8 @@ interface HeroResultProps {
 function ScoreCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="bg-card rounded-2xl border border-border/20 p-3 shadow-card text-center">
-      <span className="text-[22px] font-bold text-foreground font-['Playfair_Display']">{value}</span>
-      <span className="text-[11px] text-muted-foreground block mt-0.5">{label}</span>
+      <div className="text-[22px] font-bold text-foreground font-['Playfair_Display']">{value}%</div>
+      <div className="text-[11px] text-muted-foreground mt-0.5">{label}</div>
     </div>
   );
 }
@@ -24,7 +24,9 @@ export default function HeroResult({ skinAge, scores }: HeroResultProps) {
 
       <div
         className="w-[118px] h-[118px] mx-auto mb-3 rounded-full flex flex-col items-center justify-center shadow-card border border-border/20"
-        style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--secondary) / 0.45))" }}
+        style={{
+          background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--secondary) / 0.45))",
+        }}
       >
         <span className="text-[44px] font-bold text-foreground font-['Playfair_Display'] leading-none">{skinAge}</span>
         <span className="text-[11px] text-muted-foreground font-medium mt-1">anos</span>
