@@ -1,8 +1,9 @@
 import { Star, Users } from 'lucide-react';
+import ResultCard from './ResultCard';
 
 function TestimonialCard({ name, text, stars }: { name: string; text: string; stars: number }) {
   return (
-    <div className="bg-card rounded-3xl border border-border/20 p-4 shadow-card">
+    <ResultCard className="p-4">
       <div className="flex gap-3 items-start">
         <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-secondary-foreground flex-shrink-0">
           {name.charAt(0)}
@@ -19,7 +20,7 @@ function TestimonialCard({ name, text, stars }: { name: string; text: string; st
           <p className="text-[13px] text-muted-foreground leading-relaxed italic">"{text}"</p>
         </div>
       </div>
-    </div>
+    </ResultCard>
   );
 }
 

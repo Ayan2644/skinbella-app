@@ -1,4 +1,5 @@
 import { Lock } from 'lucide-react';
+import ResultCard from './ResultCard';
 
 const items = [
   { icon: '💆', text: 'Plano de skincare personalizado' },
@@ -12,7 +13,7 @@ const items = [
 export default function LockedReportCard() {
   return (
     <section className="px-5">
-      <div className="bg-card rounded-3xl border border-border/20 p-5 shadow-card relative overflow-hidden">
+      <ResultCard className="relative overflow-hidden">
         {/* Subtle locked overlay gradient */}
         <div
           className="absolute inset-0 pointer-events-none opacity-30"
@@ -43,7 +44,7 @@ export default function LockedReportCard() {
             ))}
           </ul>
         </div>
-      </div>
+      </ResultCard>
     </section>
   );
 }

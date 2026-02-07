@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react';
+import ResultCard from './ResultCard';
 
 interface ProjectionCardProps {
   skinAge: number;
@@ -7,12 +8,7 @@ interface ProjectionCardProps {
 export default function ProjectionCard({ skinAge }: ProjectionCardProps) {
   return (
     <section className="px-5">
-      <div className="bg-card rounded-3xl border border-border/20 p-5 shadow-card">
-        <h3 className="text-lg font-bold text-foreground font-['Playfair_Display'] mb-1">
-          Projeção com o Protocolo
-        </h3>
-        <p className="text-[12px] text-muted-foreground mb-5">Resultados estimados em 20 dias</p>
-
+      <ResultCard title="Projeção com o Protocolo" subtitle="Resultados estimados em 20 dias">
         <div
           className="rounded-2xl p-4 mb-5"
           style={{ background: 'linear-gradient(135deg, hsl(var(--primary) / 0.07), hsl(var(--primary) / 0.02))' }}
@@ -38,7 +34,7 @@ export default function ProjectionCard({ skinAge }: ProjectionCardProps) {
             </li>
           ))}
         </ul>
-      </div>
+      </ResultCard>
     </section>
   );
 }

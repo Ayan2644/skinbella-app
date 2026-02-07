@@ -1,4 +1,5 @@
 import { Shield } from 'lucide-react';
+import ResultCard from './ResultCard';
 
 const faqs = [
   {
@@ -23,10 +24,10 @@ export default function MiniFAQ() {
       </p>
       <div className="space-y-3">
         {faqs.map((faq) => (
-          <div key={faq.q} className="bg-card rounded-3xl border border-border/20 p-4 shadow-card">
+          <ResultCard key={faq.q} className="p-4">
             <p className="text-[14px] font-semibold text-foreground mb-1.5">{faq.q}</p>
             <p className="text-[13px] text-muted-foreground leading-relaxed">{faq.a}</p>
-          </div>
+          </ResultCard>
         ))}
       </div>
 
