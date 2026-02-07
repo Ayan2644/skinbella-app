@@ -31,6 +31,7 @@ const AppShell = () => {
   const allNavItems = isAdmin ? [...navItems, ...adminNavItems] : navItems;
 
   if (!auth?.loggedIn) return <Navigate to="/login" replace />;
+  if (location.pathname.startsWith('/app/admin') && !isAdmin) return <Navigate to="/app" replace />;
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';
