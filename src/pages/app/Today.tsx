@@ -108,24 +108,22 @@ const Today = () => {
 
       {/* ── Rotina Manhã ── */}
       <button onClick={() => navigate('/app/rotina')} className="w-full text-left group">
-        <div className="relative overflow-hidden rounded-2xl shadow-card border border-border/20 transition-all duration-300 group-hover:shadow-soft">
-          <img src={rotinaManha2Img} alt="Rotina Manhã" className="w-full h-auto block" />
-          <div className="absolute inset-0 flex items-center px-6">
-            <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <Sun className="w-4 h-4 text-accent" />
-                <p className="text-sm font-semibold text-foreground">Rotina Manhã</p>
-              </div>
-              {morningDone ? (
-                <span className="inline-block text-[10px] font-semibold bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">
-                  Concluída ✓
-                </span>
-              ) : (
-                <span className="inline-block text-[10px] font-medium bg-accent/10 text-accent px-2.5 py-0.5 rounded-full">
-                  Fazer rotina
-                </span>
-              )}
+        <div className="relative overflow-hidden rounded-2xl shadow-card border border-border/20 transition-all duration-300 group-hover:shadow-soft gradient-warm-rich flex items-center gap-3 py-4 px-5 pr-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="w-4 h-4 text-accent" />
+              <p className="text-sm font-semibold text-foreground">Rotina Manhã</p>
             </div>
+            <p className="text-[11px] text-muted-foreground mb-2">Meta diária</p>
+            <div className="w-full h-2 rounded-full bg-primary/15 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: morningDone ? '100%' : '30%' }}
+              />
+            </div>
+          </div>
+          <div className="w-[68px] h-[68px] rounded-2xl overflow-hidden shrink-0">
+            <img src={skincareBowlImg} alt="Rotina" className="w-full h-full object-cover" />
           </div>
         </div>
       </button>
