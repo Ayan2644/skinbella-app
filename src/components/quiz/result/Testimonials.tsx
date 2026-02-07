@@ -1,0 +1,55 @@
+import { Star, Users } from 'lucide-react';
+
+function TestimonialCard({ name, text, stars }: { name: string; text: string; stars: number }) {
+  return (
+    <div className="bg-card rounded-3xl border border-border/20 p-4 shadow-card">
+      <div className="flex gap-3 items-start">
+        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-secondary-foreground flex-shrink-0">
+          {name.charAt(0)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="text-sm font-semibold text-foreground">{name}</span>
+            <div className="flex gap-0.5">
+              {Array.from({ length: stars }).map((_, i) => (
+                <Star key={i} className="w-3 h-3 fill-accent text-accent" />
+              ))}
+            </div>
+          </div>
+          <p className="text-[13px] text-muted-foreground leading-relaxed italic">"{text}"</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Testimonials() {
+  return (
+    <section className="px-5">
+      <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-4 text-center">
+        O que dizem nossas usuárias
+      </p>
+      <div className="space-y-3">
+        <TestimonialCard
+          name="Ana C."
+          text="Minha pele mudou completamente em 30 dias seguindo o plano!"
+          stars={5}
+        />
+        <TestimonialCard
+          name="Mariana S."
+          text="O diagnóstico foi super preciso. Nunca me cuidei tão bem!"
+          stars={5}
+        />
+        <TestimonialCard
+          name="Juliana R."
+          text="Achei que era mais um quiz, mas o plano diário realmente funciona. Estou no dia 18!"
+          stars={5}
+        />
+      </div>
+      <div className="mt-4 flex items-center justify-center gap-2 text-[12px] text-muted-foreground">
+        <Users className="w-3.5 h-3.5" />
+        <span>+12.400 mulheres já fizeram a análise</span>
+      </div>
+    </section>
+  );
+}

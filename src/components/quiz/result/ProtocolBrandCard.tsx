@@ -1,0 +1,23 @@
+import { Sparkles } from 'lucide-react';
+
+export default function ProtocolBrandCard() {
+  return (
+    <section className="px-5">
+      <div className="text-center py-2">
+        <div className="w-12 h-12 mx-auto mb-4 rounded-2xl gradient-porcelain flex items-center justify-center shadow-card">
+          <Sparkles className="w-5 h-5 text-accent" />
+        </div>
+        <h2 className="text-[22px] font-bold text-foreground font-['Playfair_Display'] mb-1.5 leading-tight">
+          Protocolo Pele de Porcelana™
+        </h2>
+        <p className="text-[13px] text-muted-foreground mb-3 leading-relaxed">
+          Tratamento intensivo de recuperação da idade da pele
+        </p>
+        <span className="inline-flex items-center gap-1.5 bg-secondary text-secondary-foreground text-[11px] font-medium px-3.5 py-1.5 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          Plano guiado + acompanhamento diário
+        </span>
+      </div>
+    </section>
+  );
+}
