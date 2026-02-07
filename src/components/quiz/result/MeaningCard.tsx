@@ -1,21 +1,22 @@
-import ResultCard from './ResultCard';
+import ResultCard from "./ResultCard";
 
 interface MeaningCardProps {
   skinAge: number;
 }
 
 export default function MeaningCard({ skinAge }: MeaningCardProps) {
-  const insights = skinAge > 30
-    ? [
-        'Sua pele apresenta sinais de envelhecimento precoce que podem ser revertidos com cuidados direcionados.',
-        'A hidratação e proteção solar são prioridades imediatas para o seu perfil.',
-        'Com o protocolo correto, é possível recuperar a vitalidade em poucas semanas.',
-      ]
-    : [
-        'Sua pele tem boa base, mas precisa de manutenção para preservar a juventude.',
-        'Investir em prevenção agora evita tratamentos caros no futuro.',
-        'Um protocolo diário consistente potencializa seus resultados naturais.',
-      ];
+  const insights =
+    skinAge > 30
+      ? [
+          "Sua pele apresenta sinais de envelhecimento precoce que podem ser revertidos com cuidados direcionados.",
+          "A hidratação e a proteção solar são prioridades imediatas para o seu perfil.",
+          "Com um protocolo diário consistente, é possível recuperar vitalidade em poucas semanas.",
+        ]
+      : [
+          "Sua pele tem boa base, mas precisa de manutenção para preservar a juventude.",
+          "Investir em prevenção agora evita tratamentos caros no futuro.",
+          "Um protocolo diário consistente potencializa seus resultados naturais.",
+        ];
 
   return (
     <section className="px-5">
