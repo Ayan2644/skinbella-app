@@ -1,3 +1,5 @@
+import ResultCard from './ResultCard';
+
 interface MeaningCardProps {
   skinAge: number;
 }
@@ -17,10 +19,7 @@ export default function MeaningCard({ skinAge }: MeaningCardProps) {
 
   return (
     <section className="px-5">
-      <div className="bg-card rounded-3xl border border-border/20 p-5 shadow-card">
-        <h3 className="text-lg font-bold text-foreground font-['Playfair_Display'] mb-4">
-          O que isso significa
-        </h3>
+      <ResultCard title="O que isso significa">
         <ul className="space-y-3">
           {insights.map((text, i) => (
             <li key={i} className="flex gap-3 items-start text-[13px] text-muted-foreground leading-relaxed">
@@ -29,7 +28,7 @@ export default function MeaningCard({ skinAge }: MeaningCardProps) {
             </li>
           ))}
         </ul>
-      </div>
+      </ResultCard>
     </section>
   );
 }
