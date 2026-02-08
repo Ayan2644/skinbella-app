@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { storage } from '@/lib/storage';
-import { Home, FileText, Droplets, Sun, CheckSquare, Apple, BookOpen, ShoppingBag, HelpCircle, LogOut, Menu, X, Shield, LayoutDashboard, Users, CreditCard, BarChart3, Bell, Sparkles, MoreHorizontal } from 'lucide-react';
+import { Home, FileText, Droplets, Sun, CheckSquare, Apple, BookOpen, ShoppingBag, HelpCircle, LogOut, Menu, X, Shield, LayoutDashboard, Users, CreditCard, BarChart3, Bell, Sparkles, MoreHorizontal, PenTool } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
@@ -20,6 +20,7 @@ const adminNavItems = [
   { path: '/app/admin/usuarios', label: 'Usuários', icon: Users },
   { path: '/app/admin/assinaturas', label: 'Assinaturas', icon: CreditCard },
   { path: '/app/admin/funil', label: 'Funil', icon: BarChart3 },
+  { path: '/app/admin/quiz-editor', label: 'Editor Quiz', icon: PenTool },
 ];
 
 const bottomNavItems = [

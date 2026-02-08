@@ -20,6 +20,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import Subscriptions from "./pages/admin/Subscriptions";
 import Funnel from "./pages/admin/Funnel";
+import QuizEditor from "./pages/admin/QuizEditor";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="admin/usuarios" element={<AdminUsers />} />
             <Route path="admin/assinaturas" element={<Subscriptions />} />
             <Route path="admin/funil" element={<Funnel />} />
+            <Route path="admin/quiz-editor" element={<QuizEditor />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
