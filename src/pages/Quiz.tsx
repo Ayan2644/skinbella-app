@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import QuizProgress from '@/components/quiz/QuizProgress';
 import QuestionRenderer from '@/components/quiz/QuestionRenderer';
 import ResultScreen from '@/components/quiz/ResultScreen';
-import { quizQuestions } from '@/lib/quizData';
+import { quizStorage } from '@/lib/quizStorage';
 import { generateProfile } from '@/lib/skinEngine';
 import { storage } from '@/lib/storage';
 import heroImage from '@/assets/hero-skinbella.jpg';
@@ -19,8 +19,9 @@ const Quiz = () => {
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [profile, setProfile] = useState<any>(null);
 
-  const currentQ = quizQuestions[step];
-  const totalSteps = quizQuestions.length;
+  const activeQuestions = quizStorage.getActiveQuestions();
+  const currentQ = activeQuestions[step];
+  const totalSteps = activeQuestions.length;
 
   const handleAnswer = useCallback((value: any) => {
     setAnswers((prev) => ({ ...prev, [currentQ.id]: value }));
