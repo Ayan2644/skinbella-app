@@ -4,10 +4,18 @@ import { quizStorage } from '@/lib/quizStorage';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  GripVertical, Plus, Trash2, ArrowUp, ArrowDown, RotateCcw, Save, ChevronRight,
+  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
+  GripVertical, Plus, Trash2, RotateCcw, Save, ChevronRight,
   SlidersHorizontal, LayoutGrid, Hash, Camera, CheckSquare, List,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -21,10 +29,60 @@ const typeLabels: Record<QuestionType, { label: string; icon: typeof SlidersHori
   selfie: { label: 'Selfie', icon: Camera },
 };
 
+/* ── Sortable Item ── */
+function SortableStep({
+  q, index, isSelected, onSelect, onRemove,
+}: {
+  q: QuizQuestion; index: number; isSelected: boolean;
+  onSelect: () => void; onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: q.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+  const TypeIcon = typeLabels[q.type]?.icon ?? List;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      onClick={onSelect}
+      className={`group flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all text-sm ${
+        isSelected
+          ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
+          : 'hover:bg-muted/50 text-foreground'
+      }`}
+    >
+      <button {...attributes} {...listeners} className="touch-none p-0.5 cursor-grab active:cursor-grabbing" onClick={(e) => e.stopPropagation()}>
+        <GripVertical className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+      </button>
+      <span className="text-xs font-mono text-muted-foreground w-5 shrink-0">{index + 1}</span>
+      <TypeIcon className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+      <span className="truncate flex-1">{q.title}</span>
+      <button
+        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+        className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-destructive transition-opacity shrink-0"
+      >
+        <Trash2 className="w-3 h-3" />
+      </button>
+      <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+    </div>
+  );
+}
+
+/* ── Main Editor ── */
 const QuizEditor = () => {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     setQuestions(quizStorage.getActiveQuestions());
@@ -78,14 +136,21 @@ const QuizEditor = () => {
     setHasChanges(true);
   };
 
-  const moveQuestion = (idx: number, dir: -1 | 1) => {
-    const newIdx = idx + dir;
-    if (newIdx < 0 || newIdx >= questions.length) return;
-    const copy = [...questions];
-    [copy[idx], copy[newIdx]] = [copy[newIdx], copy[idx]];
-    setQuestions(copy);
-    if (selectedIdx === idx) setSelectedIdx(newIdx);
-    else if (selectedIdx === newIdx) setSelectedIdx(idx);
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = questions.findIndex(q => q.id === active.id);
+    const newIndex = questions.findIndex(q => q.id === over.id);
+    const reordered = arrayMove(questions, oldIndex, newIndex);
+    setQuestions(reordered);
+
+    // Update selected index to follow the selected item
+    if (selectedIdx === oldIndex) setSelectedIdx(newIndex);
+    else if (selectedIdx !== null) {
+      if (oldIndex < selectedIdx && newIndex >= selectedIdx) setSelectedIdx(selectedIdx - 1);
+      else if (oldIndex > selectedIdx && newIndex <= selectedIdx) setSelectedIdx(selectedIdx + 1);
+    }
     setHasChanges(true);
   };
 
@@ -112,7 +177,7 @@ const QuizEditor = () => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Editor do Quiz</h1>
-          <p className="text-sm text-muted-foreground">Gerencie as etapas, perguntas e respostas do quiz</p>
+          <p className="text-sm text-muted-foreground">Arraste para reordenar • Clique para editar</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleReset} className="rounded-xl gap-1.5">
@@ -131,7 +196,7 @@ const QuizEditor = () => {
       )}
 
       <div className="grid md:grid-cols-[320px_1fr] gap-4">
-        {/* Steps List */}
+        {/* Steps List with DnD */}
         <Card className="rounded-2xl border-border/30">
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-3 px-1">
@@ -140,39 +205,22 @@ const QuizEditor = () => {
                 <Plus className="w-3.5 h-3.5" /> Adicionar
               </Button>
             </div>
-            <div className="space-y-1 max-h-[65vh] overflow-y-auto pr-1">
-              {questions.map((q, i) => {
-                const TypeIcon = typeLabels[q.type]?.icon ?? List;
-                return (
-                  <div
-                    key={q.id}
-                    onClick={() => setSelectedIdx(i)}
-                    className={`group flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all text-sm ${
-                      selectedIdx === i
-                        ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
-                        : 'hover:bg-muted/50 text-foreground'
-                    }`}
-                  >
-                    <GripVertical className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
-                    <span className="text-xs font-mono text-muted-foreground w-5 shrink-0">{i + 1}</span>
-                    <TypeIcon className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
-                    <span className="truncate flex-1">{q.title}</span>
-                    <div className="hidden group-hover:flex items-center gap-0.5 shrink-0">
-                      <button onClick={(e) => { e.stopPropagation(); moveQuestion(i, -1); }} className="p-0.5 hover:text-primary" disabled={i === 0}>
-                        <ArrowUp className="w-3 h-3" />
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); moveQuestion(i, 1); }} className="p-0.5 hover:text-primary" disabled={i === questions.length - 1}>
-                        <ArrowDown className="w-3 h-3" />
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); removeQuestion(i); }} className="p-0.5 hover:text-destructive">
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                    <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-opacity ${selectedIdx === i ? 'opacity-100' : 'opacity-0'}`} />
-                  </div>
-                );
-              })}
-            </div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={questions.map(q => q.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1 max-h-[65vh] overflow-y-auto pr-1">
+                  {questions.map((q, i) => (
+                    <SortableStep
+                      key={q.id}
+                      q={q}
+                      index={i}
+                      isSelected={selectedIdx === i}
+                      onSelect={() => setSelectedIdx(i)}
+                      onRemove={() => removeQuestion(i)}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           </CardContent>
         </Card>
 
