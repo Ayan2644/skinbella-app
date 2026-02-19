@@ -7,6 +7,7 @@ import ResultScreen from '@/components/quiz/ResultScreen';
 import { quizStorage } from '@/lib/quizStorage';
 import { generateProfile } from '@/lib/skinEngine';
 import { storage } from '@/lib/storage';
+import { KIWIFY_CHECKOUT_URL } from '@/lib/auth';
 import heroImage from '@/assets/hero-skinbella.jpg';
 import { Sparkles, Shield, ArrowRight } from 'lucide-react';
 
@@ -65,7 +66,7 @@ const Quiz = () => {
     <ResultScreen
       profile={profile}
       onRedo={() => { setPhase('intro'); setStep(0); setAnswers({}); }}
-      onAccess={() => navigate('/login')}
+      onAccess={() => window.open(KIWIFY_CHECKOUT_URL, '_blank')}
     />
   );
 

@@ -3,8 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import Quiz from "./pages/Quiz";
 import Login from "./pages/Login";
+import DevLogin from "./pages/DevLogin";
 import AppShell from "./pages/AppShell";
 import NotFound from "./pages/NotFound";
 import Today from "./pages/app/Today";
@@ -30,27 +34,37 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Quiz />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/app" element={<AppShell />}>
-            <Route index element={<Today />} />
-            <Route path="relatorio" element={<Report />} />
-            <Route path="nutrientes" element={<Nutrients />} />
-            <Route path="rotina" element={<Routine />} />
-            <Route path="checklist" element={<Checklist />} />
-            <Route path="dieta" element={<Diet />} />
-            <Route path="biblioteca" element={<Library />} />
-            <Route path="produtos" element={<Products />} />
-            <Route path="faq" element={<Faq />} />
-            <Route path="admin" element={<Dashboard />} />
-            <Route path="admin/usuarios" element={<AdminUsers />} />
-            <Route path="admin/assinaturas" element={<Subscriptions />} />
-            <Route path="admin/funil" element={<Funnel />} />
-            <Route path="admin/quiz-editor" element={<QuizEditor />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Quiz />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dev-login" element={<DevLogin />} />
+            <Route
+              path="/app"
+              element={
+                <ProtectedRoute>
+                  <AppShell />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Today />} />
+              <Route path="relatorio" element={<Report />} />
+              <Route path="nutrientes" element={<Nutrients />} />
+              <Route path="rotina" element={<Routine />} />
+              <Route path="checklist" element={<Checklist />} />
+              <Route path="dieta" element={<Diet />} />
+              <Route path="biblioteca" element={<Library />} />
+              <Route path="produtos" element={<Products />} />
+              <Route path="faq" element={<Faq />} />
+              <Route path="admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+              <Route path="admin/usuarios" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+              <Route path="admin/assinaturas" element={<AdminRoute><Subscriptions /></AdminRoute>} />
+              <Route path="admin/funil" element={<AdminRoute><Funnel /></AdminRoute>} />
+              <Route path="admin/quiz-editor" element={<AdminRoute><QuizEditor /></AdminRoute>} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

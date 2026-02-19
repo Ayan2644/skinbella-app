@@ -1,38 +1,205 @@
-import { useMemo, useState } from 'react';
+/**
+ * Admin Dashboard - REAL DATA VERSION
+ *
+ * @author @dev (Dex) - Backend Developer
+ * @version 3.0.0 (Real Data)
+ * @date 2026-02-17
+ *
+ * Conectado com:
+ * - admin_metrics (métricas em tempo real do webhook)
+ * - users (usuários reais)
+ * - subscriptions (assinaturas reais da Kiwify)
+ */
+
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { generateMockUsers, generateDailyMetrics, getSubscriptionBreakdown } from '@/lib/adminData';
-import { Users, FileText, TrendingUp, DollarSign, Activity } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { Users, TrendingUp, DollarSign, Activity, Ban, Loader2, AlertCircle } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { supabase } from '@/lib/supabase';
+
+interface AdminMetrics {
+  metric_date: string;
+  total_users: number;
+  active_subscriptions: number;
+  cancelled_subscriptions: number;
+  mrr_cents: number;
+  new_users_today: number;
+  quiz_completions_today: number;
+  calculated_at: string;
+}
 
 const Dashboard = () => {
   const [period, setPeriod] = useState('30');
-  const users = useMemo(() => generateMockUsers(), []);
-  const metrics = useMemo(() => generateDailyMetrics(Number(period)), [period]);
-  const subs = useMemo(() => getSubscriptionBreakdown(users), [users]);
 
-  const totalStarted = metrics.reduce((s, m) => s + m.started, 0);
-  const totalCompleted = metrics.reduce((s, m) => s + m.completed, 0);
-  const avgConversion = totalStarted > 0 ? Math.round((totalCompleted / totalStarted) * 100) : 0;
-  const totalRevenue = subs.reduce((s, m) => s + m.revenue, 0);
-  const activeUsers = users.filter(u => u.status === 'active').length;
+  // Buscar métricas em tempo real
+  const { data: latestMetrics, isLoading: loadingMetrics, error: metricsError } = useQuery({
+    queryKey: ['admin-metrics-latest'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('admin_metrics')
+        .select('*')
+        .eq('metric_date', new Date().toISOString().split('T')[0])
+        .order('calculated_at', { ascending: false })
+        .limit(1)
+        .single();
 
+      if (error) throw error;
+      return data as AdminMetrics;
+    },
+    refetchInterval: 30000, // Atualiza a cada 30 segundos
+  });
+
+  // Buscar histórico de métricas
+  const { data: metricsHistory, isLoading: loadingHistory } = useQuery({
+    queryKey: ['admin-metrics-history', period],
+    queryFn: async () => {
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - Number(period));
+
+      const { data, error } = await supabase
+        .from('admin_metrics')
+        .select('*')
+        .gte('metric_date', daysAgo.toISOString().split('T')[0])
+        .order('metric_date', { ascending: true });
+
+      if (error) throw error;
+      return data as AdminMetrics[];
+    },
+    refetchInterval: 60000, // Atualiza a cada 1 minuto
+  });
+
+  // Buscar status de subscriptions para gráfico de pizza
+  const { data: subscriptionStats } = useQuery({
+    queryKey: ['subscription-stats'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .then(result => {
+          if (result.error) throw result.error;
+
+          const stats = result.data?.reduce((acc, sub) => {
+            acc[sub.status] = (acc[sub.status] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>) || {};
+
+          return [
+            { name: 'Ativa', count: stats.active || 0, color: 'hsl(155, 25%, 38%)' },
+            { name: 'Cancelada', count: stats.cancelled || 0, color: 'hsl(0, 65%, 55%)' },
+            { name: 'Atrasada', count: stats.late || 0, color: 'hsl(42, 55%, 62%)' },
+            { name: 'Reembolsada', count: stats.refunded || 0, color: 'hsl(220, 8%, 50%)' },
+          ].filter(s => s.count > 0);
+        });
+
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: 60000,
+  });
+
+  // Loading state
+  if (loadingMetrics || loadingHistory) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Carregando métricas em tempo real...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (metricsError) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <AlertCircle className="w-12 h-12 mx-auto text-destructive" />
+          <div>
+            <h3 className="font-semibold text-lg">Erro ao carregar métricas</h3>
+            <p className="text-sm text-muted-foreground">
+              {metricsError instanceof Error ? metricsError.message : 'Erro desconhecido'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Se não há dados, mostrar estado vazio
+  if (!latestMetrics) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground" />
+          <div>
+            <h3 className="font-semibold text-lg">Nenhuma métrica encontrada</h3>
+            <p className="text-sm text-muted-foreground">
+              Aguardando o primeiro evento do webhook...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // KPIs com dados REAIS
   const kpis = [
-    { label: 'Total Usuários', value: users.length, icon: Users, accent: 'text-primary' },
-    { label: 'Quiz Preenchidos', value: totalCompleted, icon: FileText, accent: 'text-accent' },
-    { label: 'Taxa Conversão', value: `${avgConversion}%`, icon: TrendingUp, accent: 'text-primary' },
-    { label: 'Receita Mensal', value: `R$ ${totalRevenue.toFixed(0)}`, icon: DollarSign, accent: 'text-accent' },
-    { label: 'Ativos Agora', value: activeUsers, icon: Activity, accent: 'text-primary' },
+    {
+      label: 'Total Usuários',
+      value: latestMetrics.total_users,
+      icon: Users,
+      accent: 'text-primary'
+    },
+    {
+      label: 'Assinaturas Ativas',
+      value: latestMetrics.active_subscriptions,
+      icon: Activity,
+      accent: 'text-accent'
+    },
+    {
+      label: 'Canceladas',
+      value: latestMetrics.cancelled_subscriptions,
+      icon: Ban,
+      accent: 'text-destructive'
+    },
+    {
+      label: 'MRR (Mensal)',
+      value: `R$ ${(latestMetrics.mrr_cents / 100).toFixed(2)}`,
+      icon: DollarSign,
+      accent: 'text-primary'
+    },
+    {
+      label: 'Novos Hoje',
+      value: latestMetrics.new_users_today,
+      icon: TrendingUp,
+      accent: 'text-accent'
+    },
   ];
 
-  const PIE_COLORS = ['hsl(35, 15%, 80%)', 'hsl(155, 25%, 38%)', 'hsl(42, 55%, 62%)'];
+  // Preparar dados do histórico para gráficos
+  const chartData = metricsHistory?.map(m => ({
+    date: new Date(m.metric_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+    users: m.total_users,
+    active: m.active_subscriptions,
+    cancelled: m.cancelled_subscriptions,
+    mrr: m.mrr_cents / 100,
+  })) || [];
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Visão geral do SkinBella App</p>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard Admin</h1>
+          <p className="text-sm text-muted-foreground">
+            Dados em tempo real do webhook Kiwify
+            <span className="ml-2 text-xs text-primary">
+              • Atualizado: {new Date(latestMetrics.calculated_at).toLocaleTimeString('pt-BR')}
+            </span>
+          </p>
         </div>
         <Select value={period} onValueChange={setPeriod}>
           <SelectTrigger className="w-40 rounded-xl">
@@ -64,60 +231,69 @@ const Dashboard = () => {
 
       {/* Charts Row */}
       <div className="grid lg:grid-cols-3 gap-4">
-        {/* Area Chart - Quiz starts vs completions */}
+        {/* Area Chart - Users & Subscriptions */}
         <Card className="lg:col-span-2 rounded-2xl border-border/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Quiz: Iniciados vs Completos</CardTitle>
+            <CardTitle className="text-base font-semibold">Evolução - Usuários vs Assinaturas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={metrics} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="gStart" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="gUsers" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(155, 25%, 38%)" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="hsl(155, 25%, 38%)" stopOpacity={0} />
                     </linearGradient>
-                    <linearGradient id="gComp" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="gActive" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(42, 55%, 62%)" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="hsl(42, 55%, 62%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(35, 15%, 88%)" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={v => v.slice(5)} stroke="hsl(220, 8%, 50%)" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(220, 8%, 50%)" />
                   <YAxis tick={{ fontSize: 10 }} stroke="hsl(220, 8%, 50%)" />
                   <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid hsl(35, 15%, 88%)', fontSize: '12px' }} />
-                  <Area type="monotone" dataKey="started" stroke="hsl(155, 25%, 38%)" fill="url(#gStart)" name="Iniciados" />
-                  <Area type="monotone" dataKey="completed" stroke="hsl(42, 55%, 62%)" fill="url(#gComp)" name="Completos" />
+                  <Area type="monotone" dataKey="users" stroke="hsl(155, 25%, 38%)" fill="url(#gUsers)" name="Total Usuários" />
+                  <Area type="monotone" dataKey="active" stroke="hsl(42, 55%, 62%)" fill="url(#gActive)" name="Assinaturas Ativas" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        {/* Pie Chart - Subscriptions */}
+        {/* Pie Chart - Subscription Status */}
         <Card className="rounded-2xl border-border/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Assinaturas</CardTitle>
+            <CardTitle className="text-base font-semibold">Status de Assinaturas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={subs} dataKey="count" nameKey="plan" cx="50%" cy="50%" outerRadius={70} innerRadius={40} strokeWidth={2}>
-                    {subs.map((_, i) => (
-                      <Cell key={i} fill={PIE_COLORS[i]} />
+                  <Pie
+                    data={subscriptionStats}
+                    dataKey="count"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={70}
+                    innerRadius={40}
+                    strokeWidth={2}
+                  >
+                    {subscriptionStats?.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
                   <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid hsl(35, 15%, 88%)', fontSize: '12px' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center gap-4 mt-2">
-              {subs.map((s, i) => (
-                <div key={s.plan} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: PIE_COLORS[i] }} />
-                  <span className="capitalize">{s.plan} ({s.count})</span>
+            <div className="flex flex-wrap justify-center gap-3 mt-2">
+              {subscriptionStats?.map(s => (
+                <div key={s.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.color }} />
+                  <span>{s.name} ({s.count})</span>
                 </div>
               ))}
             </div>
@@ -125,21 +301,30 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Conversion Bar Chart */}
+      {/* MRR Chart */}
       <Card className="rounded-2xl border-border/30">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">Taxa de Conversão Diária (%)</CardTitle>
+          <CardTitle className="text-base font-semibold">Receita Mensal Recorrente (MRR)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={metrics} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="gMRR" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(155, 25%, 38%)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="hsl(155, 25%, 38%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(35, 15%, 88%)" />
-                <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={v => v.slice(5)} stroke="hsl(220, 8%, 50%)" />
-                <YAxis tick={{ fontSize: 10 }} stroke="hsl(220, 8%, 50%)" domain={[0, 100]} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid hsl(35, 15%, 88%)', fontSize: '12px' }} />
-                <Bar dataKey="conversionRate" fill="hsl(155, 25%, 38%)" radius={[4, 4, 0, 0]} name="Conversão %" />
-              </BarChart>
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(220, 8%, 50%)" />
+                <YAxis tick={{ fontSize: 10 }} stroke="hsl(220, 8%, 50%)" tickFormatter={v => `R$ ${v}`} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '12px', border: '1px solid hsl(35, 15%, 88%)', fontSize: '12px' }}
+                  formatter={(value: number) => [`R$ ${value.toFixed(2)}`, 'MRR']}
+                />
+                <Area type="monotone" dataKey="mrr" stroke="hsl(155, 25%, 38%)" fill="url(#gMRR)" name="MRR (R$)" />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </CardContent>

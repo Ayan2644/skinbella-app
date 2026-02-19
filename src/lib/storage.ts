@@ -4,8 +4,11 @@ const KEYS = {
   auth: 'skinbella.auth',
   checklist: 'skinbella.checklist',
   streak: 'skinbella.streak',
+  streakData: 'skinbella.streak.data',
   routineMorning: 'skinbella.routine.morning',
   routineNight: 'skinbella.routine.night',
+  routineStepsMorning: 'skinbella.routine.steps.morning',
+  routineStepsNight: 'skinbella.routine.steps.night',
   selfieHistory: 'skinbella.selfies',
 } as const;
 
@@ -33,7 +36,24 @@ export const storage = {
   isAdmin: () => get<{ isAdmin?: boolean }>(KEYS.auth)?.isAdmin ?? false,
 
   saveChecklist: (items: { id: string; label: string; done: boolean }[]) => set(KEYS.checklist, items),
-  getChecklist: () => get<{ id: string; label: string; done: boolean }[]>(KEYS.checklist),
+  getChecklist: () => {
+    const saved = get<{ id: string; label: string; done: boolean }[]>(KEYS.checklist);
+    // Se não existir, retornar checklist padrão
+    if (!saved) {
+      const defaultChecklist = [
+        { id: '1', label: 'Beber 2L de água 💧', done: false },
+        { id: '2', label: 'Aplicar protetor solar ☀️', done: false },
+        { id: '3', label: 'Fazer rotina da manhã 🌅', done: false },
+        { id: '4', label: 'Fazer rotina da noite 🌙', done: false },
+        { id: '5', label: 'Dormir 8 horas 😴', done: false },
+        { id: '6', label: 'Evitar açúcar e alimentos processados 🥗', done: false },
+      ];
+      // Salvar a checklist padrão
+      set(KEYS.checklist, defaultChecklist);
+      return defaultChecklist;
+    }
+    return saved;
+  },
 
   saveStreak: (n: number) => set(KEYS.streak, n),
   getStreak: () => get<number>(KEYS.streak) ?? 0,
@@ -55,4 +75,45 @@ export const storage = {
     set(KEYS.selfieHistory, history);
   },
   getSelfies: () => get<{ date: string; url: string }[]>(KEYS.selfieHistory) ?? [],
+
+  // Routine Steps (BUG FIX)
+  getRoutineSteps: (type: 'morning' | 'night') => {
+    const key = type === 'morning' ? KEYS.routineStepsMorning : KEYS.routineStepsNight;
+    return get<Record<string, boolean>>(key) ?? {};
+  },
+  saveRoutineSteps: (type: 'morning' | 'night', steps: Record<string, boolean>) => {
+    const key = type === 'morning' ? KEYS.routineStepsMorning : KEYS.routineStepsNight;
+    set(key, steps);
+  },
+
+  // Streak Data (BUG FIX)
+  getStreakData: () => {
+    const data = get<{ lastDate: string; completedToday: boolean }>(KEYS.streakData);
+    if (!data) {
+      return { lastDate: '', completedToday: false };
+    }
+    // Verificar se é hoje
+    const today = new Date().toDateString();
+    if (data.lastDate !== today) {
+      return { lastDate: data.lastDate, completedToday: false };
+    }
+    return data;
+  },
+  incrementStreakIfNewDay: () => {
+    const today = new Date().toDateString();
+    const streakData = get<{ lastDate: string; completedToday: boolean }>(KEYS.streakData);
+
+    // Se já completou hoje, não incrementa
+    if (streakData && streakData.lastDate === today && streakData.completedToday) {
+      return false;
+    }
+
+    const currentStreak = get<number>(KEYS.streak) ?? 0;
+    const newStreak = currentStreak + 1;
+
+    set(KEYS.streak, newStreak);
+    set(KEYS.streakData, { lastDate: today, completedToday: true });
+
+    return true;
+  },
 };

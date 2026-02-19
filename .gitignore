@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Windows reserved name - prevent accidental creation
+nul
+nul.*
+.env
