@@ -1,50 +1,26 @@
 /**
- * Authentication Library - Magic Link + Subscription Validation
- *
- * @author @dev (Dex) - Backend Squad
- * @version 1.0.0
- * @story 1.4 - Implement Magic Link Authentication
+ * Authentication Library - Magic Link + Password + Subscription Validation
  */
 
-import { supabase } from './supabase'
+import { supabase } from '@/integrations/supabase/client'
 
 /**
- * Check if email has an active subscription
+ * Check if email has an active subscription (uses service role via edge function for unauthenticated check)
  */
 export async function hasActiveSubscription(email: string): Promise<boolean> {
   try {
-    // First, find user by email
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email)
-      .single()
+    // Use edge function to check subscription (bypasses RLS since user isn't logged in yet)
+    const { data, error } = await supabase.functions.invoke('bright-responder', {
+      method: 'POST',
+      body: { action: 'check_subscription', email }
+    })
 
-    if (userError || !user) {
+    if (error) {
+      console.error('Error checking subscription:', error)
       return false
     }
 
-    // Check if user has active subscription
-    const { data: subscription, error: subError } = await supabase
-      .from('subscriptions')
-      .select('status, expires_at')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .single()
-
-    if (subError || !subscription) {
-      return false
-    }
-
-    // Check if subscription is not expired
-    if (subscription.expires_at) {
-      const expiresAt = new Date(subscription.expires_at)
-      if (expiresAt < new Date()) {
-        return false
-      }
-    }
-
-    return true
+    return data?.hasActiveSubscription === true
   } catch (error) {
     console.error('Error checking subscription:', error)
     return false
@@ -53,7 +29,6 @@ export async function hasActiveSubscription(email: string): Promise<boolean> {
 
 /**
  * Send magic link to user's email
- * Note: Subscription check happens AFTER login via RLS + ProtectedRoute
  */
 export async function sendMagicLink(email: string): Promise<{
   success: boolean
@@ -61,21 +36,18 @@ export async function sendMagicLink(email: string): Promise<{
   needsSubscription?: boolean
 }> {
   try {
-    // Send magic link directly
-    // Subscription will be validated by RLS after user clicks the link
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: `${window.location.origin}/app`,
-        shouldCreateUser: true, // Allow creating auth user (they must have subscription in DB)
+        shouldCreateUser: false, // Only existing users (created by webhook)
       }
     })
 
     if (error) {
       console.error('Error sending magic link:', error)
 
-      // Check if error is because user doesn't exist
-      if (error.message.includes('User not found') || error.message.includes('not found')) {
+      if (error.message.includes('Signups not allowed') || error.message.includes('not found') || error.message.includes('User not found')) {
         return {
           success: false,
           needsSubscription: true,
@@ -83,15 +55,10 @@ export async function sendMagicLink(email: string): Promise<{
         }
       }
 
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message }
     }
 
-    return {
-      success: true
-    }
+    return { success: true }
   } catch (error) {
     console.error('Error in sendMagicLink:', error)
     return {
@@ -115,18 +82,11 @@ export async function verifyMagicLink(token: string): Promise<{
     })
 
     if (error) {
-      console.error('Error verifying magic link:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message }
     }
 
-    return {
-      success: true
-    }
+    return { success: true }
   } catch (error) {
-    console.error('Error in verifyMagicLink:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erro ao verificar link de acesso'
@@ -140,15 +100,9 @@ export async function verifyMagicLink(token: string): Promise<{
 export async function getCurrentUser() {
   try {
     const { data: { user }, error } = await supabase.auth.getUser()
-
-    if (error) {
-      console.error('Error getting current user:', error)
-      return null
-    }
-
+    if (error) return null
     return user
-  } catch (error) {
-    console.error('Error in getCurrentUser:', error)
+  } catch {
     return null
   }
 }
@@ -156,26 +110,12 @@ export async function getCurrentUser() {
 /**
  * Sign out current user
  */
-export async function signOut(): Promise<{
-  success: boolean
-  error?: string
-}> {
+export async function signOut(): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      console.error('Error signing out:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
-
-    return {
-      success: true
-    }
+    if (error) return { success: false, error: error.message }
+    return { success: true }
   } catch (error) {
-    console.error('Error in signOut:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erro ao sair'
@@ -196,40 +136,33 @@ export async function getSubscriptionStatus(userId: string) {
       .limit(1)
       .single()
 
-    if (error) {
-      console.error('Error getting subscription:', error)
-      return null
-    }
-
+    if (error) return null
     return subscription
-  } catch (error) {
-    console.error('Error in getSubscriptionStatus:', error)
+  } catch {
     return null
   }
 }
 
 /**
- * Check if user is admin
+ * Check if user has admin role (uses user_roles table)
  */
-export async function isAdmin(): Promise<boolean> {
+export async function checkIsAdmin(userId: string): Promise<boolean> {
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data, error } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .single()
 
-    if (!session) {
-      return false
-    }
-
-    // Check for is_admin custom claim in JWT
-    const isAdminClaim = session.user.user_metadata?.is_admin
-
-    return isAdminClaim === true
-  } catch (error) {
-    console.error('Error checking admin status:', error)
+    if (error || !data) return false
+    return true
+  } catch {
     return false
   }
 }
 
 /**
- * Kiwify checkout URL from env
+ * Kiwify checkout URL
  */
 export const KIWIFY_CHECKOUT_URL = import.meta.env.VITE_KIWIFY_CHECKOUT_URL || 'https://pay.kiwify.com.br/YOUR_PRODUCT_ID'
