@@ -1,17 +1,12 @@
 /**
  * ProtectedRoute Component - Route Protection with Subscription Check
- *
- * @author @dev (Dex) - Backend Squad
- * @version 1.2.0
- * @story 1.4 - Implement Magic Link Authentication
- *
- * Admin users bypass subscription requirement.
+ * Admin users (via user_roles table) bypass subscription requirement.
  */
 
 import { ReactNode, useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
+import { checkIsAdmin } from '@/lib/auth'
 import { Loader2 } from 'lucide-react'
 
 interface ProtectedRouteProps {
@@ -19,39 +14,24 @@ interface ProtectedRouteProps {
   requireSubscription?: boolean
 }
 
-const DEV_MODE = false; // Auth flow corrigido - webhook cria users no Auth
-
 export function ProtectedRoute({ children, requireSubscription = true }: ProtectedRouteProps) {
   const { user, loading, hasActiveSubscription } = useAuth()
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
   const [checkingAdmin, setCheckingAdmin] = useState(false)
 
-  // Check if user is admin (admins bypass subscription requirement)
   useEffect(() => {
-    if (!user?.email || !requireSubscription || hasActiveSubscription) {
+    if (!user?.id || !requireSubscription || hasActiveSubscription) {
       setIsAdmin(null)
       setCheckingAdmin(false)
       return
     }
 
     setCheckingAdmin(true)
-    supabase
-      .from('users')
-      .select('is_admin')
-      .eq('email', user.email)
-      .single()
-      .then(({ data }) => {
-        setIsAdmin(data ? (data.is_admin ?? false) : false)
-        setCheckingAdmin(false)
-      }, () => {
-        setIsAdmin(false)
-        setCheckingAdmin(false)
-      })
-  }, [user?.email, requireSubscription, hasActiveSubscription])
-
-  if (DEV_MODE) {
-    return <>{children}</>
-  }
+    checkIsAdmin(user.id).then((result) => {
+      setIsAdmin(result)
+      setCheckingAdmin(false)
+    })
+  }, [user?.id, requireSubscription, hasActiveSubscription])
 
   if (loading || checkingAdmin) {
     return (
@@ -68,7 +48,6 @@ export function ProtectedRoute({ children, requireSubscription = true }: Protect
     return <Navigate to="/login" replace />
   }
 
-  // Admin users bypass subscription check
   if (requireSubscription && !hasActiveSubscription && !isAdmin) {
     return <Navigate to="/login?error=subscription_required" replace />
   }

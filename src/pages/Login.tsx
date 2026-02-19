@@ -1,9 +1,5 @@
 /**
- * Login Page - Magic Link Authentication
- *
- * @author @dev (Dex) - Backend Squad
- * @version 2.0.0 (Magic Link)
- * @story 1.4 - Implement Magic Link Authentication
+ * Login Page - Magic Link + Password Authentication
  */
 
 import { useState, useEffect } from 'react'
@@ -14,17 +10,26 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { Sparkles, Mail, ExternalLink, Loader2, Lock } from 'lucide-react'
 import { sendMagicLink, KIWIFY_CHECKOUT_URL } from '@/lib/auth'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/hooks/useAuth'
 
 const Login = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [searchParams] = useSearchParams()
+  const { user } = useAuth()
   const [loginMode, setLoginMode] = useState<'magic-link' | 'password'>('magic-link')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/app', { replace: true })
+    }
+  }, [user, navigate])
 
   // Check for error param (from ProtectedRoute)
   useEffect(() => {
@@ -74,11 +79,7 @@ const Login = () => {
           title: '✅ Login realizado!',
           description: 'Redirecionando...'
         })
-
-        // Redirecionar para o app
-        setTimeout(() => {
-          navigate('/app')
-        }, 500)
+        navigate('/app', { replace: true })
       }
     } catch (error) {
       console.error('Login error:', error)
@@ -87,6 +88,7 @@ const Login = () => {
         description: 'Tente novamente mais tarde.',
         variant: 'destructive'
       })
+    } finally {
       setLoading(false)
     }
   }
@@ -126,7 +128,6 @@ const Login = () => {
         return
       }
 
-      // Success!
       setEmailSent(true)
       toast({
         title: '✅ Link enviado!',
@@ -146,7 +147,6 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     if (loginMode === 'password') {
       await handlePasswordLogin()
     } else {
@@ -220,14 +220,16 @@ const Login = () => {
             Acesse o SkinBella
           </h1>
           <p className="text-sm text-muted-foreground">
-            Entre com seu email de assinante
+            {loginMode === 'magic-link'
+              ? 'Entre com seu email de assinante'
+              : 'Entre com email e senha'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="email" className="text-sm font-medium text-foreground">
-              Email da Assinatura
+              {loginMode === 'magic-link' ? 'Email da Assinatura' : 'Email'}
             </Label>
             <Input
               id="email"
@@ -239,9 +241,11 @@ const Login = () => {
               required
               disabled={loading}
             />
-            <p className="text-xs text-muted-foreground mt-1.5">
-              Use o email cadastrado na Kiwify
-            </p>
+            {loginMode === 'magic-link' && (
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Use o email cadastrado na Kiwify
+              </p>
+            )}
           </div>
 
           {loginMode === 'password' && (
@@ -277,7 +281,7 @@ const Login = () => {
                 {loginMode === 'password' ? (
                   <>
                     <Lock className="w-4 h-4 mr-2" />
-                    Entrar com senha
+                    Entrar
                   </>
                 ) : (
                   <>
@@ -289,14 +293,13 @@ const Login = () => {
             )}
           </Button>
 
-          {/* Toggle entre Magic Link e Password */}
           <button
             type="button"
             onClick={() => setLoginMode(loginMode === 'magic-link' ? 'password' : 'magic-link')}
             className="w-full text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
           >
             {loginMode === 'magic-link'
-              ? '🔑 Já tenho uma conta - Entrar com senha'
+              ? '🔑 Já tenho conta — Entrar com senha'
               : '✉️ Receber link de acesso por email'}
           </button>
         </form>
