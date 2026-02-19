@@ -17,7 +17,7 @@ interface AuthContextType {
   loading: boolean
   signOut: () => Promise<void>
   hasActiveSubscription: boolean
-  subscriptionStatus: 'active' | 'cancelled' | 'expired' | 'paused' | 'refunded' | null
+  subscriptionStatus: string | null
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
-  const [subscriptionStatus, setSubscriptionStatus] = useState<'active' | 'cancelled' | 'expired' | 'paused' | 'refunded' | null>(null)
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
 
   // Check subscription status
   const checkSubscription = async (userId: string) => {
