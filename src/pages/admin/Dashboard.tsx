@@ -74,27 +74,23 @@ const Dashboard = () => {
   const { data: subscriptionStats } = useQuery({
     queryKey: ['subscription-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const result = await supabase
         .from('subscriptions')
-        .select('status')
-        .then(result => {
-          if (result.error) throw result.error;
+        .select('status');
 
-          const stats = result.data?.reduce((acc, sub) => {
-            acc[sub.status] = (acc[sub.status] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>) || {};
+      if (result.error) throw result.error;
 
-          return [
-            { name: 'Ativa', count: stats.active || 0, color: 'hsl(155, 25%, 38%)' },
-            { name: 'Cancelada', count: stats.cancelled || 0, color: 'hsl(0, 65%, 55%)' },
-            { name: 'Atrasada', count: stats.late || 0, color: 'hsl(42, 55%, 62%)' },
-            { name: 'Reembolsada', count: stats.refunded || 0, color: 'hsl(220, 8%, 50%)' },
-          ].filter(s => s.count > 0);
-        });
+      const stats = result.data?.reduce((acc, sub) => {
+        acc[sub.status] = (acc[sub.status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>) || {};
 
-      if (error) throw error;
-      return data;
+      return [
+        { name: 'Ativa', count: stats.active || 0, color: 'hsl(155, 25%, 38%)' },
+        { name: 'Cancelada', count: stats.cancelled || 0, color: 'hsl(0, 65%, 55%)' },
+        { name: 'Atrasada', count: stats.late || 0, color: 'hsl(42, 55%, 62%)' },
+        { name: 'Reembolsada', count: stats.refunded || 0, color: 'hsl(220, 8%, 50%)' },
+      ].filter(s => s.count > 0);
     },
     refetchInterval: 60000,
   });
