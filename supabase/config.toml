@@ -1,1 +1,4 @@
 project_id = "kkfvlbqhxvexpjrdlgpx"
+
+[functions.bright-responder]
+verify_jwt = false

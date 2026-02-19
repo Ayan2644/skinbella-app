@@ -19,7 +19,7 @@ interface ProtectedRouteProps {
   requireSubscription?: boolean
 }
 
-const DEV_MODE = true; // TODO: Desativar após corrigir auth flow
+const DEV_MODE = false; // Auth flow corrigido - webhook cria users no Auth
 
 export function ProtectedRoute({ children, requireSubscription = true }: ProtectedRouteProps) {
   const { user, loading, hasActiveSubscription } = useAuth()
