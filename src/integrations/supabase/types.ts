@@ -14,7 +14,204 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_metrics: {
+        Row: {
+          active_subscriptions: number | null
+          calculated_at: string
+          cancelled_subscriptions: number | null
+          id: string
+          metric_date: string
+          mrr_cents: number | null
+          new_users_today: number | null
+          quiz_completions_today: number | null
+          total_users: number | null
+        }
+        Insert: {
+          active_subscriptions?: number | null
+          calculated_at?: string
+          cancelled_subscriptions?: number | null
+          id?: string
+          metric_date: string
+          mrr_cents?: number | null
+          new_users_today?: number | null
+          quiz_completions_today?: number | null
+          total_users?: number | null
+        }
+        Update: {
+          active_subscriptions?: number | null
+          calculated_at?: string
+          cancelled_subscriptions?: number | null
+          id?: string
+          metric_date?: string
+          mrr_cents?: number | null
+          new_users_today?: number | null
+          quiz_completions_today?: number | null
+          total_users?: number | null
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          converted_to_user: boolean | null
+          created_at: string
+          email: string
+          id: string
+          quiz_completed: boolean | null
+          quiz_result_id: string | null
+          source: string | null
+          user_id: string | null
+        }
+        Insert: {
+          converted_to_user?: boolean | null
+          created_at?: string
+          email: string
+          id?: string
+          quiz_completed?: boolean | null
+          quiz_result_id?: string | null
+          source?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          converted_to_user?: boolean | null
+          created_at?: string
+          email?: string
+          id?: string
+          quiz_completed?: boolean | null
+          quiz_result_id?: string | null
+          source?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      quiz_results: {
+        Row: {
+          answers: Json | null
+          created_at: string
+          id: string
+          scores: Json | null
+          skin_age: number | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          created_at?: string
+          id?: string
+          scores?: Json | null
+          skin_age?: number | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          created_at?: string
+          id?: string
+          scores?: Json | null
+          skin_age?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          amount_cents: number | null
+          cancelled_at: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          kiwify_subscription_id: string
+          plan_name: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number | null
+          cancelled_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          kiwify_subscription_id: string
+          plan_name?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number | null
+          cancelled_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          kiwify_subscription_id?: string
+          plan_name?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_activity: {
+        Row: {
+          activity_data: Json | null
+          activity_type: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          activity_data?: Json | null
+          activity_type: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          activity_data?: Json | null
+          activity_type?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          is_admin: boolean | null
+          is_blocked: boolean | null
+          kiwify_customer_id: string | null
+          profile_photo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          is_admin?: boolean | null
+          is_blocked?: boolean | null
+          kiwify_customer_id?: string | null
+          profile_photo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          is_admin?: boolean | null
+          is_blocked?: boolean | null
+          kiwify_customer_id?: string | null
+          profile_photo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
