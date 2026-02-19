@@ -2,7 +2,7 @@
  * Authentication Library - Magic Link + Password + Subscription Validation
  */
 
-import { supabase } from '@/integrations/supabase/client'
+import { supabase } from '@/lib/supabase'
 
 /**
  * Check if email has an active subscription (uses service role via edge function for unauthenticated check)
