@@ -39,28 +39,48 @@ function normalizeEventName(event: string): KiwifyEvent {
   return (mapping[event] as KiwifyEvent) || (event as KiwifyEvent)
 }
 
-function validateWebhookToken(req: Request): boolean {
-  const expectedToken = Deno.env.get('KIWIFY_WEBHOOK_TOKEN')
-  if (!expectedToken) {
+async function validateWebhookToken(req: Request, bodyText: string): Promise<boolean> {
+  const secretToken = Deno.env.get('KIWIFY_WEBHOOK_TOKEN')
+  if (!secretToken) {
     console.error('❌ KIWIFY_WEBHOOK_TOKEN not configured')
     return false
   }
 
-  // Kiwify sends token as ?signature= query param OR in headers
-  const url = new URL(req.url)
-  const token = url.searchParams.get('signature')
-    || req.headers.get('x-kiwify-token') 
+  // Check direct token match in headers first
+  const headerToken = req.headers.get('x-kiwify-token') 
     || req.headers.get('x-webhook-token')
     || req.headers.get('authorization')?.replace('Bearer ', '')
 
-  console.log('🔑 Token check:', { received: token ? token.substring(0, 8) + '...' : 'null', source: url.searchParams.get('signature') ? 'query_param' : 'header' })
-
-  if (!token) {
-    console.error('❌ No token found in headers or query params')
-    return false
+  if (headerToken && headerToken === secretToken) {
+    console.log('✅ Token validated via header')
+    return true
   }
 
-  return token === expectedToken
+  // Kiwify sends HMAC-SHA1 signature as ?signature= query param
+  const url = new URL(req.url)
+  const signature = url.searchParams.get('signature')
+
+  if (signature && bodyText) {
+    try {
+      const encoder = new TextEncoder()
+      const key = await crypto.subtle.importKey(
+        'raw', encoder.encode(secretToken),
+        { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']
+      )
+      const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText))
+      const expectedSig = Array.from(new Uint8Array(sig))
+        .map(b => b.toString(16).padStart(2, '0')).join('')
+
+      console.log('🔑 HMAC check:', { received: signature.substring(0, 12) + '...', expected: expectedSig.substring(0, 12) + '...' })
+      return signature === expectedSig
+    } catch (e) {
+      console.error('❌ HMAC validation error:', e)
+      return false
+    }
+  }
+
+  console.error('❌ No valid token or signature found')
+  return false
 }
 
 function jsonResponse(body: Record<string, unknown>, status = 200) {
@@ -332,18 +352,19 @@ serve(async (req) => {
       return jsonResponse({ error: 'Method Not Allowed' }, 405)
     }
 
-    // 2. Validate token
-    if (!validateWebhookToken(req)) {
-      console.error('❌ Invalid webhook token')
-      return jsonResponse({ error: 'Unauthorized' }, 401)
-    }
-
-    console.log('✅ Token validated')
-
-    // 3. Parse body
+    // 2. Read body first (needed for HMAC validation)
     const text = await req.text()
     console.log('📦 Raw body length:', text.length)
 
+    // 3. Validate token (HMAC uses body)
+    if (!await validateWebhookToken(req, text)) {
+      console.error('❌ Invalid webhook token/signature')
+      return jsonResponse({ error: 'Unauthorized' }, 401)
+    }
+
+    console.log('✅ Token/signature validated')
+
+    // 4. Parse body
     if (!text || text.trim().length === 0) {
       console.log('⚠️ Empty body - webhook test ping')
       return jsonResponse({ success: true, message: 'Webhook test OK - empty body' })
