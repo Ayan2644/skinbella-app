@@ -41,7 +41,7 @@ export function ProtectedRoute({ children, requireSubscription = true }: Protect
       .eq('email', user.email)
       .single()
       .then(({ data }) => {
-        setIsAdmin(data?.is_admin ?? false)
+        setIsAdmin(data ? (data.is_admin ?? false) : false)
         setCheckingAdmin(false)
       }, () => {
         setIsAdmin(false)

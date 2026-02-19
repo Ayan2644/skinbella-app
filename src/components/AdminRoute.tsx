@@ -43,7 +43,7 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
           console.error('Error checking admin status:', error);
           setIsAdmin(false);
         } else {
-          setIsAdmin(data?.is_admin || false);
+          setIsAdmin(data ? (data.is_admin ?? false) : false);
         }
       } catch (err) {
         console.error('Error checking admin:', err);
