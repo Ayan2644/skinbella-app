@@ -46,13 +46,17 @@ function validateWebhookToken(req: Request): boolean {
     return false
   }
 
-  // Try multiple header formats Kiwify might use
-  const token = req.headers.get('x-kiwify-token') 
+  // Kiwify sends token as ?signature= query param OR in headers
+  const url = new URL(req.url)
+  const token = url.searchParams.get('signature')
+    || req.headers.get('x-kiwify-token') 
     || req.headers.get('x-webhook-token')
     || req.headers.get('authorization')?.replace('Bearer ', '')
 
+  console.log('🔑 Token check:', { received: token ? token.substring(0, 8) + '...' : 'null', source: url.searchParams.get('signature') ? 'query_param' : 'header' })
+
   if (!token) {
-    console.error('❌ No token found in headers')
+    console.error('❌ No token found in headers or query params')
     return false
   }
 
