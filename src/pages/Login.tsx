@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { Sparkles, Mail, ExternalLink, Loader2, Lock } from 'lucide-react'
 import { sendMagicLink, KIWIFY_CHECKOUT_URL } from '@/lib/auth'
-import { supabase } from '@/integrations/supabase/client'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 
 const Login = () => {
