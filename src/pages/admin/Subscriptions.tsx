@@ -50,7 +50,7 @@ const Subscriptions = () => {
   // Buscar assinaturas reais do Supabase
   const { data: subscriptions = [], isLoading, error } = useQuery({
     queryKey: ['admin-subscriptions'],
-    retry: false,
+    
     queryFn: async (): Promise<SubscriptionRow[]> => {
       console.log('[Subscriptions] Buscando...');
 

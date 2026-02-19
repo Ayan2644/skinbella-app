@@ -43,8 +43,7 @@ export function ProtectedRoute({ children, requireSubscription = true }: Protect
       .then(({ data }) => {
         setIsAdmin(data?.is_admin ?? false)
         setCheckingAdmin(false)
-      })
-      .catch(() => {
+      }, () => {
         setIsAdmin(false)
         setCheckingAdmin(false)
       })

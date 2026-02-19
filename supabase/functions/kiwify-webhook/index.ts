@@ -301,7 +301,7 @@ serve(async (req) => {
       console.error('❌ JSON parse error:', parseError)
       return new Response(JSON.stringify({
         error: 'Invalid JSON',
-        details: parseError.message
+        details: (parseError as Error).message
       }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -411,8 +411,8 @@ serve(async (req) => {
     console.error('❌ Error processing webhook:', error)
 
     return new Response(JSON.stringify({
-      error: error.message,
-      stack: error.stack
+      error: (error as Error).message,
+      stack: (error as Error).stack
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
