@@ -1,6 +1,7 @@
 /**
  * ProtectedRoute Component - Route Protection with Subscription Check
  * Admin users (via user_roles table) bypass subscription requirement.
+ * @updated force-rebuild
  */
 
 import { ReactNode, useEffect, useState } from 'react'

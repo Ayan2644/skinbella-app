@@ -1,5 +1,6 @@
 /**
  * useAuth Hook - Authentication State Management
+ * @updated force-rebuild
  */
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
