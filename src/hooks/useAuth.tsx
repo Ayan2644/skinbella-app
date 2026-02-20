@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const loadingRef = { current: true }
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
 
@@ -108,15 +109,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setLoading(false)
+      loadingRef.current = false
     })
 
     // Get initial session with timeout fallback
     const timeout = setTimeout(() => {
-      if (mounted && loading) {
+      if (mounted && loadingRef.current) {
         console.warn('⏱️ Auth session check timed out, setting loading=false')
         setLoading(false)
+        loadingRef.current = false
       }
-    }, 5000)
+    }, 3000)
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return
@@ -129,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setLoading(false)
+      loadingRef.current = false
     }).catch(() => {
       if (mounted) {
         clearTimeout(timeout)
