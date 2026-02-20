@@ -1,68 +1,67 @@
 /**
  * Admin Route Protection
- *
- * @author @dev (Dex) - Backend Developer
- * Protege rotas admin - apenas usuários com is_admin = true podem acessar
+ * Uses user_roles table via checkIsAdmin for proper RBAC.
+ * Mock users with isAdmin=true bypass checks.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/lib/supabase';
+import { useAuth, getMockUser } from '@/hooks/useAuth';
+import { checkIsAdmin } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
 
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
-const DEV_MODE = true; // TODO: Desativar após corrigir auth flow
-
 export const AdminRoute = ({ children }: AdminRouteProps) => {
-  const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(DEV_MODE ? true : null);
-  const [loading, setLoading] = useState(!DEV_MODE);
+  const { user, loading } = useAuth();
+  const mockUser = useMemo(() => getMockUser(), []);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [timedOut, setTimedOut] = useState(false);
+
+  // Safety timeout
+  useEffect(() => {
+    const t = setTimeout(() => setTimedOut(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
-    if (DEV_MODE) return;
+    // Mock user with isAdmin bypass
+    if (mockUser?.isAdmin) {
+      setIsAdmin(true);
+      setChecking(false);
+      return;
+    }
 
-    const checkAdmin = async () => {
-      if (!user) {
+    if (loading) return;
+
+    if (!user?.id) {
+      setIsAdmin(false);
+      setChecking(false);
+      return;
+    }
+
+    checkIsAdmin(user.id)
+      .then((result) => {
+        setIsAdmin(result);
+        setChecking(false);
+      })
+      .catch(() => {
         setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
+        setChecking(false);
+      });
+  }, [user?.id, loading, mockUser]);
 
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('is_admin')
-          .eq('email', user.email)
-          .single();
-
-        if (error) {
-          console.error('Error checking admin status:', error);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(data ? (data.is_admin ?? false) : false);
-        }
-      } catch (err) {
-        console.error('Error checking admin:', err);
-        setIsAdmin(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAdmin();
-  }, [user]);
-
-  if (DEV_MODE) {
+  // Mock user with isAdmin — always allow
+  if (mockUser?.isAdmin) {
     return <>{children}</>;
   }
 
-  if (loading) {
+  if ((loading || checking) && !timedOut) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-96">
         <div className="text-center space-y-4">
           <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
           <p className="text-muted-foreground">Verificando permissões...</p>

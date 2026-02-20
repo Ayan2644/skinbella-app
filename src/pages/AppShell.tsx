@@ -1,7 +1,8 @@
 import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, getMockUser } from '@/hooks/useAuth';
+import { checkIsAdmin } from '@/lib/auth';
 import { Home, FileText, Droplets, Sun, CheckSquare, Apple, BookOpen, ShoppingBag, HelpCircle, LogOut, Menu, X, Shield, LayoutDashboard, Users, CreditCard, BarChart3, Bell, Sparkles, MoreHorizontal, PenTool } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const navItems = [
@@ -31,39 +32,31 @@ const bottomNavItems = [
   { path: '/app/rotina', label: 'Rotina', icon: Sun },
 ];
 
-// 🔧 DEV MODE: Bypass autenticação em desenvolvimento
-const DEV_MODE = true; // TODO: Desativar após corrigir auth flow
-
 const AppShell = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut: authSignOut } = useAuth();
+  const mockUser = useMemo(() => getMockUser(), []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Verificar se usuário é admin
+  // Check admin status
   useEffect(() => {
-    const checkAdmin = async () => {
-      if (DEV_MODE) {
-        setIsAdmin(true); // Em DEV_MODE, todos são admin
-        return;
-      }
+    // Mock user with isAdmin flag
+    if (mockUser?.isAdmin) {
+      setIsAdmin(true);
+      return;
+    }
 
-      // TODO: Verificar is_admin do banco de dados
+    if (!user?.id) {
       setIsAdmin(false);
-    };
+      return;
+    }
 
-    checkAdmin();
-  }, [user]);
-
-  // Em DEV_MODE, bypass completo
-  if (DEV_MODE) {
-    console.log('🔧 AppShell: DEV MODE - bypass de autenticação');
-  } else {
-    // Modo produção: verificar autenticação
-    if (!user) return <Navigate to="/login" replace />;
-    if (location.pathname.startsWith('/app/admin') && !isAdmin) return <Navigate to="/app" replace />;
-  }
+    checkIsAdmin(user.id)
+      .then(setIsAdmin)
+      .catch(() => setIsAdmin(false));
+  }, [user?.id, mockUser]);
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';
@@ -75,6 +68,7 @@ const AppShell = () => {
     navigate('/');
   };
 
+  const displayEmail = user?.email || mockUser?.email || 'Usuário';
   const moreActive = ['/app/checklist', '/app/dieta', '/app/biblioteca', '/app/produtos', '/app/faq'].some(p => location.pathname.startsWith(p));
 
   return (
@@ -87,7 +81,7 @@ const AppShell = () => {
             <p className="text-sm font-bold tracking-[0.1em] uppercase text-primary">SkinBella</p>
             {isAdmin && <Shield className="w-3 h-3 text-accent" />}
           </div>
-          <p className="text-sm text-muted-foreground">Olá, {user?.email || 'Usuário'} {isAdmin ? '🛡️' : '✨'}</p>
+          <p className="text-sm text-muted-foreground">Olá, {displayEmail} {isAdmin ? '🛡️' : '✨'}</p>
         </div>
         <nav className="flex-1 space-y-0.5">
           {navItems.map((item) => (
@@ -151,7 +145,7 @@ const AppShell = () => {
       {menuOpen && (
         <div className="md:hidden fixed inset-0 z-30 bg-background/98 backdrop-blur-xl animate-fade-in pt-16 px-5 overflow-y-auto">
           <div className="pb-4 mb-3 border-b border-border/20">
-            <p className="text-lg font-bold text-foreground">Olá, {user?.email || 'Usuário'} ✨</p>
+            <p className="text-lg font-bold text-foreground">Olá, {displayEmail} ✨</p>
             <p className="text-sm text-muted-foreground">Seu painel de cuidados</p>
           </div>
           <nav className="space-y-0.5">
