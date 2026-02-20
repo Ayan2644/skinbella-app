@@ -4,7 +4,7 @@
  * Mock users (localStorage) bypass all checks.
  */
 
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState, useMemo } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth, getMockUser } from '@/hooks/useAuth'
 import { checkIsAdmin } from '@/lib/auth'
@@ -21,8 +21,8 @@ export function ProtectedRoute({ children, requireSubscription = true }: Protect
   const [checkingAdmin, setCheckingAdmin] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
 
-  // Mock user bypass — skip all checks
-  const mockUser = getMockUser()
+  // Memoize mock user to prevent render loops
+  const mockUser = useMemo(() => getMockUser(), [])
   
   // Safety timeout: never stay loading more than 4s
   useEffect(() => {
@@ -48,7 +48,7 @@ export function ProtectedRoute({ children, requireSubscription = true }: Protect
         setIsAdmin(false)
         setCheckingAdmin(false)
       })
-  }, [user?.id, requireSubscription, hasActiveSubscription, mockUser?.id])
+  }, [user?.id, requireSubscription, hasActiveSubscription, mockUser])
 
   // Mock user — always allow
   if (mockUser) {

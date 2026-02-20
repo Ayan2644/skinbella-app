@@ -165,4 +165,4 @@ export async function checkIsAdmin(userId: string): Promise<boolean> {
 /**
  * Kiwify checkout URL
  */
-export const KIWIFY_CHECKOUT_URL = import.meta.env.VITE_KIWIFY_CHECKOUT_URL || 'https://pay.kiwify.com.br/YOUR_PRODUCT_ID'
+export const KIWIFY_CHECKOUT_URL = import.meta.env.VITE_KIWIFY_CHECKOUT_URL || 'https://pay.kiwify.com.br/25XXmrv'
