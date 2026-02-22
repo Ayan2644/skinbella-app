@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { RotateCcw, ArrowRight } from "lucide-react";
+import marbleBg from "@/assets/result/marble-bg.png";
 import HeroResult from "./result/HeroResult";
 import MeaningCard from "./result/MeaningCard";
 import ProjectionCard from "./result/ProjectionCard";
@@ -19,9 +20,20 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-background flex justify-center px-0">
+    <div className="min-h-screen flex justify-center px-0 relative" style={{ backgroundColor: '#F6F2ED' }}>
+      {/* MARBLE BACKGROUND */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${marbleBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'repeat-y',
+          opacity: 0.55,
+        }}
+      />
       {/* PHONE FRAME */}
-      <div className="relative w-full max-w-[420px] min-h-screen bg-background flex flex-col animate-fade-in-up pb-28">
+      <div className="relative z-10 w-full max-w-[420px] min-h-screen flex flex-col animate-fade-in-up pb-28">
         {/* HERO */}
         <HeroResult skinAge={profile.skinAge} scores={profile.scores} />
 
