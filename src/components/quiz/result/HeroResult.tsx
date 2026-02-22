@@ -5,56 +5,64 @@ interface HeroResultProps {
   scores: { hidratacao: number; textura: number };
 }
 
-function ScoreCard({ label, value }: { label: string; value: number }) {
+function ScorePill({ label, value }: { label: string; value: number }) {
   return (
-    <div className="sb-card sb-grain py-4 px-4 text-center">
-      <p className="font-display text-[28px] leading-none text-foreground font-semibold">{value}%</p>
-      <p className="text-[11px] text-muted-foreground mt-1 font-medium">{label}</p>
+    <div className="sb-card !p-4 text-center rounded-[22px] shadow-card">
+      <div className="font-display text-[28px] leading-none text-foreground font-semibold">{value}%</div>
+      <div className="mt-1 text-[11px] text-muted-foreground font-medium">{label}</div>
     </div>
   );
 }
 
 export default function HeroResult({ skinAge, scores }: HeroResultProps) {
   return (
-    <section className="sb-section pt-8">
-      <div className="sb-container text-center">
+    <section className="px-5 pt-8 pb-4">
+      {/* container central com “cara de landing” */}
+      <div className="max-w-[420px] mx-auto text-center">
         <p className="sb-label mb-3">SEU RESULTADO</p>
 
-        <h1 className="sb-h1">
+        <h1 className="font-display text-[28px] leading-tight text-foreground font-semibold">
           Idade da sua pele:
-          <span className="block font-display text-[30px] mt-1">{skinAge} anos</span>
+          <br />
+          <span className="font-display text-[34px] font-semibold">{skinAge} anos</span>
         </h1>
 
-        <p className="sb-body mt-2">
-          Baseado na análise de <span className="font-semibold text-foreground/80">{quizQuestions.length}</span> fatores
-        </p>
+        <p className="mt-2 text-[13px] text-muted-foreground">Baseado na análise de {quizQuestions.length} fatores</p>
 
-        {/* Age Circle (hero) */}
-        <div className="mt-6">
-          <div className="mx-auto w-[132px] h-[132px] rounded-full border border-border/40 shadow-soft bg-[hsl(var(--card))] relative overflow-hidden">
-            {/* subtle porcelain shine */}
+        {/* círculo porcelana */}
+        <div className="mt-5 flex justify-center">
+          <div
+            className="
+              relative w-[128px] h-[128px] rounded-full
+              flex flex-col items-center justify-center
+              border border-border/30
+              shadow-card
+              overflow-hidden
+            "
+            style={{
+              background:
+                "radial-gradient(circle at 30% 25%, hsl(var(--card)) 0%, hsl(var(--background)) 55%, hsl(var(--secondary) / 0.35) 100%)",
+            }}
+          >
+            {/* highlight */}
             <div
-              className="absolute inset-0 opacity-70"
+              className="absolute inset-0 opacity-60 pointer-events-none"
               style={{
-                background:
-                  "radial-gradient(120px 90px at 25% 18%, hsl(var(--shine) / 0.85), transparent 60%), linear-gradient(145deg, hsl(var(--surface-strong)), hsl(var(--surface-soft)))",
+                background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 55%)",
               }}
             />
-            <div className="relative z-10 h-full w-full flex flex-col items-center justify-center">
-              <span className="font-display text-[46px] leading-none text-foreground font-semibold">{skinAge}</span>
-              <span className="text-[11px] text-muted-foreground mt-1 font-medium">anos</span>
+            <div className="relative z-10 font-display text-[46px] leading-none text-foreground font-semibold">
+              {skinAge}
             </div>
+            <div className="relative z-10 text-[11px] text-muted-foreground mt-1">anos</div>
           </div>
         </div>
 
-        {/* Score cards row */}
-        <div className="grid grid-cols-2 gap-3 mt-6">
-          <ScoreCard label="Hidratação" value={scores.hidratacao} />
-          <ScoreCard label="Textura" value={scores.textura} />
+        {/* scores */}
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <ScorePill label="Hidratação" value={scores.hidratacao} />
+          <ScorePill label="Textura" value={scores.textura} />
         </div>
-
-        {/* Divider like landing page */}
-        <div className="mt-7 sb-divider" />
       </div>
     </section>
   );
