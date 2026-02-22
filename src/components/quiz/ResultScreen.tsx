@@ -19,7 +19,7 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen result-bg flex justify-center relative">
+    <div className="min-h-screen flex justify-center relative" style={{ background: '#F6F2ED' }}>
       {/* Marble background image */}
       <div
         className="fixed inset-0 z-0 pointer-events-none"
@@ -27,8 +27,8 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
           backgroundImage: `url(${marbleBg})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.18,
+          backgroundRepeat: 'repeat-y',
+          opacity: 0.55,
         }}
       />
       {/* PHONE FRAME */}
