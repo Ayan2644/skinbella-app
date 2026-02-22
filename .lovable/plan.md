@@ -1,149 +1,123 @@
 
 
-# Plano: Correcao Completa do Fluxo Kiwify + Dashboard + Liberacao de Acesso
+# Redesign Completo da Pagina de Resultados do Quiz
 
-## Problemas Encontrados
-
-### 1. KIWIFY_WEBHOOK_TOKEN nao esta configurado como secret
-O webhook valida o token com `Deno.env.get('KIWIFY_WEBHOOK_TOKEN')`, mas esse secret NAO existe no projeto. Toda requisicao sera rejeitada com 401.
-
-### 2. config.toml nao tem `verify_jwt = false` para o webhook
-Sem isso, o Supabase exige um JWT valido para chamar a Edge Function. A Kiwify nao envia JWT, entao o webhook nunca sera alcancado (retorna 401 antes mesmo de chegar no codigo).
-
-### 3. Webhook NAO cria usuario no Supabase Auth
-O handler `handlePurchaseApproved` cria registro na tabela `users`, mas NAO cria o usuario no Supabase Auth. Quando a pessoa tentar fazer login com Magic Link, o sistema nao encontrara o usuario autenticavel. O login falhara.
-
-### 4. Tabela `leads` nao tem constraint UNIQUE em `email`
-O webhook faz `upsert({ onConflict: 'email' })` na tabela leads, mas nao existe constraint unique. Isso causa erro no banco.
-
-### 5. Funcao `refresh_admin_metrics` nao existe
-O webhook tenta chamar `supabase.rpc('refresh_admin_metrics')` apos processar cada evento, mas essa funcao nao foi criada no banco. O erro e tratado como non-critical, mas o Dashboard nunca recebe dados.
-
-### 6. Dashboard depende de `admin_metrics` preenchida
-O Dashboard busca dados da tabela `admin_metrics` por `metric_date = hoje`. Se a funcao RPC nao existe, essa tabela fica vazia e o Dashboard mostra "Nenhuma metrica encontrada".
-
-### 7. Politica RLS de seguranca muito permissiva
-A policy "Service role full access" esta aplicada a TODOS os roles (incluindo anon), nao apenas service_role. Qualquer pessoa pode ler/escrever em todas as tabelas.
-
-### 8. Webhook sem CORS headers
-Embora a Kiwify chame diretamente (sem CORS), a falta de headers pode causar problemas se testarmos via browser.
+## Objetivo
+Transformar a pagina de resultados do quiz em uma experiencia visual premium de alta conversao, seguindo fielmente as referencias fornecidas com fundo marmorizado rose, paleta verde salvia + dourado, graficos de rejuvenescimento e imagens antes/depois.
 
 ---
 
-## Plano de Implementacao
+## 1. Fundo e Atmosfera Global
 
-### Etapa 1: Configurar Secret do Webhook
-- Solicitar ao usuario que configure o `KIWIFY_WEBHOOK_TOKEN` via ferramenta de secrets
+**Arquivo: `src/index.css`**
+- Adicionar gradiente radial dourado + linear porcelana como fundo da pagina de resultado
+- Adicionar classe CSS para textura marmorizada sutil (overlay com opacidade ~6%)
+- Ajustar variaveis CSS se necessario para acomodar os novos tons
 
-### Etapa 2: Atualizar `supabase/config.toml`
-```toml
-[functions.kiwify-webhook]
-verify_jwt = false
-```
-
-### Etapa 3: Migration - Correcoes no banco de dados
-
-```sql
--- 1. Unique constraint na tabela leads
-ALTER TABLE public.leads ADD CONSTRAINT leads_email_key UNIQUE (email);
-
--- 2. Unique constraint na tabela subscriptions (para idempotencia)
-ALTER TABLE public.subscriptions ADD CONSTRAINT subscriptions_kiwify_id_key UNIQUE (kiwify_subscription_id);
-
--- 3. Criar funcao refresh_admin_metrics
-CREATE OR REPLACE FUNCTION public.refresh_admin_metrics()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-BEGIN
-  INSERT INTO admin_metrics (metric_date, total_users, active_subscriptions, cancelled_subscriptions, mrr_cents, new_users_today, quiz_completions_today)
-  SELECT
-    CURRENT_DATE,
-    (SELECT count(*) FROM users),
-    (SELECT count(*) FROM subscriptions WHERE status = 'active'),
-    (SELECT count(*) FROM subscriptions WHERE status IN ('cancelled','chargedback','refunded')),
-    (SELECT COALESCE(sum(amount_cents), 0) FROM subscriptions WHERE status = 'active'),
-    (SELECT count(*) FROM users WHERE created_at::date = CURRENT_DATE),
-    (SELECT count(*) FROM quiz_results WHERE created_at::date = CURRENT_DATE)
-  ON CONFLICT (metric_date) DO UPDATE SET
-    total_users = EXCLUDED.total_users,
-    active_subscriptions = EXCLUDED.active_subscriptions,
-    cancelled_subscriptions = EXCLUDED.cancelled_subscriptions,
-    mrr_cents = EXCLUDED.mrr_cents,
-    new_users_today = EXCLUDED.new_users_today,
-    quiz_completions_today = EXCLUDED.quiz_completions_today,
-    calculated_at = now();
-END;
-$$;
-
--- 4. Unique constraint em admin_metrics.metric_date (para ON CONFLICT funcionar)
-ALTER TABLE public.admin_metrics ADD CONSTRAINT admin_metrics_date_key UNIQUE (metric_date);
-
--- 5. Corrigir RLS - dropar politicas permissivas e recriar restritas ao service_role
-DROP POLICY IF EXISTS "Service role full access users" ON public.users;
-DROP POLICY IF EXISTS "Service role full access subscriptions" ON public.subscriptions;
-DROP POLICY IF EXISTS "Service role full access leads" ON public.leads;
-DROP POLICY IF EXISTS "Service role full access quiz" ON public.quiz_results;
-DROP POLICY IF EXISTS "Service role full access activity" ON public.user_activity;
-DROP POLICY IF EXISTS "Service role full access metrics" ON public.admin_metrics;
-
--- Recriar com role check real (service_role usa JWT com role='service_role')
--- Para admin_metrics: admins podem ler
-CREATE POLICY "Admins can read metrics" ON public.admin_metrics
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM users WHERE id::text = (auth.uid())::text AND is_admin = true)
-  );
-
--- Para users: admins podem ler todos
-CREATE POLICY "Admins can read all users" ON public.users
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM users WHERE id::text = (auth.uid())::text AND is_admin = true)
-  );
-
--- Para subscriptions: admins podem ler todas
-CREATE POLICY "Admins can read all subscriptions" ON public.subscriptions
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM users WHERE id::text = (auth.uid())::text AND is_admin = true)
-  );
-
--- Para leads: admins podem ler
-CREATE POLICY "Admins can read leads" ON public.leads
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM users WHERE id::text = (auth.uid())::text AND is_admin = true)
-  );
-```
-
-### Etapa 4: Atualizar Edge Function `kiwify-webhook/index.ts`
-Mudancas principais:
-- Adicionar CORS headers
-- No `handlePurchaseApproved`: criar usuario no Supabase Auth usando `supabaseAdmin.auth.admin.createUser()` antes de inserir na tabela `users`, linkando o `auth.uid` como `id` na tabela users
-- Usar o ID do auth user como `user_id` na tabela `users` (para que RLS funcione com `auth.uid()`)
-- Tratar caso de usuario ja existente no Auth (email ja cadastrado)
-
-### Etapa 5: Melhorar o Dashboard
-- Adicionar fallback: se `admin_metrics` estiver vazia, calcular metricas diretamente das tabelas `users` e `subscriptions`
-- Adicionar card de "Ultimo Webhook" mostrando quando o ultimo evento foi processado
-- Adicionar log de eventos recentes (ultimos webhooks recebidos) usando `user_activity`
-
-### Etapa 6: Desativar DEV_MODE no ProtectedRoute
-- Mudar `DEV_MODE = false` para que a autenticacao funcione de verdade em producao
+**Cores-chave da referencia:**
+- Fundo base: `#F6F2ED` (ja proximo do atual)
+- Cards: `#FFFFFF` com borda `rgba(0,0,0,0.05)` e sombra `0 4px 20px rgba(0,0,0,0.05)`
+- Verde assinatura: `#4E6B57` (botoes e CTA)
+- Dourado suave: `#C8A96B` (badges, estrelas, bullets)
 
 ---
 
-## Resumo das Acoes
+## 2. Geracao de Imagens via IA
 
-| Acao | Tipo | Prioridade |
-|------|------|------------|
-| Configurar KIWIFY_WEBHOOK_TOKEN | Secret | Critica |
-| verify_jwt = false no config.toml | Config | Critica |
-| Criar usuario no Auth ao comprar | Edge Function | Critica |
-| Unique constraint em leads.email | Migration | Alta |
-| Unique constraint em subscriptions.kiwify_subscription_id | Migration | Alta |
-| Criar funcao refresh_admin_metrics | Migration | Alta |
-| Unique em admin_metrics.metric_date | Migration | Alta |
-| Corrigir RLS policies (seguranca) | Migration | Alta |
-| Dashboard com fallback de dados | Frontend | Media |
-| DEV_MODE = false | Frontend | Media |
+Usar o modelo `google/gemini-2.5-flash-image` atraves de uma Edge Function para gerar e salvar no storage as seguintes imagens:
+
+| Imagem | Descricao | Uso |
+|--------|-----------|-----|
+| Antes/Depois | Rosto feminino maduro, iluminacao suave, fundo neutro | MeaningCard e Testimonials |
+| Produtos flat-lay | Composicao SkinBella com flores, fundo creme, estetica luxo natural | Bloco entre Projecao e Oferta |
+| Testimonial antes/depois 1 | Mulher loira, dia 1 vs dia 30 | Card de depoimento |
+| Testimonial antes/depois 2 | Mulher morena, dia 1 vs dia 30 | Card de depoimento |
+
+As imagens serao geradas uma vez e salvas como assets estaticos no projeto (`src/assets/result/`).
+
+---
+
+## 3. Componentes Redesenhados
+
+### 3.1 `ResultCard.tsx` (base)
+- Atualizar para: fundo branco, borda `rgba(0,0,0,0.05)`, sombra `0 4px 20px rgba(0,0,0,0.05)`, radius 24px
+- Gradiente sutil interno: `linear-gradient(145deg, #FFFFFF, #F3EEE8)`
+
+### 3.2 `HeroResult.tsx`
+- Circulo central: 180x180px com gradiente porcelana `linear-gradient(145deg, #FFFFFF, #EFE8E1)`, sombra `0 10px 40px rgba(0,0,0,0.06)`
+- Numero: 64px Playfair Display
+- Metricas (Hidratacao/Textura): card horizontal unico com divisao central por linha vertical, numeros 36px Playfair
+
+### 3.3 `MeaningCard.tsx`
+- Layout dividido: texto com bullets a esquerda, imagem antes/depois a direita
+- Bullets com bolinha dourada (#C8A96B) 6px
+- Fotos antes/depois com radius 16px, sombra leve, legendas "Antes" e "Depois: 20 dias"
+
+### 3.4 `ProjectionCard.tsx` (Novo: Grafico de Rejuvenescimento)
+- Grafico SVG customizado com:
+  - Fundo creme claro com linhas horizontais 10% opacidade
+  - Curva Bezier principal em verde `#4E6B57`, espessura 3px
+  - Linha comparativa dourada tracejada
+  - Pontos finais: circulos preenchidos 8px
+  - Legendas: Dia 1 / Dia 10 / Dia 20
+  - Valores dinamicos baseados em skinAge (ex: 56 -> 51)
+- Manter checklist abaixo com icones de check verdes
+- Botao CTA verde escuro `#4E6B57` com texto branco
+
+### 3.5 Novo: `ProductShowcaseCard.tsx`
+- Imagem flat-lay de produtos gerada por IA
+- Card com radius 24px, sem texto extra - apenas visual aspiracional
+
+### 3.6 `OfferCard.tsx`
+- Titulo: "Relatorio completo bloqueado" em Playfair 32px
+- Badge dourado "-52% HOJE" com radius 999px
+- Preco: R$59 riscado + R$29 em Playfair 44px
+- Botao verde escuro largura total, 56px altura
+- Trust badges abaixo (Checkout seguro, Acesso imediato, Suporte)
+
+### 3.7 `Testimonials.tsx`
+- Cards com fotos antes/depois lado a lado (pequenas, com label "Dia 1" e "Dia 30")
+- Estrelas douradas (#C8A96B)
+- Layout: foto a esquerda, texto + estrelas a direita
+
+### 3.8 `MiniFAQ.tsx`
+- Cards brancos, padding 28px, radius 20px
+- Pergunta: 18px Inter bold
+- Resposta: 16px Inter normal
+
+### 3.9 `ProtocolBrandCard.tsx` e `LockedReportCard.tsx`
+- Serao absorvidos/fundidos nos novos blocos (OfferCard e ProductShowcase)
+
+---
+
+## 4. `ResultScreen.tsx` - Nova Ordem
+
+```text
+1. HeroResult (circulo + metricas)
+2. MeaningCard (diagnostico + antes/depois)
+3. ProjectionCard (grafico SVG + checklist + CTA)
+4. ProductShowcaseCard (imagem produtos)
+5. OfferCard (relatorio bloqueado + preco + CTA)
+6. Testimonials (com fotos antes/depois)
+7. MiniFAQ
+8. Sticky CTA (botao verde no rodape)
+```
+
+---
+
+## 5. Sticky CTA Redesenhado
+- Fundo com blur porcelana
+- Botao verde escuro `#4E6B57` com radius 20px
+- Preco e desconto ao lado esquerdo
+
+---
+
+## Detalhes Tecnicos
+
+- **Imagens**: Geradas via Edge Function usando `google/gemini-2.5-flash-image`, convertidas de base64 para arquivos PNG e colocadas em `src/assets/result/`
+- **Grafico SVG**: Componente React puro com `<svg>`, paths Bezier e animacao CSS para a curva
+- **CSS**: Ajustes no `index.css` para adicionar gradientes globais e classe `.result-bg` com textura marmorizada
+- **Sem dependencias novas**: Tudo feito com SVG nativo, CSS e React
+- **Componentes removidos**: `ProtocolBrandCard.tsx` e `LockedReportCard.tsx` serao removidos (funcionalidade absorvida)
+- **Componentes novos**: `ProductShowcaseCard.tsx`, `RejuvenationChart.tsx` (SVG)
 
