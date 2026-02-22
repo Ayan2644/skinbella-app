@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import marbleBg from "@/assets/result/marble-bg.png";
 
 type Props = {
   title?: string;
@@ -23,6 +24,15 @@ export default function ResultCard({ title, subtitle, children, className, heade
           "px-5 py-5",
         )}
       >
+        {/* brilho/texture sutil por cima do card (porcelain wash) */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.12]"
+          style={{
+            backgroundImage: `url(${marbleBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
         {/* brilho/texture sutil por cima do card (porcelain wash) */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.65]"
