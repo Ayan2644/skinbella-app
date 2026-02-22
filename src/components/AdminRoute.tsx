@@ -1,12 +1,11 @@
 /**
  * Admin Route Protection
  * Uses user_roles table via checkIsAdmin for proper RBAC.
- * Mock users with isAdmin=true bypass checks.
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth, getMockUser } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { checkIsAdmin } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
 
@@ -16,25 +15,16 @@ interface AdminRouteProps {
 
 export const AdminRoute = ({ children }: AdminRouteProps) => {
   const { user, loading } = useAuth();
-  const mockUser = useMemo(() => getMockUser(), []);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
   const [timedOut, setTimedOut] = useState(false);
 
-  // Safety timeout
   useEffect(() => {
     const t = setTimeout(() => setTimedOut(true), 5000);
     return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
-    // Mock user with isAdmin bypass
-    if (mockUser?.isAdmin) {
-      setIsAdmin(true);
-      setChecking(false);
-      return;
-    }
-
     if (loading) return;
 
     if (!user?.id) {
@@ -52,12 +42,7 @@ export const AdminRoute = ({ children }: AdminRouteProps) => {
         setIsAdmin(false);
         setChecking(false);
       });
-  }, [user?.id, loading, mockUser]);
-
-  // Mock user with isAdmin — always allow
-  if (mockUser?.isAdmin) {
-    return <>{children}</>;
-  }
+  }, [user?.id, loading]);
 
   if ((loading || checking) && !timedOut) {
     return (
