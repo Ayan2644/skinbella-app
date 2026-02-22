@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -33,6 +35,8 @@
     --ring: 155 25% 38%;
 
     --radius: 1rem;
+    --radius-card: 1.5rem;
+    --radius-pill: 999px;
 
     --sidebar-background: 35 20% 96%;
     --sidebar-foreground: 220 10% 25%;
@@ -44,8 +48,14 @@
     --sidebar-ring: 155 25% 38%;
 
     --surface: 35 18% 95%;
+    --surface-strong: 35 20% 99%;
+    --surface-soft: 35 22% 93%;
     --porcelain: 42 55% 62%;
     --porcelain-foreground: 220 10% 12%;
+
+    --shadow-soft: 0 10px 30px -14px hsl(220 10% 18% / 0.12);
+    --shadow-card: 0 2px 12px -2px hsl(220 10% 18% / 0.06);
+    --shadow-elev: 0 16px 36px -20px hsl(220 10% 18% / 0.24);
   }
 
   .dark {
@@ -77,8 +87,14 @@
     --sidebar-border: 220 10% 18%;
     --sidebar-ring: 155 30% 45%;
     --surface: 220 12% 12%;
+    --surface-strong: 220 14% 14%;
+    --surface-soft: 220 10% 10%;
     --porcelain: 42 45% 55%;
     --porcelain-foreground: 0 0% 100%;
+
+    --shadow-soft: 0 10px 30px -14px hsl(220 50% 2% / 0.45);
+    --shadow-card: 0 2px 12px -2px hsl(220 50% 2% / 0.35);
+    --shadow-elev: 0 18px 40px -20px hsl(220 50% 2% / 0.6);
   }
 }
 
@@ -86,41 +102,88 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+    @apply bg-background text-foreground antialiased font-sans;
   }
 }
 
 @layer utilities {
+  .sb-screen {
+    @apply min-h-screen bg-background text-foreground;
+  }
+
+  .sb-card {
+    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)] p-5 shadow-card;
+  }
+
+  .sb-card-elev {
+    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)] p-5 shadow-elev;
+  }
+
+  .sb-pill {
+    @apply inline-flex items-center rounded-[var(--radius-pill)] border border-border/40 bg-[hsl(var(--surface-soft))] px-3 py-1 text-xs font-medium;
+  }
+
+  .sb-label {
+    @apply text-[11px] uppercase tracking-[0.14em] font-semibold text-muted-foreground;
+  }
+
+  .sb-h1 {
+    @apply font-display text-3xl md:text-4xl font-semibold tracking-tight text-foreground;
+  }
+
+  .sb-h2 {
+    @apply font-display text-2xl md:text-3xl font-semibold tracking-tight text-foreground;
+  }
+
+  .sb-body {
+    @apply text-sm md:text-base text-muted-foreground leading-relaxed;
+  }
+
+  .sb-gradient-card {
+    background: linear-gradient(145deg, hsl(var(--surface-strong)), hsl(var(--surface-soft)));
+  }
+
+  .sb-gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--porcelain) / 0.2), hsl(var(--primary) / 0.12));
+  }
+
   .shadow-elegant {
-    box-shadow: 0 4px 20px -4px hsl(220 10% 18% / 0.08);
+    box-shadow: var(--shadow-elev);
   }
+
   .shadow-card {
-    box-shadow: 0 2px 12px -2px hsl(220 10% 18% / 0.06);
+    box-shadow: var(--shadow-card);
   }
+
   .gradient-porcelain {
-    background: linear-gradient(135deg, hsl(42 55% 62% / 0.15), hsl(155 25% 38% / 0.08));
+    @apply sb-gradient-accent;
   }
+
   .gradient-hero {
-    background: linear-gradient(180deg, hsl(35 25% 97%), hsl(30 25% 93%));
+    @apply sb-gradient-card;
   }
 }
 
 @layer components {
   .quiz-card {
-    @apply bg-card rounded-2xl shadow-card p-4 border border-border/50 cursor-pointer transition-all duration-200;
+    @apply bg-card text-card-foreground border border-border/50 rounded-[var(--radius-card)] p-4 shadow-card cursor-pointer transition-all duration-200;
   }
+
   .quiz-card:hover {
     @apply shadow-elegant;
   }
+
   .quiz-card.selected {
     @apply border-primary ring-2 ring-primary/20;
   }
+
   .metric-card {
-    @apply bg-card rounded-2xl shadow-card p-5 border border-border/30;
+    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)] p-5 shadow-card;
   }
+
   .app-card {
-    @apply bg-card rounded-2xl shadow-card p-5 border border-border/30 transition-all duration-200 hover:shadow-elegant;
+    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)] p-5 shadow-card transition-all duration-200 hover:shadow-elegant;
   }
 }
