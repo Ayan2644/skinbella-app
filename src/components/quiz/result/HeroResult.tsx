@@ -1,47 +1,68 @@
 import { quizQuestions } from "@/lib/quizData";
+import marbleTexture from "@/assets/result/marble-texture.jpg";
 
 interface HeroResultProps {
   skinAge: number;
   scores: { hidratacao: number; textura: number };
 }
 
-function ScoreCard({ label, value }: { label: string; value: number }) {
-  const getColor = (v: number) => {
-    if (v >= 70) return "text-success";
-    if (v >= 40) return "text-accent";
-    return "text-destructive";
-  };
-
-  return (
-    <div className="bg-card rounded-3xl border border-border/20 px-4 py-3 text-center shadow-card">
-      <p className={`text-[28px] font-bold ${getColor(value)} font-['Playfair_Display'] leading-none`}>{value}%</p>
-      <p className="text-[11px] text-muted-foreground mt-1 font-medium tracking-wide">{label}</p>
-    </div>
-  );
+function getColor(v: number) {
+  if (v >= 70) return "text-primary";
+  if (v >= 40) return "text-accent";
+  return "text-destructive";
 }
 
 export default function HeroResult({ skinAge, scores }: HeroResultProps) {
   return (
-    <section className="text-center pt-6 pb-2 px-5">
-      <p className="text-[10px] font-semibold tracking-[0.28em] uppercase text-muted-foreground mb-3">Seu resultado</p>
-
-      {/* Age circle */}
+    <section className="text-center pt-10 pb-4 px-5 relative">
+      {/* Marble texture overlay */}
       <div
-        className="w-[118px] h-[118px] mx-auto mb-3 rounded-full flex flex-col items-center justify-center shadow-elegant border border-border/20"
-        style={{ background: "linear-gradient(145deg, hsl(var(--card)), hsl(var(--secondary) / 0.45))" }}
+        className="absolute inset-0 opacity-[0.06] pointer-events-none"
+        style={{ backgroundImage: `url(${marbleTexture})`, backgroundSize: 'cover' }}
+      />
+
+      <p className="text-[10px] font-semibold tracking-[0.28em] uppercase text-muted-foreground mb-5 relative z-10">
+        Seu resultado
+      </p>
+
+      {/* Age circle — 180px porcelain */}
+      <div
+        className="w-[180px] h-[180px] mx-auto mb-4 rounded-full flex flex-col items-center justify-center relative z-10"
+        style={{
+          background: 'linear-gradient(145deg, #FFFFFF, #EFE8E1)',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.06)',
+          border: '1px solid rgba(0,0,0,0.05)',
+        }}
       >
-        <span className="text-[44px] font-bold text-foreground font-['Playfair_Display'] leading-none">{skinAge}</span>
-        <span className="text-[11px] text-muted-foreground font-medium mt-1">anos</span>
+        <span className="text-[64px] font-bold text-foreground font-display leading-none">{skinAge}</span>
+        <span className="text-[12px] text-muted-foreground font-medium mt-1">anos</span>
       </div>
 
-      <h1 className="text-[18px] font-bold text-foreground font-['Playfair_Display'] leading-tight">
+      <h1 className="text-[20px] font-semibold text-foreground font-display leading-tight relative z-10">
         Idade da sua pele: {skinAge} anos
       </h1>
-      <p className="text-[12px] text-muted-foreground mt-1">Baseado na análise de {quizQuestions.length} fatores</p>
+      <p className="text-[13px] text-muted-foreground mt-1.5 relative z-10">
+        Baseado na análise de {quizQuestions.length} fatores
+      </p>
 
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        <ScoreCard label="Hidratação" value={scores.hidratacao} />
-        <ScoreCard label="Textura" value={scores.textura} />
+      {/* Metrics — single horizontal card with divider */}
+      <div
+        className="mt-6 mx-auto result-card-premium p-0 flex items-center relative z-10"
+        style={{ height: 110 }}
+      >
+        <div className="flex-1 flex flex-col items-center justify-center py-3">
+          <span className={`text-[36px] font-bold font-display leading-none ${getColor(scores.hidratacao)}`}>
+            {scores.hidratacao}%
+          </span>
+          <span className="text-[14px] text-muted-foreground mt-1.5 font-medium">Hidratação</span>
+        </div>
+        <div className="w-px h-16 bg-foreground/[0.06]" />
+        <div className="flex-1 flex flex-col items-center justify-center py-3">
+          <span className={`text-[36px] font-bold font-display leading-none ${getColor(scores.textura)}`}>
+            {scores.textura}%
+          </span>
+          <span className="text-[14px] text-muted-foreground mt-1.5 font-medium">Textura</span>
+        </div>
       </div>
     </section>
   );

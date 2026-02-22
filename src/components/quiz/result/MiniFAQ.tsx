@@ -1,5 +1,4 @@
 import { Shield } from 'lucide-react';
-import ResultCard from './ResultCard';
 
 const faqs = [
   {
@@ -24,16 +23,20 @@ export default function MiniFAQ() {
       </p>
       <div className="space-y-3">
         {faqs.map((faq) => (
-          <ResultCard key={faq.q} className="p-4">
-            <p className="text-[14px] font-semibold text-foreground mb-1.5">{faq.q}</p>
-            <p className="text-[13px] text-muted-foreground leading-relaxed">{faq.a}</p>
-          </ResultCard>
+          <div
+            key={faq.q}
+            className="result-card-premium p-[28px]"
+            style={{ borderRadius: 20 }}
+          >
+            <p className="text-[18px] font-semibold text-foreground mb-1.5 font-sans">{faq.q}</p>
+            <p className="text-[16px] text-muted-foreground leading-relaxed">{faq.a}</p>
+          </div>
         ))}
       </div>
 
       {/* Guarantee */}
       <div className="mt-5 flex items-center justify-center gap-2 text-[12px] text-muted-foreground">
-        <Shield className="w-4 h-4 text-primary" />
+        <Shield className="w-4 h-4" style={{ color: '#4E6B57' }} />
         <span>Pagamento 100% seguro • Garantia de 7 dias</span>
       </div>
     </section>

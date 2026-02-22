@@ -164,6 +164,20 @@
   .gradient-hero {
     @apply sb-gradient-card;
   }
+
+  /* Result page premium background */
+  .result-bg {
+    background:
+      radial-gradient(1200px 600px at 50% -100px, hsl(42 55% 62% / 0.15) 0%, transparent 60%),
+      linear-gradient(180deg, #F6F2ED 0%, #EFE8E1 100%);
+  }
+
+  .result-card-premium {
+    background: linear-gradient(145deg, #FFFFFF 0%, #F3EEE8 100%);
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border-radius: 24px;
+  }
 }
 
 @layer components {
