@@ -1,31 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================
+   SkinBella — Porcelain / Marble Landing System (Base)
+   ========================================================= */
 @layer base {
   :root {
+    /* Core */
     --background: 35 25% 97%;
-    --foreground: 220 10% 18%;
+    --foreground: 220 12% 16%;
 
-    --card: 35 20% 99%;
-    --card-foreground: 220 10% 18%;
+    --card: 35 22% 99%;
+    --card-foreground: 220 12% 16%;
 
-    --popover: 35 20% 99%;
-    --popover-foreground: 220 10% 18%;
+    --popover: 35 22% 99%;
+    --popover-foreground: 220 12% 16%;
 
+    /* Brand */
     --primary: 155 25% 38%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 25% 88%;
-    --secondary-foreground: 220 10% 25%;
-
-    --muted: 35 15% 93%;
-    --muted-foreground: 220 8% 50%;
-
     --accent: 42 55% 62%;
-    --accent-foreground: 220 10% 15%;
+    --accent-foreground: 220 10% 14%;
+
+    /* UI */
+    --secondary: 33 24% 90%;
+    --secondary-foreground: 220 10% 26%;
+
+    --muted: 35 16% 93%;
+    --muted-foreground: 220 8% 50%;
 
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;
@@ -34,67 +40,64 @@
     --input: 35 15% 88%;
     --ring: 155 25% 38%;
 
+    /* Radius */
     --radius: 1rem;
-    --radius-card: 1.5rem;
+    --radius-card: 1.6rem;
+    --radius-card-lg: 2rem;
     --radius-pill: 999px;
 
-    --sidebar-background: 35 20% 96%;
-    --sidebar-foreground: 220 10% 25%;
-    --sidebar-primary: 155 25% 38%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 25% 90%;
-    --sidebar-accent-foreground: 220 10% 18%;
-    --sidebar-border: 35 15% 88%;
-    --sidebar-ring: 155 25% 38%;
-
+    /* Surfaces (porcelain feel) */
     --surface: 35 18% 95%;
-    --surface-strong: 35 20% 99%;
-    --surface-soft: 35 22% 93%;
-    --porcelain: 42 55% 62%;
-    --porcelain-foreground: 220 10% 12%;
+    --surface-strong: 35 22% 99%;
+    --surface-soft: 35 18% 93%;
 
-    --shadow-soft: 0 10px 30px -14px hsl(220 10% 18% / 0.12);
-    --shadow-card: 0 2px 12px -2px hsl(220 10% 18% / 0.06);
-    --shadow-elev: 0 16px 36px -20px hsl(220 10% 18% / 0.24);
+    /* Shadows (very soft / premium) */
+    --shadow-soft: 0 10px 30px -16px hsl(220 12% 16% / 0.12);
+    --shadow-card: 0 2px 14px -6px hsl(220 12% 16% / 0.12);
+    --shadow-elev: 0 18px 50px -24px hsl(220 12% 16% / 0.28);
+
+    /* Subtle highlight */
+    --shine: 0 0% 100%;
   }
 
   .dark {
     --background: 220 15% 8%;
     --foreground: 35 15% 93%;
+
     --card: 220 15% 11%;
     --card-foreground: 35 15% 93%;
+
     --popover: 220 15% 11%;
     --popover-foreground: 35 15% 93%;
+
     --primary: 155 30% 45%;
     --primary-foreground: 0 0% 100%;
+
     --secondary: 30 15% 20%;
     --secondary-foreground: 35 15% 90%;
+
     --muted: 220 10% 16%;
     --muted-foreground: 220 8% 60%;
+
     --accent: 42 45% 55%;
     --accent-foreground: 0 0% 100%;
+
     --destructive: 0 60% 45%;
     --destructive-foreground: 0 0% 100%;
+
     --border: 220 10% 18%;
     --input: 220 10% 18%;
     --ring: 155 30% 45%;
-    --sidebar-background: 220 15% 10%;
-    --sidebar-foreground: 35 15% 90%;
-    --sidebar-primary: 155 30% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 10% 16%;
-    --sidebar-accent-foreground: 35 15% 90%;
-    --sidebar-border: 220 10% 18%;
-    --sidebar-ring: 155 30% 45%;
+
     --surface: 220 12% 12%;
     --surface-strong: 220 14% 14%;
     --surface-soft: 220 10% 10%;
-    --porcelain: 42 45% 55%;
-    --porcelain-foreground: 0 0% 100%;
 
     --shadow-soft: 0 10px 30px -14px hsl(220 50% 2% / 0.45);
-    --shadow-card: 0 2px 12px -2px hsl(220 50% 2% / 0.35);
-    --shadow-elev: 0 18px 40px -20px hsl(220 50% 2% / 0.6);
+    --shadow-card: 0 2px 14px -6px hsl(220 50% 2% / 0.35);
+    --shadow-elev: 0 18px 55px -22px hsl(220 50% 2% / 0.62);
+
+    --shine: 0 0% 100%;
   }
 }
 
@@ -103,90 +106,171 @@
     @apply border-border;
   }
 
+  html,
+  body {
+    height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground antialiased font-sans;
+    font-family:
+      Inter,
+      system-ui,
+      -apple-system,
+      Segoe UI,
+      Roboto,
+      Helvetica,
+      Arial,
+      sans-serif;
+  }
+
+  /* Display font only where we want premium headings */
+  .font-display {
+    font-family: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   }
 }
 
+/* =========================================================
+   Utilities — layout / surfaces / marble background / cards
+   ========================================================= */
 @layer utilities {
+  /* Page container like mobile app (centered, narrow) */
+  .sb-container {
+    @apply max-w-[420px] mx-auto w-full;
+  }
+
+  /* Landing page vertical feel: big sections, more breathing */
+  .sb-section {
+    @apply px-5;
+  }
+
+  /* Background marble/porcelain (no external image) */
+  .sb-marble {
+    background:
+      radial-gradient(1200px 600px at 15% 10%, hsl(var(--shine) / 0.65), transparent 60%),
+      radial-gradient(900px 500px at 85% 30%, hsl(var(--accent) / 0.12), transparent 55%),
+      radial-gradient(700px 420px at 30% 85%, hsl(var(--primary) / 0.1), transparent 55%),
+      linear-gradient(180deg, hsl(var(--background)), hsl(var(--surface)) 55%, hsl(var(--background)));
+  }
+
+  /* Subtle paper grain overlay (pure CSS) */
+  .sb-grain {
+    position: relative;
+  }
+  .sb-grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.06) 0px,
+        rgba(0, 0, 0, 0.06) 1px,
+        transparent 1px,
+        transparent 3px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.04) 0px,
+        rgba(0, 0, 0, 0.04) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+    mix-blend-mode: multiply;
+    border-radius: inherit;
+  }
+
   .sb-screen {
-    @apply min-h-screen bg-background text-foreground;
+    @apply min-h-screen text-foreground;
   }
 
+  /* Cards (premium, soft) */
   .sb-card {
-    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)] p-5 shadow-card;
-  }
-
-  .sb-card-elev {
-    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)] p-5 shadow-elev;
-  }
-
-  .sb-pill {
-    @apply inline-flex items-center rounded-[var(--radius-pill)] border border-border/40 bg-[hsl(var(--surface-soft))] px-3 py-1 text-xs font-medium;
-  }
-
-  .sb-label {
-    @apply text-[11px] uppercase tracking-[0.14em] font-semibold text-muted-foreground;
-  }
-
-  .sb-h1 {
-    @apply font-display text-3xl md:text-4xl font-semibold tracking-tight text-foreground;
-  }
-
-  .sb-h2 {
-    @apply font-display text-2xl md:text-3xl font-semibold tracking-tight text-foreground;
-  }
-
-  .sb-body {
-    @apply text-sm md:text-base text-muted-foreground leading-relaxed;
-  }
-
-  .sb-gradient-card {
-    background: linear-gradient(145deg, hsl(var(--surface-strong)), hsl(var(--surface-soft)));
-  }
-
-  .sb-gradient-accent {
-    background: linear-gradient(135deg, hsl(var(--porcelain) / 0.2), hsl(var(--primary) / 0.12));
-  }
-
-  .shadow-elegant {
-    box-shadow: var(--shadow-elev);
-  }
-
-  .shadow-card {
+    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)] p-5;
     box-shadow: var(--shadow-card);
   }
 
-  .gradient-porcelain {
-    @apply sb-gradient-accent;
+  .sb-card-lg {
+    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card-lg)] p-6;
+    box-shadow: var(--shadow-elev);
   }
 
-  .gradient-hero {
-    @apply sb-gradient-card;
-  }
-
-  /* Result page premium background */
-  .result-bg {
+  /* Glass-like highlight for hero boxes */
+  .sb-card-shine {
     background:
-      radial-gradient(1200px 600px at 50% -100px, hsl(42 55% 62% / 0.15) 0%, transparent 60%),
-      linear-gradient(180deg, #F6F2ED 0%, #EFE8E1 100%);
+      radial-gradient(500px 220px at 20% 10%, hsl(var(--shine) / 0.7), transparent 55%),
+      linear-gradient(145deg, hsl(var(--surface-strong)), hsl(var(--surface-soft)));
   }
 
-  .result-card-premium {
-    background: linear-gradient(145deg, #FFFFFF 0%, #F3EEE8 100%);
-    border: 1px solid rgba(0,0,0,0.05);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    border-radius: 24px;
+  /* Pills / badges */
+  .sb-pill {
+    @apply inline-flex items-center gap-2 rounded-[var(--radius-pill)]
+      border border-border/40 bg-[hsl(var(--surface-soft))] px-3 py-1 text-[11px] font-semibold;
+  }
+
+  .sb-label {
+    @apply text-[10px] uppercase tracking-[0.28em] font-semibold text-muted-foreground;
+  }
+
+  /* Headings like the reference */
+  .sb-h1 {
+    @apply font-display text-[26px] leading-tight font-semibold tracking-tight text-foreground;
+  }
+
+  .sb-h2 {
+    @apply font-display text-[20px] leading-snug font-semibold tracking-tight text-foreground;
+  }
+
+  .sb-body {
+    @apply text-[13px] text-muted-foreground leading-relaxed;
+  }
+
+  /* Dividers between landing sections */
+  .sb-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
+  }
+
+  /* Soft gradients used inside cards */
+  .sb-gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--accent) / 0.18), hsl(var(--primary) / 0.1), hsl(var(--shine) / 0.2));
+  }
+
+  .sb-gradient-warm {
+    background: linear-gradient(145deg, hsl(var(--surface-strong)), hsl(var(--surface-soft)));
+  }
+
+  /* Shadows (aliases) */
+  .shadow-elegant {
+    box-shadow: var(--shadow-elev);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Better tap targets */
+  .sb-tap {
+    @apply rounded-[var(--radius-card)] min-h-12;
   }
 }
 
+/* =========================================================
+   Components — quiz cards + app cards
+   ========================================================= */
 @layer components {
   .quiz-card {
-    @apply bg-card text-card-foreground border border-border/50 rounded-[var(--radius-card)] p-4 shadow-card cursor-pointer transition-all duration-200;
+    @apply bg-card text-card-foreground border border-border/50 rounded-[var(--radius-card)]
+      p-4 cursor-pointer transition-all duration-200;
+    box-shadow: var(--shadow-card);
   }
 
   .quiz-card:hover {
-    @apply shadow-elegant;
+    box-shadow: var(--shadow-elev);
   }
 
   .quiz-card.selected {
@@ -194,10 +278,31 @@
   }
 
   .metric-card {
-    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)] p-5 shadow-card;
+    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)]
+      p-5;
+    box-shadow: var(--shadow-card);
   }
 
   .app-card {
-    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)] p-5 shadow-card transition-all duration-200 hover:shadow-elegant;
+    @apply bg-card text-card-foreground border border-border/40 rounded-[var(--radius-card)]
+      p-5 transition-all duration-200;
+    box-shadow: var(--shadow-card);
   }
+  .app-card:hover {
+    box-shadow: var(--shadow-elev);
+  }
+}
+
+/* =========================================================
+   Scrollbar (thin & clean)
+   ========================================================= */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
 }
