@@ -1,46 +1,12 @@
 /**
  * useAuth Hook - Authentication State Management
- * @updated force-rebuild
+ * Real Supabase Auth only — no mock/localStorage bypasses.
  */
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { signOut as authSignOut, getSubscriptionStatus } from '@/lib/auth'
-
-const MOCK_USER_KEY = 'skinbella.mock_user'
-
-export interface MockUser {
-  id: string
-  email: string
-  isAdmin?: boolean
-}
-
-export function getMockUser(): MockUser | null {
-  try {
-    const raw = localStorage.getItem(MOCK_USER_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch { return null }
-}
-
-export function setMockUser(mock: MockUser) {
-  localStorage.setItem(MOCK_USER_KEY, JSON.stringify(mock))
-}
-
-export function clearMockUser() {
-  localStorage.removeItem(MOCK_USER_KEY)
-}
-
-function mockToUser(mock: MockUser): User {
-  return {
-    id: mock.id,
-    email: mock.email,
-    app_metadata: {},
-    user_metadata: { full_name: mock.email },
-    aud: 'authenticated',
-    created_at: new Date().toISOString(),
-  } as unknown as User
-}
 
 interface AuthContextType {
   user: User | null
@@ -81,19 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // Check for mock user first (local dev testing)
-    const mock = getMockUser()
-    if (mock) {
-      console.log('🔧 useAuth: Using mock user from localStorage:', mock.email)
-      setUser(mockToUser(mock))
-      setHasActiveSubscription(true) // mock users bypass subscription
-      setLoading(false)
-      return
-    }
-
     let mounted = true
 
-    // Set up auth state listener
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -112,7 +67,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loadingRef.current = false
     })
 
-    // Get initial session with timeout fallback
     const timeout = setTimeout(() => {
       if (mounted && loadingRef.current) {
         console.warn('⏱️ Auth session check timed out, setting loading=false')
@@ -148,7 +102,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const handleSignOut = async () => {
-    clearMockUser()
     await authSignOut()
     setUser(null)
     setSession(null)

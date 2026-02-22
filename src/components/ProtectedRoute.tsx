@@ -1,12 +1,11 @@
 /**
  * ProtectedRoute Component - Route Protection with Subscription Check
  * Admin users (via user_roles table) bypass subscription requirement.
- * Mock users (localStorage) bypass all checks.
  */
 
-import { ReactNode, useEffect, useState, useMemo } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useAuth, getMockUser } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 import { checkIsAdmin } from '@/lib/auth'
 import { Loader2 } from 'lucide-react'
 
@@ -21,17 +20,12 @@ export function ProtectedRoute({ children, requireSubscription = true }: Protect
   const [checkingAdmin, setCheckingAdmin] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
 
-  // Memoize mock user to prevent render loops
-  const mockUser = useMemo(() => getMockUser(), [])
-  
-  // Safety timeout: never stay loading more than 4s
   useEffect(() => {
     const t = setTimeout(() => setTimedOut(true), 4000)
     return () => clearTimeout(t)
   }, [])
 
   useEffect(() => {
-    if (mockUser) return // skip admin check for mock
     if (!user?.id || !requireSubscription || hasActiveSubscription) {
       setIsAdmin(null)
       setCheckingAdmin(false)
@@ -48,14 +42,8 @@ export function ProtectedRoute({ children, requireSubscription = true }: Protect
         setIsAdmin(false)
         setCheckingAdmin(false)
       })
-  }, [user?.id, requireSubscription, hasActiveSubscription, mockUser])
+  }, [user?.id, requireSubscription, hasActiveSubscription])
 
-  // Mock user — always allow
-  if (mockUser) {
-    return <>{children}</>
-  }
-
-  // Show loading, but only until timeout
   if ((loading || checkingAdmin) && !timedOut) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

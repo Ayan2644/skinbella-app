@@ -1,8 +1,8 @@
 import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth, getMockUser } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { checkIsAdmin } from '@/lib/auth';
 import { Home, FileText, Droplets, Sun, CheckSquare, Apple, BookOpen, ShoppingBag, HelpCircle, LogOut, Menu, X, Shield, LayoutDashboard, Users, CreditCard, BarChart3, Bell, Sparkles, MoreHorizontal, PenTool } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const navItems = [
@@ -36,18 +36,10 @@ const AppShell = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut: authSignOut } = useAuth();
-  const mockUser = useMemo(() => getMockUser(), []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check admin status
   useEffect(() => {
-    // Mock user with isAdmin flag
-    if (mockUser?.isAdmin) {
-      setIsAdmin(true);
-      return;
-    }
-
     if (!user?.id) {
       setIsAdmin(false);
       return;
@@ -56,7 +48,7 @@ const AppShell = () => {
     checkIsAdmin(user.id)
       .then(setIsAdmin)
       .catch(() => setIsAdmin(false));
-  }, [user?.id, mockUser]);
+  }, [user?.id]);
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';
@@ -68,7 +60,7 @@ const AppShell = () => {
     navigate('/');
   };
 
-  const displayEmail = user?.email || mockUser?.email || 'Usuário';
+  const displayEmail = user?.email || 'Usuário';
   const moreActive = ['/app/checklist', '/app/dieta', '/app/biblioteca', '/app/produtos', '/app/faq'].some(p => location.pathname.startsWith(p));
 
   return (
