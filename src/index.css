@@ -306,3 +306,12 @@
   background: hsl(var(--border));
   border-radius: 999px;
 }
+
+@layer utilities {
+  .shadow-card {
+    box-shadow: 0 6px 26px -18px hsl(220 10% 18% / 0.18);
+  }
+  .shadow-elegant {
+    box-shadow: 0 14px 40px -22px hsl(220 10% 18% / 0.26);
+  }
+}
