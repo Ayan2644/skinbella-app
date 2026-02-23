@@ -1,123 +1,87 @@
 
+# Expandir Layout e Redesenhar Projecao do Protocolo
 
-# Redesign Completo da Pagina de Resultados do Quiz
+## Resumo
 
-## Objetivo
-Transformar a pagina de resultados do quiz em uma experiencia visual premium de alta conversao, seguindo fielmente as referencias fornecidas com fundo marmorizado rose, paleta verde salvia + dourado, graficos de rejuvenescimento e imagens antes/depois.
-
----
-
-## 1. Fundo e Atmosfera Global
-
-**Arquivo: `src/index.css`**
-- Adicionar gradiente radial dourado + linear porcelana como fundo da pagina de resultado
-- Adicionar classe CSS para textura marmorizada sutil (overlay com opacidade ~6%)
-- Ajustar variaveis CSS se necessario para acomodar os novos tons
-
-**Cores-chave da referencia:**
-- Fundo base: `#F6F2ED` (ja proximo do atual)
-- Cards: `#FFFFFF` com borda `rgba(0,0,0,0.05)` e sombra `0 4px 20px rgba(0,0,0,0.05)`
-- Verde assinatura: `#4E6B57` (botoes e CTA)
-- Dourado suave: `#C8A96B` (badges, estrelas, bullets)
+A pagina de resultados esta muito estreita (max 420px) e o grafico de projecao esta comprimido. Vamos expandir o layout e redesenhar o ProjectionCard para ficar como a imagem de referencia, com grafico + antes/depois lado a lado, banner de destaque em Playfair Display, e area sombreada abaixo da curva verde.
 
 ---
 
-## 2. Geracao de Imagens via IA
+## Mudancas
 
-Usar o modelo `google/gemini-2.5-flash-image` atraves de uma Edge Function para gerar e salvar no storage as seguintes imagens:
+### 1. ResultScreen.tsx -- Expandir frame principal
+- Aumentar `max-w-[420px]` para `max-w-[520px]`
+- Reduzir padding das secoes de `px-4` para `px-2`
 
-| Imagem | Descricao | Uso |
-|--------|-----------|-----|
-| Antes/Depois | Rosto feminino maduro, iluminacao suave, fundo neutro | MeaningCard e Testimonials |
-| Produtos flat-lay | Composicao SkinBella com flores, fundo creme, estetica luxo natural | Bloco entre Projecao e Oferta |
-| Testimonial antes/depois 1 | Mulher loira, dia 1 vs dia 30 | Card de depoimento |
-| Testimonial antes/depois 2 | Mulher morena, dia 1 vs dia 30 | Card de depoimento |
+### 2. ResultCard.tsx -- Remover padding externo duplicado
+- Remover o `px-5` da `<section>` wrapper (linha 15), pois quem controla o padding externo e o pai
+- Isso libera ~40px de espaco horizontal para o conteudo dos cards
 
-As imagens serao geradas uma vez e salvas como assets estaticos no projeto (`src/assets/result/`).
+### 3. MeaningCard.tsx e ProjectionCard.tsx -- Remover px-5 do wrapper
+- Ambos envolvem o `ResultCard` em `<section className="px-5">`, que ja tem seu proprio padding
+- Remover esse padding duplicado
 
----
+### 4. RejuvenationChart.tsx -- Grafico expandido e premium
+- Aumentar viewBox de 320x160 para 420x200
+- Aumentar maxHeight de 180 para 240
+- Adicionar **area sombreada** (gradient fill) abaixo da curva verde usando `<linearGradient>` + `<path>` com fill
+- Engrossar curva verde (strokeWidth 3.5)
+- Pontos maiores (r=6)
+- Labels maiores (fontSize 12-13)
+- Trocar "Dia 1" / "Dia 20" por **"Hoje"** e **"20 dias"** com destaque
+- Legenda: "Idade Biologica" (verde) e "Idade Cronologica" (dourado tracejado)
 
-## 3. Componentes Redesenhados
+### 5. ProjectionCard.tsx -- Redesign completo
 
-### 3.1 `ResultCard.tsx` (base)
-- Atualizar para: fundo branco, borda `rgba(0,0,0,0.05)`, sombra `0 4px 20px rgba(0,0,0,0.05)`, radius 24px
-- Gradiente sutil interno: `linear-gradient(145deg, #FFFFFF, #F3EEE8)`
-
-### 3.2 `HeroResult.tsx`
-- Circulo central: 180x180px com gradiente porcelana `linear-gradient(145deg, #FFFFFF, #EFE8E1)`, sombra `0 10px 40px rgba(0,0,0,0.06)`
-- Numero: 64px Playfair Display
-- Metricas (Hidratacao/Textura): card horizontal unico com divisao central por linha vertical, numeros 36px Playfair
-
-### 3.3 `MeaningCard.tsx`
-- Layout dividido: texto com bullets a esquerda, imagem antes/depois a direita
-- Bullets com bolinha dourada (#C8A96B) 6px
-- Fotos antes/depois com radius 16px, sombra leve, legendas "Antes" e "Depois: 20 dias"
-
-### 3.4 `ProjectionCard.tsx` (Novo: Grafico de Rejuvenescimento)
-- Grafico SVG customizado com:
-  - Fundo creme claro com linhas horizontais 10% opacidade
-  - Curva Bezier principal em verde `#4E6B57`, espessura 3px
-  - Linha comparativa dourada tracejada
-  - Pontos finais: circulos preenchidos 8px
-  - Legendas: Dia 1 / Dia 10 / Dia 20
-  - Valores dinamicos baseados em skinAge (ex: 56 -> 51)
-- Manter checklist abaixo com icones de check verdes
-- Botao CTA verde escuro `#4E6B57` com texto branco
-
-### 3.5 Novo: `ProductShowcaseCard.tsx`
-- Imagem flat-lay de produtos gerada por IA
-- Card com radius 24px, sem texto extra - apenas visual aspiracional
-
-### 3.6 `OfferCard.tsx`
-- Titulo: "Relatorio completo bloqueado" em Playfair 32px
-- Badge dourado "-52% HOJE" com radius 999px
-- Preco: R$59 riscado + R$29 em Playfair 44px
-- Botao verde escuro largura total, 56px altura
-- Trust badges abaixo (Checkout seguro, Acesso imediato, Suporte)
-
-### 3.7 `Testimonials.tsx`
-- Cards com fotos antes/depois lado a lado (pequenas, com label "Dia 1" e "Dia 30")
-- Estrelas douradas (#C8A96B)
-- Layout: foto a esquerda, texto + estrelas a direita
-
-### 3.8 `MiniFAQ.tsx`
-- Cards brancos, padding 28px, radius 20px
-- Pergunta: 18px Inter bold
-- Resposta: 16px Inter normal
-
-### 3.9 `ProtocolBrandCard.tsx` e `LockedReportCard.tsx`
-- Serao absorvidos/fundidos nos novos blocos (OfferCard e ProductShowcase)
-
----
-
-## 4. `ResultScreen.tsx` - Nova Ordem
+Nova estrutura interna:
 
 ```text
-1. HeroResult (circulo + metricas)
-2. MeaningCard (diagnostico + antes/depois)
-3. ProjectionCard (grafico SVG + checklist + CTA)
-4. ProductShowcaseCard (imagem produtos)
-5. OfferCard (relatorio bloqueado + preco + CTA)
-6. Testimonials (com fotos antes/depois)
-7. MiniFAQ
-8. Sticky CTA (botao verde no rodape)
++-----------------------------------------------+
+| Projecao com o Protocolo                       |
+| Resultados estimados em 20 dias                |
++-----------------------------------------------+
+|  [Grafico SVG expandido]  |  [Circulo          |
+|  Curva verde com glow     |   Antes/Depois     |
+|  Linha dourada tracejada  |   com divisao]     |
+|  Labels: Hoje / 20 dias   |   "Evolucao"       |
++-----------------------------------------------+
+|  +------------------------------------------+  |
+|  | Voce pode reverter de 2 a 4 anos na      |  |
+|  | aparencia da sua pele.                    |  |
+|  +------------------------------------------+  |
+|  (fundo #FDF8F3, fonte Playfair Display,       |
+|   texto verde #4E6B57, italico)                |
++-----------------------------------------------+
+|  * Plano diario guiado passo a passo           |
+|  * Checklist + streak de consistencia          |
+|  * Selfie semanal para comparar evolucao       |
++-----------------------------------------------+
+|  [ Comecar protocolo agora ]                   |
++-----------------------------------------------+
 ```
 
----
-
-## 5. Sticky CTA Redesenhado
-- Fundo com blur porcelana
-- Botao verde escuro `#4E6B57` com radius 20px
-- Preco e desconto ao lado esquerdo
+Detalhes:
+- **Layout lado a lado**: `flex` com grafico `flex-1` e circulo antes/depois `w-24`
+- **Circulo antes/depois**: 80x80px rounded-full com borda verde sutil, dividido ao meio com texto "ANTES | DEPOIS", label "Evolucao" abaixo em uppercase tracking-widest
+- **Banner de destaque**: `div` com `background: #FDF8F3`, `border: 1px solid rgba(200,169,107,0.2)`, rounded-xl, padding 16px, texto centralizado em `font-display` (Playfair Display), italico, cor `#4E6B57`, com "2 a 4 anos" em bold+underline
+- **Checklist**: mantido como esta, com icones de check verde
+- **Botao CTA**: mantido com estilo verde #4E6B57
 
 ---
 
 ## Detalhes Tecnicos
 
-- **Imagens**: Geradas via Edge Function usando `google/gemini-2.5-flash-image`, convertidas de base64 para arquivos PNG e colocadas em `src/assets/result/`
-- **Grafico SVG**: Componente React puro com `<svg>`, paths Bezier e animacao CSS para a curva
-- **CSS**: Ajustes no `index.css` para adicionar gradientes globais e classe `.result-bg` com textura marmorizada
-- **Sem dependencias novas**: Tudo feito com SVG nativo, CSS e React
-- **Componentes removidos**: `ProtocolBrandCard.tsx` e `LockedReportCard.tsx` serao removidos (funcionalidade absorvida)
-- **Componentes novos**: `ProductShowcaseCard.tsx`, `RejuvenationChart.tsx` (SVG)
+### Arquivos modificados (5):
+1. **src/components/quiz/ResultScreen.tsx** -- max-width e padding
+2. **src/components/quiz/result/ResultCard.tsx** -- remover px-5 da section
+3. **src/components/quiz/result/MeaningCard.tsx** -- remover px-5 duplicado
+4. **src/components/quiz/result/ProjectionCard.tsx** -- redesign completo com layout lado a lado + banner
+5. **src/components/quiz/result/RejuvenationChart.tsx** -- SVG expandido com gradient fill
 
+### Sem dependencias novas
+- Tudo feito com SVG nativo, CSS e componentes React existentes
+
+### Ganho de espaco estimado
+- Frame: +100px (420 para 520)
+- Padding removido: ~40px recuperados
+- Total: ~140px a mais de largura util para o conteudo
