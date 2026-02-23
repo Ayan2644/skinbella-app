@@ -12,7 +12,7 @@ type Props = {
 
 export default function ResultCard({ title, subtitle, children, className, headerRight }: Props) {
   return (
-    <section className={cn("px-5", className)}>
+    <section className={cn("", className)}>
       <div
         className={cn(
           // base premium (porcelana)

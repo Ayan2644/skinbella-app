@@ -22,7 +22,7 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
   return (
     <div className="min-h-screen bg-background flex justify-center">
       {/* FRAME */}
-      <div className="relative w-full max-w-[420px] min-h-screen bg-background overflow-hidden">
+      <div className="relative w-full max-w-[520px] min-h-screen bg-background overflow-hidden">
         {/* Background texture / gradient (sutil, estilo porcelana) */}
         <div className="pointer-events-none absolute inset-0 opacity-[0.9]">
           <div className="absolute inset-0 gradient-hero" />
@@ -43,12 +43,12 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
         {/* CONTENT SCROLL */}
         <div className="relative z-10 flex flex-col pb-28">
           {/* HERO */}
-          <div className="px-4 pt-2">
+          <div className="px-2 pt-2">
             <HeroResult skinAge={profile.skinAge} scores={profile.scores} />
           </div>
 
           {/* STACKED SECTIONS */}
-          <div className="mt-4 space-y-6 px-4">
+          <div className="mt-4 space-y-6 px-2">
             <MeaningCard skinAge={profile.skinAge} />
             <ProjectionCard skinAge={profile.skinAge} />
             <ProtocolBrandCard />

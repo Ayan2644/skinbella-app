@@ -19,8 +19,7 @@ export default function MeaningCard({ skinAge }: MeaningCardProps) {
         ];
 
   return (
-    <section className="px-5">
-      <ResultCard title="O que isso significa">
+    <ResultCard title="O que isso significa">
         <ul className="space-y-3">
           {insights.map((text, i) => (
             <li key={i} className="flex gap-3 items-start text-[13px] text-muted-foreground leading-relaxed">
@@ -32,7 +31,6 @@ export default function MeaningCard({ skinAge }: MeaningCardProps) {
             </li>
           ))}
         </ul>
-      </ResultCard>
-    </section>
+    </ResultCard>
   );
 }
