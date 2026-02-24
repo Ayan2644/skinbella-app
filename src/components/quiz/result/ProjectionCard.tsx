@@ -10,76 +10,69 @@ interface ProjectionCardProps {
 
 export default function ProjectionCard({ skinAge, onAccess }: ProjectionCardProps) {
   return (
-    <ResultCard title="Projeção com o Protocolo" subtitle="Resultados estimados em 20 dias">
-      {/* Chart + Before/After side by side */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1 min-w-0">
-          <RejuvenationChart skinAge={skinAge} />
-        </div>
-
-        {/* Before/After circle */}
-        <div className="w-24 flex flex-col items-center gap-2 flex-shrink-0">
-          <div
-            className="relative w-20 h-20 rounded-full overflow-hidden flex items-center justify-center"
-            style={{
-              border: '2px solid rgba(78,107,87,0.2)',
-              background: 'linear-gradient(135deg, #F6F2ED, #EDE8E1)',
-            }}
-          >
-            {/* Vertical divider */}
-            <div className="absolute top-2 bottom-2 left-1/2 w-px -translate-x-1/2" style={{ backgroundColor: 'rgba(78,107,87,0.25)' }} />
-            <span className="text-[9px] font-bold tracking-wide" style={{ color: '#4E6B57' }}>
-              ANTES | DEPOIS
-            </span>
+    <section className="px-5">
+      <ResultCard title="Projeção com o Protocolo" subtitle="Resultados estimados em 20 dias">
+        
+        {/* Container Lado a Lado: Gráfico + Evolução Visual */}
+        <div className="flex items-center gap-2 mb-6">
+          <div className="flex-1 min-h-[180px]">
+            <RejuvenationChart skinAge={skinAge} />
           </div>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Evolução</span>
-        </div>
-      </div>
-
-      {/* Impact banner */}
-      <div
-        className="rounded-xl p-4 my-4 text-center"
-        style={{
-          background: '#FDF8F3',
-          border: '1px solid rgba(200,169,107,0.2)',
-        }}
-      >
-        <p className="font-display italic text-lg" style={{ color: '#4E6B57' }}>
-          Você pode reverter de{' '}
-          <span className="font-bold underline">2 a 4 anos</span>{' '}
-          na aparência da sua pele.
-        </p>
-      </div>
-
-      {/* Checklist */}
-      <ul className="space-y-3">
-        {[
-          'Plano diário guiado passo a passo',
-          'Checklist + streak de consistência',
-          'Selfie semanal para comparar evolução',
-        ].map((text) => (
-          <li key={text} className="flex items-center gap-3 text-[13px] text-foreground/80">
-            <div
-              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: 'rgba(78,107,87,0.1)' }}
-            >
-              <Check className="w-3 h-3" style={{ color: '#4E6B57' }} />
+          
+          {/* Círculo de Evolução (Igual à referência) */}
+          <div className="w-24 flex flex-col items-center gap-2 flex-shrink-0">
+            <div className="relative w-20 h-20 rounded-full border-2 border-[#4E6B57]/10 overflow-hidden bg-[#FDF8F3] flex items-center justify-center">
+               <div className="text-[9px] font-bold text-[#4E6B57] leading-tight text-center px-1">
+                  ANTES<br/>|<br/>DEPOIS
+               </div>
             </div>
-            {text}
-          </li>
-        ))}
-      </ul>
+            <span className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-medium">Evolução</span>
+          </div>
+        </div>
 
-      {onAccess && (
-        <Button
-          onClick={onAccess}
-          className="w-full mt-5 rounded-[20px] h-14 text-base font-semibold text-white"
-          style={{ backgroundColor: '#4E6B57', boxShadow: '0 4px 16px rgba(78,107,87,0.25)' }}
-        >
-          <Sparkles className="w-5 h-5 mr-2" />
-          Começar protocolo agora
-        </Button>
-      )}
-    </ResultCard>
+        {/* Banner de Destaque com Fonte Serifada */}
+        <div className="bg-[#FDF8F3] rounded-[20px] p-5 border border-orange-100/50 mb-6 shadow-sm">
+          <p className="font-serif italic text-[#4E6B57] text-[17px] leading-relaxed text-center">
+            Você pode reverter de <span className="font-bold underline decoration-orange-200">2 a 4 anos</span> na aparência da sua pele.
+          </p>
+        </div>
+
+        {/* Checklist de Itens */}
+        <div className="space-y-4 mb-6">
+          {[
+            'Plano diário guiado passo a passo',
+            'Checklist + streak de consistência',
+            'Selfie semanal para comparar evolução',
+          ].map((text) => (
+            <div key={text} className="flex items-center gap-3 text-[13px] text-foreground/90 font-medium">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[#4E6B57]/10">
+                <Check className="w-3 h-3 text-[#4E6B57]" strokeWidth={3} />
+              </div>
+              {text}
+            </div>
+          ))}
+        </div>
+
+        {onAccess && (
+          <div className="space-y-3">
+            <Button
+              onClick={onAccess}
+              className="w-full rounded-[20px] h-14 text-base font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
+              style={{ 
+                backgroundColor: '#4E6B57', 
+                boxShadow: '0 8px 20px rgba(78,107,87,0.25)' 
+              }}
+            >
+              <Sparkles className="w-5 h-5 mr-2 text-orange-200" />
+              Começar protocolo agora
+            </Button>
+            <div className="flex justify-center gap-4 text-[10px] text-muted-foreground uppercase tracking-widest font-semibold opacity-60">
+              <span>● Acesso Imediato</span>
+              <span>● Checkout Seguro</span>
+            </div>
+          </div>
+        )}
+      </ResultCard>
+    </section>
   );
 }
