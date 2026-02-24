@@ -64,6 +64,129 @@ export type InnerSectionBgVariant = (typeof INNER_SECTION_BG_VARIANTS)[number]["
 
 export type SectionStyleVariant = (typeof SECTION_STYLE_VARIANTS)[number]["value"];
 
+/** Available font families for the editor */
+export const FONT_OPTIONS = [
+  { value: "", label: "Padrão" },
+  { value: "Playfair Display", label: "Playfair Display" },
+  { value: "Inter", label: "Inter" },
+  { value: "Georgia", label: "Georgia" },
+  { value: "Lora", label: "Lora" },
+  { value: "Merriweather", label: "Merriweather" },
+  { value: "Cormorant Garamond", label: "Cormorant Garamond" },
+  { value: "DM Serif Display", label: "DM Serif Display" },
+  { value: "Libre Baskerville", label: "Libre Baskerville" },
+  { value: "Poppins", label: "Poppins" },
+  { value: "Montserrat", label: "Montserrat" },
+  { value: "Raleway", label: "Raleway" },
+  { value: "Open Sans", label: "Open Sans" },
+  { value: "Roboto", label: "Roboto" },
+  { value: "Nunito", label: "Nunito" },
+  { value: "Quicksand", label: "Quicksand" },
+  { value: "Dancing Script", label: "Dancing Script" },
+  { value: "Pacifico", label: "Pacifico" },
+  { value: "system-ui", label: "System UI" },
+] as const;
+
+/** Font weight options */
+export const FONT_WEIGHT_OPTIONS = [
+  { value: "300", label: "Light (300)" },
+  { value: "400", label: "Regular (400)" },
+  { value: "500", label: "Medium (500)" },
+  { value: "600", label: "Semibold (600)" },
+  { value: "700", label: "Bold (700)" },
+  { value: "800", label: "Extra Bold (800)" },
+  { value: "900", label: "Black (900)" },
+] as const;
+
+/** Predefined gradient presets */
+export const GRADIENT_PRESETS = [
+  { value: "", label: "Nenhum" },
+  { value: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", label: "Violeta Suave" },
+  { value: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", label: "Rosa Quente" },
+  { value: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)", label: "Azul Cristal" },
+  { value: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)", label: "Verde Menta" },
+  { value: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", label: "Pôr do Sol" },
+  { value: "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)", label: "Lavanda" },
+  { value: "linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)", label: "Pêssego Roxo" },
+  { value: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)", label: "Dourado Coral" },
+  { value: "linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%)", label: "Céu Azul" },
+  { value: "linear-gradient(135deg, #c3cfe2 0%, #f5f7fa 100%)", label: "Prata Suave" },
+  { value: "linear-gradient(135deg, #C8A96B 0%, #4E6B57 100%)", label: "Dourado → Verde" },
+  { value: "linear-gradient(135deg, #F6F2ED 0%, #E8DFD4 100%)", label: "Porcelana" },
+  { value: "linear-gradient(180deg, rgba(78,107,87,0.1) 0%, transparent 100%)", label: "Verde Fade" },
+  { value: "linear-gradient(180deg, rgba(200,169,107,0.15) 0%, transparent 100%)", label: "Dourado Fade" },
+  { value: "linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 100%)", label: "Noite Escura" },
+  { value: "linear-gradient(135deg, #2d1b69 0%, #11998e 100%)", label: "Cosmos" },
+] as const;
+
+/** Shadow presets */
+export const SHADOW_PRESETS = [
+  { value: "", label: "Nenhuma" },
+  { value: "0 1px 3px rgba(0,0,0,0.1)", label: "Sutil" },
+  { value: "0 4px 12px rgba(0,0,0,0.1)", label: "Suave" },
+  { value: "0 8px 24px rgba(0,0,0,0.12)", label: "Média" },
+  { value: "0 12px 40px rgba(0,0,0,0.15)", label: "Forte" },
+  { value: "0 20px 60px rgba(0,0,0,0.2)", label: "Dramática" },
+  { value: "0 0 20px rgba(78,107,87,0.3)", label: "Glow Verde" },
+  { value: "0 0 20px rgba(200,169,107,0.3)", label: "Glow Dourado" },
+  { value: "0 0 30px rgba(167,139,250,0.3)", label: "Glow Violeta" },
+  { value: "inset 0 2px 6px rgba(0,0,0,0.1)", label: "Interna" },
+] as const;
+
+/** Border style options */
+export const BORDER_STYLE_OPTIONS = [
+  { value: "", label: "Nenhuma" },
+  { value: "solid", label: "Sólida" },
+  { value: "dashed", label: "Tracejada" },
+  { value: "dotted", label: "Pontilhada" },
+  { value: "double", label: "Dupla" },
+] as const;
+
+/** Letter spacing presets */
+export const LETTER_SPACING_OPTIONS = [
+  { value: "", label: "Padrão" },
+  { value: "-0.05em", label: "Compacto" },
+  { value: "0", label: "Normal" },
+  { value: "0.05em", label: "Suave" },
+  { value: "0.1em", label: "Espaçado" },
+  { value: "0.2em", label: "Largo" },
+  { value: "0.3em", label: "Muito Largo" },
+] as const;
+
+/** Text transform options */
+export const TEXT_TRANSFORM_OPTIONS = [
+  { value: "", label: "Padrão" },
+  { value: "none", label: "Normal" },
+  { value: "uppercase", label: "MAIÚSCULAS" },
+  { value: "lowercase", label: "minúsculas" },
+  { value: "capitalize", label: "Capitalizar" },
+] as const;
+
+/** Line height options */
+export const LINE_HEIGHT_OPTIONS = [
+  { value: "", label: "Padrão" },
+  { value: "1", label: "1.0 — Compacto" },
+  { value: "1.2", label: "1.2 — Justo" },
+  { value: "1.4", label: "1.4 — Normal" },
+  { value: "1.6", label: "1.6 — Confortável" },
+  { value: "1.8", label: "1.8 — Espaçoso" },
+  { value: "2", label: "2.0 — Duplo" },
+] as const;
+
+/** Opacity presets */
+export const OPACITY_OPTIONS = [
+  { value: "", label: "100%" },
+  { value: "0.9", label: "90%" },
+  { value: "0.8", label: "80%" },
+  { value: "0.7", label: "70%" },
+  { value: "0.6", label: "60%" },
+  { value: "0.5", label: "50%" },
+  { value: "0.4", label: "40%" },
+  { value: "0.3", label: "30%" },
+  { value: "0.2", label: "20%" },
+  { value: "0.1", label: "10%" },
+] as const;
+
 /** Common Lucide icon names available in the icon selector */
 export const ICON_OPTIONS = [
   "Sparkles", "Shield", "Zap", "Heart", "Star", "Check", "Lock", "Users",

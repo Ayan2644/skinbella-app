@@ -34,13 +34,30 @@ export function buildStyle(styles: Record<string, any>): React.CSSProperties {
   const s: React.CSSProperties = {};
   if (styles.fontSize) s.fontSize = styles.fontSize;
   if (styles.fontFamily) s.fontFamily = styles.fontFamily;
+  if (styles.fontWeight) s.fontWeight = styles.fontWeight;
+  if (styles.fontStyle) s.fontStyle = styles.fontStyle;
   if (styles.color) s.color = styles.color;
   if (styles.bgColor) s.backgroundColor = styles.bgColor;
+  if (styles.bgGradient) s.background = styles.bgGradient;
   if (styles.padding) s.padding = styles.padding;
   if (styles.margin) s.margin = styles.margin;
   if (styles.borderRadius) s.borderRadius = styles.borderRadius;
   if (styles.textAlign) s.textAlign = styles.textAlign as React.CSSProperties["textAlign"];
   if (styles.maxWidth) s.maxWidth = styles.maxWidth;
+  if (styles.letterSpacing) s.letterSpacing = styles.letterSpacing;
+  if (styles.lineHeight) s.lineHeight = styles.lineHeight;
+  if (styles.textTransform) s.textTransform = styles.textTransform as React.CSSProperties["textTransform"];
+  if (styles.opacity) s.opacity = Number(styles.opacity);
+  if (styles.boxShadow) s.boxShadow = styles.boxShadow;
+  if (styles.borderWidth) s.borderWidth = styles.borderWidth;
+  if (styles.borderStyle) s.borderStyle = styles.borderStyle as React.CSSProperties["borderStyle"];
+  if (styles.borderColor) s.borderColor = styles.borderColor;
+  if (styles.textShadow) s.textShadow = styles.textShadow;
+  if (styles.backdropFilter) s.backdropFilter = styles.backdropFilter;
+  if (styles.WebkitBackgroundClip === "text") {
+    s.WebkitBackgroundClip = "text";
+    s.WebkitTextFillColor = "transparent";
+  }
   return s;
 }
 
