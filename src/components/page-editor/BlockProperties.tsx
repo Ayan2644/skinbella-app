@@ -7,7 +7,12 @@ import { Trash2, Upload, Plus, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { uploadPageAsset } from "@/hooks/usePageBlocks";
-import { SECTION_STYLE_VARIANTS, BADGE_VARIANTS, INNER_SECTION_BG_VARIANTS } from "./blockTypes";
+import {
+  SECTION_STYLE_VARIANTS, BADGE_VARIANTS, INNER_SECTION_BG_VARIANTS,
+  FONT_OPTIONS, FONT_WEIGHT_OPTIONS, GRADIENT_PRESETS, SHADOW_PRESETS,
+  BORDER_STYLE_OPTIONS, LETTER_SPACING_OPTIONS, TEXT_TRANSFORM_OPTIONS,
+  LINE_HEIGHT_OPTIONS, OPACITY_OPTIONS,
+} from "./blockTypes";
 import LucideIconPicker from "./LucideIconPicker";
 import type { PageBlock } from "@/hooks/usePageBlocks";
 
@@ -468,33 +473,85 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
       {/* === Style fields === */}
       {!isSection && !block.block_type.startsWith("section_") || editingChild ? (
         <div className="border-t border-border/30 pt-3 space-y-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Estilos</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Tipografia</p>
+
+          {/* Font Family */}
           <div>
             <Label className="text-xs">Fonte</Label>
             <Select value={activeStyles.fontFamily || ""} onValueChange={(v) => updateStyles("fontFamily", v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
-              <SelectContent className="bg-popover z-50">
-                <SelectItem value="Playfair Display">Playfair Display</SelectItem>
-                <SelectItem value="Inter">Inter</SelectItem>
-                <SelectItem value="system-ui">System</SelectItem>
+              <SelectContent className="bg-popover z-50 max-h-60">
+                {FONT_OPTIONS.map((f) => (
+                  <SelectItem key={f.value} value={f.value || "default"}>
+                    <span style={{ fontFamily: f.value || "inherit" }}>{f.label}</span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
+
+          {/* Font Size */}
           <div><Label className="text-xs">Tamanho fonte</Label><Input value={activeStyles.fontSize || ""} onChange={(e) => updateStyles("fontSize", e.target.value)} placeholder="16px" className="mt-1 text-xs h-8" /></div>
+
+          {/* Font Weight */}
           <div>
-            <Label className="text-xs">Cor do texto</Label>
-            <div className="flex gap-2 mt-1">
-              <input type="color" value={activeStyles.color || "#000000"} onChange={(e) => updateStyles("color", e.target.value)} className="w-8 h-8 rounded border cursor-pointer" />
-              <Input value={activeStyles.color || ""} onChange={(e) => updateStyles("color", e.target.value)} className="text-xs h-8 flex-1" />
-            </div>
+            <Label className="text-xs">Peso da fonte</Label>
+            <Select value={activeStyles.fontWeight || ""} onValueChange={(v) => updateStyles("fontWeight", v)}>
+              <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {FONT_WEIGHT_OPTIONS.map((w) => (
+                  <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          {/* Italic toggle */}
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Itálico</Label>
+            <Switch checked={activeStyles.fontStyle === "italic"} onCheckedChange={(v) => updateStyles("fontStyle", v ? "italic" : "")} />
+          </div>
+
+          {/* Letter Spacing */}
           <div>
-            <Label className="text-xs">Cor de fundo</Label>
-            <div className="flex gap-2 mt-1">
-              <input type="color" value={activeStyles.bgColor || "#ffffff"} onChange={(e) => updateStyles("bgColor", e.target.value)} className="w-8 h-8 rounded border cursor-pointer" />
-              <Input value={activeStyles.bgColor || ""} onChange={(e) => updateStyles("bgColor", e.target.value)} className="text-xs h-8 flex-1" />
-            </div>
+            <Label className="text-xs">Espaçamento letras</Label>
+            <Select value={activeStyles.letterSpacing || ""} onValueChange={(v) => updateStyles("letterSpacing", v)}>
+              <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {LETTER_SPACING_OPTIONS.map((ls) => (
+                  <SelectItem key={ls.value} value={ls.value || "default"}>{ls.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          {/* Line Height */}
+          <div>
+            <Label className="text-xs">Altura da linha</Label>
+            <Select value={activeStyles.lineHeight || ""} onValueChange={(v) => updateStyles("lineHeight", v)}>
+              <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {LINE_HEIGHT_OPTIONS.map((lh) => (
+                  <SelectItem key={lh.value} value={lh.value || "default"}>{lh.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Text Transform */}
+          <div>
+            <Label className="text-xs">Transformação de texto</Label>
+            <Select value={activeStyles.textTransform || ""} onValueChange={(v) => updateStyles("textTransform", v)}>
+              <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {TEXT_TRANSFORM_OPTIONS.map((tt) => (
+                  <SelectItem key={tt.value} value={tt.value || "default"}>{tt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Alignment */}
           <div>
             <Label className="text-xs">Alinhamento</Label>
             <Select value={activeStyles.textAlign || "left"} onValueChange={(v) => updateStyles("textAlign", v)}>
@@ -506,8 +563,137 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
               </SelectContent>
             </Select>
           </div>
+
+          {/* === Colors Section === */}
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-2">Cores</p>
+
+          {/* Text Color */}
+          <div>
+            <Label className="text-xs">Cor do texto</Label>
+            <div className="flex gap-2 mt-1">
+              <input type="color" value={activeStyles.color || "#000000"} onChange={(e) => updateStyles("color", e.target.value)} className="w-8 h-8 rounded border cursor-pointer" />
+              <Input value={activeStyles.color || ""} onChange={(e) => updateStyles("color", e.target.value)} className="text-xs h-8 flex-1" placeholder="#hex ou hsl()" />
+            </div>
+          </div>
+
+          {/* Background Color */}
+          <div>
+            <Label className="text-xs">Cor de fundo</Label>
+            <div className="flex gap-2 mt-1">
+              <input type="color" value={activeStyles.bgColor || "#ffffff"} onChange={(e) => updateStyles("bgColor", e.target.value)} className="w-8 h-8 rounded border cursor-pointer" />
+              <Input value={activeStyles.bgColor || ""} onChange={(e) => updateStyles("bgColor", e.target.value)} className="text-xs h-8 flex-1" placeholder="#hex ou hsl()" />
+            </div>
+          </div>
+
+          {/* Background Gradient */}
+          <div>
+            <Label className="text-xs">Gradiente de fundo</Label>
+            <Select value={activeStyles.bgGradient || ""} onValueChange={(v) => updateStyles("bgGradient", v)}>
+              <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Nenhum" /></SelectTrigger>
+              <SelectContent className="bg-popover z-50 max-h-60">
+                {GRADIENT_PRESETS.map((g) => (
+                  <SelectItem key={g.value || "none"} value={g.value || "none"}>
+                    <div className="flex items-center gap-2">
+                      {g.value && <div className="w-4 h-4 rounded-full border border-border/50 flex-shrink-0" style={{ background: g.value }} />}
+                      <span>{g.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input value={activeStyles.bgGradient || ""} onChange={(e) => updateStyles("bgGradient", e.target.value)} placeholder="linear-gradient(135deg, #cor1, #cor2)" className="mt-1 text-xs h-8" />
+          </div>
+
+          {/* Gradient text toggle */}
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Texto gradiente</Label>
+            <Switch
+              checked={activeStyles.WebkitBackgroundClip === "text"}
+              onCheckedChange={(v) => {
+                updateStyles("WebkitBackgroundClip", v ? "text" : "");
+              }}
+            />
+          </div>
+
+          {/* Text Shadow */}
+          <div>
+            <Label className="text-xs">Sombra do texto</Label>
+            <Input value={activeStyles.textShadow || ""} onChange={(e) => updateStyles("textShadow", e.target.value)} placeholder="0 2px 4px rgba(0,0,0,0.3)" className="mt-1 text-xs h-8" />
+          </div>
+
+          {/* Opacity */}
+          <div>
+            <Label className="text-xs">Opacidade</Label>
+            <Select value={activeStyles.opacity || ""} onValueChange={(v) => updateStyles("opacity", v)}>
+              <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="100%" /></SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {OPACITY_OPTIONS.map((o) => (
+                  <SelectItem key={o.value || "full"} value={o.value || "full"}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* === Box Section === */}
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground pt-2">Caixa & Bordas</p>
+
+          {/* Padding */}
           <div><Label className="text-xs">Padding</Label><Input value={activeStyles.padding || ""} onChange={(e) => updateStyles("padding", e.target.value)} placeholder="8px 0" className="mt-1 text-xs h-8" /></div>
+
+          {/* Margin */}
+          <div><Label className="text-xs">Margem</Label><Input value={activeStyles.margin || ""} onChange={(e) => updateStyles("margin", e.target.value)} placeholder="0 auto" className="mt-1 text-xs h-8" /></div>
+
+          {/* Border Radius */}
           <div><Label className="text-xs">Border radius</Label><Input value={activeStyles.borderRadius || ""} onChange={(e) => updateStyles("borderRadius", e.target.value)} placeholder="16px" className="mt-1 text-xs h-8" /></div>
+
+          {/* Border Style */}
+          <div>
+            <Label className="text-xs">Estilo da borda</Label>
+            <Select value={activeStyles.borderStyle || ""} onValueChange={(v) => updateStyles("borderStyle", v)}>
+              <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Nenhuma" /></SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {BORDER_STYLE_OPTIONS.map((bs) => (
+                  <SelectItem key={bs.value || "none"} value={bs.value || "none"}>{bs.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Border Width */}
+          {activeStyles.borderStyle && (
+            <div><Label className="text-xs">Espessura da borda</Label><Input value={activeStyles.borderWidth || ""} onChange={(e) => updateStyles("borderWidth", e.target.value)} placeholder="1px" className="mt-1 text-xs h-8" /></div>
+          )}
+
+          {/* Border Color */}
+          {activeStyles.borderStyle && (
+            <div>
+              <Label className="text-xs">Cor da borda</Label>
+              <div className="flex gap-2 mt-1">
+                <input type="color" value={activeStyles.borderColor || "#e0e0e0"} onChange={(e) => updateStyles("borderColor", e.target.value)} className="w-8 h-8 rounded border cursor-pointer" />
+                <Input value={activeStyles.borderColor || ""} onChange={(e) => updateStyles("borderColor", e.target.value)} className="text-xs h-8 flex-1" />
+              </div>
+            </div>
+          )}
+
+          {/* Box Shadow */}
+          <div>
+            <Label className="text-xs">Sombra</Label>
+            <Select value={activeStyles.boxShadow || ""} onValueChange={(v) => updateStyles("boxShadow", v)}>
+              <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Nenhuma" /></SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {SHADOW_PRESETS.map((sh) => (
+                  <SelectItem key={sh.value || "none"} value={sh.value || "none"}>{sh.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input value={activeStyles.boxShadow || ""} onChange={(e) => updateStyles("boxShadow", e.target.value)} placeholder="0 4px 12px rgba(0,0,0,0.1)" className="mt-1 text-xs h-8" />
+          </div>
+
+          {/* Max Width */}
+          <div><Label className="text-xs">Largura máxima</Label><Input value={activeStyles.maxWidth || ""} onChange={(e) => updateStyles("maxWidth", e.target.value)} placeholder="100%" className="mt-1 text-xs h-8" /></div>
+
+          {/* Backdrop Filter */}
+          <div><Label className="text-xs">Backdrop blur</Label><Input value={activeStyles.backdropFilter || ""} onChange={(e) => updateStyles("backdropFilter", e.target.value)} placeholder="blur(8px)" className="mt-1 text-xs h-8" /></div>
         </div>
       ) : null}
 
