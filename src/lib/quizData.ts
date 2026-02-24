@@ -7,6 +7,8 @@ export interface QuizOption {
   emoji?: string;
 }
 
+export type OptionLayout = 'vertical' | 'horizontal';
+
 export interface QuizQuestionStyles {
   fontFamily?: string;
   fontSize?: string;
@@ -19,6 +21,7 @@ export interface QuizQuestionStyles {
   optionBorderColor?: string;
   optionSelectedColor?: string;
   padding?: string;
+  optionLayout?: OptionLayout;
 }
 
 export interface QuizQuestion {

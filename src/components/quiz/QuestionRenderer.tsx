@@ -27,9 +27,50 @@ const QuestionRenderer = ({ question, value, onChange }: QuestionRendererProps) 
   }
 };
 
-/* ── Full-width cards with emoji + label + description ── */
+/* ── Cards with emoji/image — supports vertical & horizontal layout ── */
 function CardsQuestion({ question, value, onChange }: QuestionRendererProps) {
   const s = question.styles ?? {};
+  const isHorizontal = s.optionLayout === 'horizontal';
+
+  if (isHorizontal) {
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        {question.options?.map((opt) => {
+          const isSelected = value === opt.value;
+          return (
+            <button
+              key={opt.value}
+              onClick={() => onChange(opt.value)}
+              className={`group relative flex flex-col items-center text-center gap-2 rounded-2xl p-4 transition-all duration-200 border-2 ${
+                isSelected
+                  ? 'border-primary bg-primary/5 shadow-elegant'
+                  : 'border-border/60 bg-card hover:border-primary/30 hover:shadow-soft'
+              }`}
+              style={{
+                backgroundColor: !isSelected && s.optionBgColor ? s.optionBgColor : undefined,
+                borderColor: !isSelected && s.optionBorderColor ? s.optionBorderColor : undefined,
+              }}
+            >
+              {opt.emoji && (
+                <span className="w-11 h-11 rounded-xl flex items-center justify-center text-xl bg-secondary/60">
+                  {opt.emoji}
+                </span>
+              )}
+              <p className={`font-semibold text-[15px] leading-tight ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                {opt.label}
+              </p>
+              {opt.description && (
+                <p className="text-[12px] text-muted-foreground leading-snug">
+                  {opt.description}
+                </p>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {question.options?.map((opt) => {
