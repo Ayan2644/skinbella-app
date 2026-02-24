@@ -1,0 +1,51 @@
+name: skinbella-quiz
+version: 1.0.0
+description: >
+  Squad de experiência do quiz — otimiza copy, branching condicional,
+  micro-textos e loading para máxima taxa de conclusão e qualidade dos
+  dados coletados. Camada 2 (Experiência). Depende de skinbella-diagnostico.
+author: SKINBELLA Content Team
+license: UNLICENSED
+slashPrefix: skinbella-quiz
+
+aios:
+  minVersion: "2.1.0"
+  type: squad
+
+global_rules:
+  - "P1 (idade) é SEMPRE a primeira pergunta — imutável"
+  - "Todos os outputs são documentos Markdown (.md) APENAS"
+  - "P14 (selfie) é SEMPRE opcional com botão de skip"
+  - "Branches condicionais só existem com valor diagnóstico real"
+  - "Nunca prometer diagnóstico visual sem ML implementado"
+
+components:
+  agents:
+    - ux-writer.md
+  tasks:
+    - ux-writer-auditar-perguntas.md
+    - ux-writer-reescrever-perguntas.md
+    - ux-writer-mapear-branching.md
+    - ux-writer-criar-micro-textos.md
+    - ux-writer-otimizar-processamento.md
+  data:
+    - refs-perguntas-v2.md
+    - refs-analise-originais.md
+    - refs-branching-logic.md
+    - refs-tom-de-voz.md
+    - refs-persona.md
+    - refs-matriz-perfil.md
+
+config:
+  extends: extend
+
+dependencies:
+  squads:
+    - skinbella-diagnostico
+
+tags:
+  - skinbella
+  - quiz
+  - ux
+  - conversao
+  - camada-2

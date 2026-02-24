@@ -1,0 +1,50 @@
+name: skinbella-resultado
+version: 1.0.0
+description: >
+  Squad de resultado e conversão — otimiza a ResultScreen para máxima
+  conversão do diagnóstico ao CTA. Mapa de seções, hipóteses de A/B,
+  sticky CTA e urgência ética. Camada 2 (Experiência). Depende de skinbella-copy.
+author: SKINBELLA Content Team
+license: UNLICENSED
+slashPrefix: skinbella-resultado
+
+aios:
+  minVersion: "2.1.0"
+  type: squad
+
+global_rules:
+  - "Todos os outputs são documentos Markdown (.md) APENAS"
+  - "Urgência APENAS se baseada em algo real e documentado"
+  - "ALERTA: Preço inconsistente R$19 vs R$29 — decisão necessária antes de validar"
+  - "Cada hipótese de A/B tem variação A, B, métrica e critério de winner"
+
+components:
+  agents:
+    - cro-specialist.md
+  tasks:
+    - cro-mapear-resultado.md
+    - cro-analisar-hipoteses.md
+    - cro-criar-sticky-cta.md
+    - cro-criar-urgencia.md
+    - cro-auditar-resultado.md
+  data:
+    - refs-mapa-resultado.md
+    - refs-oferta.md
+    - refs-provas-sociais.md
+    - refs-faq.md
+    - refs-cta-variacoes.md
+    - refs-persona.md
+
+config:
+  extends: extend
+
+dependencies:
+  squads:
+    - skinbella-copy
+
+tags:
+  - skinbella
+  - resultado
+  - cro
+  - conversao
+  - camada-2

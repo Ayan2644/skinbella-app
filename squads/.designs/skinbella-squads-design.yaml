@@ -1,0 +1,395 @@
+# squad-design.yaml — SKINBELLA Content Squads
+# Gerado por: @squad-creator (Craft)
+# Data: 2026-02-24
+# Confiança geral: 94%
+
+squad_group:
+  name: skinbella-content-squads
+  description: "Squads de geração de copy e conteúdo estratégico para o produto SKINBELLA"
+  domain: skincare-saas-content
+  version: "1.0"
+
+global_rules:
+  - "Todos os outputs são documentos Markdown (.md) APENAS"
+  - "Nenhum squad gera ou modifica código"
+  - "Validação humana obrigatória antes de qualquer handoff ao @dev"
+  - "P1 (idade) sempre primeira pergunta do quiz — imutável"
+  - "Content-first: copy define o produto, código implementa o conteúdo"
+
+analysis:
+  entities:
+    - SkinProfile (8 perfis primários)
+    - QuizQuestion (14 base + 3 condicionais)
+    - Nutrientes Caps (8 ativos)
+    - Nutrientes Serum (8 ativos)
+    - Marina (persona — 4 segmentos)
+    - Copy (hero, projeção, nutrientes, CTA, FAQ, depoimentos)
+  workflows:
+    - criar-diagnostico
+    - escrever-copy-resultado
+    - otimizar-quiz
+    - analisar-conversao
+    - validar-claims-cientificos
+    - criar-rotinas-por-perfil
+  stakeholders:
+    active:
+      - Marina (usuária final — referência para copy)
+      - Especialista científica (autoridade de conteúdo)
+      - Copywriter DR (criadora de copy)
+      - Você (validador e aprovador)
+    future:
+      - "@dev (implementa APÓS validação completa — fora do escopo dos squads)"
+  data_sources:
+    - docs/referencias/produtos/substancias-caps.md
+    - docs/referencias/produtos/substancias-serum.md
+    - docs/conteudo/diagnostico/matriz-perfil-problema.md
+    - docs/referencias/publico-alvo/persona.md
+    - docs/referencias/branding/tom-de-voz.md
+
+squads:
+
+  # ─────────────────────────────────────────
+  # CAMADA 1 — CIÊNCIA & CONTEÚDO (Fundação)
+  # ─────────────────────────────────────────
+
+  - id: skinbella-diagnostico
+    name: "Squad Diagnóstico Científico"
+    layer: 1
+    description: "Define o conhecimento científico que fundamenta todas as recomendações do produto"
+    path: "./squads/skinbella-diagnostico/"
+    confidence: 0.97
+
+    agents:
+      - id: cientista
+        name: "Dra. Lara"
+        persona: "Nutricionista Funcional + Dermatologista Clínica"
+        icon: "🔬"
+        whenToUse: "Gerar e validar conteúdo científico de diagnóstico e recomendações de pele"
+        confidence: 0.97
+        user_added: false
+        user_modified: false
+
+        commands:
+          - name: criar-rotinas
+            description: "Gera rotina manhã/noite por perfil de pele"
+          - name: criar-recomendacoes-nutri
+            description: "Define qual nutriente para qual perfil com justificativa científica"
+          - name: validar-claims
+            description: "Verifica base científica defensável de qualquer afirmação"
+          - name: criar-biblioteca-frases
+            description: "Gera biblioteca de frases clínicas para a tela de resultado"
+          - name: criar-dieta-por-perfil
+            description: "Define alimentos a priorizar/reduzir por perfil"
+
+    tasks:
+      - name: criar-rotinas
+        agent: cientista
+        entrada:
+          - perfil_id
+          - tipo_pele
+          - problema_principal
+          - substancias-caps.md (referência)
+          - substancias-serum.md (referência)
+        saida: docs/conteudo/diagnostico/rotinas-por-perfil.md
+        confidence: 0.95
+
+      - name: criar-recomendacoes-nutri
+        agent: cientista
+        entrada:
+          - perfil_id
+          - substancias-caps.md
+          - substancias-serum.md
+          - matriz-perfil-problema.md
+        saida: docs/conteudo/diagnostico/nutrientes-por-perfil.md
+        confidence: 0.94
+
+      - name: validar-claims
+        agent: cientista
+        entrada:
+          - doc_path (qualquer doc de copy a validar)
+          - lista_de_claims
+        saida: docs/conteudo/diagnostico/claims-validados.md
+        confidence: 0.92
+
+      - name: criar-biblioteca-frases
+        agent: cientista
+        entrada:
+          - matriz-perfil-problema.md
+          - 8 perfis primários
+          - tom-de-voz.md
+        saida: docs/conteudo/diagnostico/frases-diagnostico.md
+        confidence: 0.90
+
+      - name: criar-dieta-por-perfil
+        agent: cientista
+        entrada:
+          - perfil_id
+          - causa_raiz
+          - matriz-perfil-problema.md
+        saida: docs/conteudo/diagnostico/dieta-por-perfil.md
+        confidence: 0.89
+
+    existing_outputs:
+      - docs/conteudo/diagnostico/matriz-perfil-problema.md  # ✓ já criado
+
+  - id: skinbella-copy
+    name: "Squad Copy & Resultado"
+    layer: 1
+    description: "Escreve todos os textos do resultado do quiz, personalizados por perfil, com foco em conversão"
+    path: "./squads/skinbella-copy/"
+    confidence: 0.96
+
+    agents:
+      - id: copywriter
+        name: "Val"
+        persona: "Copywriter Direct Response especializada em saúde & beleza feminina"
+        icon: "✍️"
+        whenToUse: "Escrever copy personalizada por perfil para todas as seções da tela de resultado"
+        confidence: 0.96
+        user_added: false
+        user_modified: false
+
+        commands:
+          - name: escrever-hero
+            description: "Headline + subtítulo diagnóstico por perfil"
+          - name: escrever-significado
+            description: "Seção 'O que isso significa' por perfil (MeaningCard)"
+          - name: escrever-projecao
+            description: "Marcos D7/D20/D60 por perfil (ProjectionCard)"
+          - name: escrever-nutrientes
+            description: "Copy de cada nutriente — porquê + o que vai sentir"
+          - name: escrever-depoimentos
+            description: "Depoimentos segmentados por perfil e segmento de Marina"
+          - name: escrever-cta
+            description: "Variações de CTA para A/B test"
+          - name: escrever-faq
+            description: "FAQ de quebra de objeções por perfil"
+          - name: escrever-oferta
+            description: "Copy do OfferCard e LockedReportCard por perfil"
+
+    tasks:
+      - name: escrever-significado
+        agent: copywriter
+        entrada:
+          - perfil_id
+          - hero-por-perfil.md
+          - matriz-perfil-problema.md
+          - tom-de-voz.md
+        saida: docs/conteudo/copy-resultado/significado-por-perfil.md
+        confidence: 0.96
+        status: pendente
+
+      - name: escrever-hero
+        agent: copywriter
+        entrada: [perfil_id, tom-de-voz.md, persona.md]
+        saida: docs/conteudo/copy-resultado/hero-por-perfil.md
+        confidence: 0.94
+        status: concluido
+
+      - name: escrever-projecao
+        agent: copywriter
+        entrada: [perfil_id, causa_raiz, prazo_protocolo]
+        saida: docs/conteudo/copy-resultado/projecao-por-perfil.md
+        confidence: 0.93
+        status: concluido
+
+      - name: escrever-nutrientes
+        agent: copywriter
+        entrada: [perfil_id, substancias-caps.md, substancias-serum.md]
+        saida: docs/conteudo/copy-resultado/nutrientes-copy.md
+        confidence: 0.92
+        status: concluido
+
+      - name: escrever-depoimentos
+        agent: copywriter
+        entrada: [perfil_id, segmento_marina, dor_principal]
+        saida: docs/conteudo/resultado/provas-sociais.md
+        confidence: 0.91
+        status: concluido
+
+      - name: escrever-cta
+        agent: copywriter
+        entrada: [perfil_id, hipoteses_ab]
+        saida: docs/conteudo/copy-resultado/cta-variacoes.md
+        confidence: 0.90
+        status: concluido
+
+      - name: escrever-faq
+        agent: copywriter
+        entrada: [objecoes_por_perfil, persona.md]
+        saida: docs/conteudo/resultado/faq-resultado.md
+        confidence: 0.90
+        status: concluido
+
+      - name: escrever-oferta
+        agent: copywriter
+        entrada: [perfil_id, itens_inclusos, preco]
+        saida: docs/conteudo/resultado/oferta-copy.md
+        confidence: 0.90
+        status: concluido
+
+    existing_outputs:
+      - docs/conteudo/copy-resultado/hero-por-perfil.md       # ✓ concluído
+      - docs/conteudo/copy-resultado/projecao-por-perfil.md   # ✓ concluído
+      - docs/conteudo/copy-resultado/nutrientes-copy.md       # ✓ concluído
+      - docs/conteudo/copy-resultado/cta-variacoes.md         # ✓ concluído
+      - docs/conteudo/resultado/provas-sociais.md             # ✓ concluído
+      - docs/conteudo/resultado/faq-resultado.md              # ✓ concluído
+      - docs/conteudo/resultado/oferta-copy.md                # ✓ concluído
+
+  # ─────────────────────────────────────────
+  # CAMADA 2 — EXPERIÊNCIA DO PRODUTO
+  # ─────────────────────────────────────────
+
+  - id: skinbella-quiz
+    name: "Squad Quiz Experience"
+    layer: 2
+    description: "Otimiza o quiz para máxima taxa de conclusão e qualidade dos dados coletados"
+    path: "./squads/skinbella-quiz/"
+    confidence: 0.93
+    depends_on: [skinbella-diagnostico, skinbella-copy]
+
+    agents:
+      - id: ux-writer
+        name: "Bia"
+        persona: "UX Writer + Especialista em Quiz de Conversão"
+        icon: "🧪"
+        whenToUse: "Otimizar copy e estrutura do quiz para máxima conclusão e identificação emocional"
+        confidence: 0.93
+        user_added: false
+        user_modified: false
+
+        commands:
+          - name: auditar-perguntas
+            description: "Análise de atrito e valor de personalização por pergunta"
+          - name: reescrever-perguntas
+            description: "Copy v2 com tom SKINBELLA e jornada emocional crescente"
+          - name: mapear-branching
+            description: "Define quais respostas disparam quais perguntas condicionais"
+          - name: otimizar-processamento
+            description: "5 mensagens dos 7 segundos de loading"
+          - name: analisar-atrito
+            description: "Identifica pontos de abandono e propõe soluções"
+
+    tasks:
+      - name: mapear-branching
+        agent: ux-writer
+        entrada:
+          - perguntas-v2.md
+          - analise-perguntas-originais.md
+          - matriz-perfil-problema.md
+        saida: docs/conteudo/quiz/branching-logic.md
+        confidence: 0.95
+        status: pendente
+
+      - name: criar-micro-textos
+        agent: ux-writer
+        entrada: [tom-de-voz.md, persona.md]
+        saida: docs/conteudo/quiz/micro-textos.md
+        confidence: 0.93
+        status: pendente
+
+      - name: otimizar-processamento
+        agent: ux-writer
+        entrada: [perfil_id, jornada_emocional_quiz]
+        saida: docs/conteudo/quiz/copy-processamento.md
+        confidence: 0.91
+        status: pendente
+
+      - name: auditar-perguntas
+        agent: ux-writer
+        entrada: [perguntas-v2.md, analise-perguntas-originais.md]
+        saida: docs/conteudo/quiz/auditoria-atrito.md
+        confidence: 0.90
+        status: pendente
+
+    existing_outputs:
+      - docs/conteudo/quiz/perguntas-v2.md                  # ✓ concluído
+      - docs/conteudo/quiz/analise-perguntas-originais.md   # ✓ concluído
+
+  - id: skinbella-resultado
+    name: "Squad Resultado & Conversão"
+    layer: 2
+    description: "Otimiza a tela de resultado para máxima conversão — do diagnóstico ao CTA"
+    path: "./squads/skinbella-resultado/"
+    confidence: 0.91
+    depends_on: [skinbella-copy]
+
+    agents:
+      - id: cro-specialist
+        name: "Gabi"
+        persona: "CRO Specialist + Growth Hacker focada em conversão da tela de resultado"
+        icon: "📈"
+        whenToUse: "Mapear, analisar e otimizar cada seção da ResultScreen para conversão"
+        confidence: 0.91
+        user_added: false
+        user_modified: false
+
+        commands:
+          - name: mapear-resultado
+            description: "Mapeia cada seção da ResultScreen com objetivo de conversão"
+          - name: analisar-hipoteses
+            description: "Prioriza hipóteses de A/B test por impacto esperado"
+          - name: criar-sticky-cta
+            description: "Variações do sticky CTA por perfil e segmento"
+          - name: criar-urgencia
+            description: "Copy de urgência e escassez ética por perfil"
+          - name: auditar-resultado
+            description: "Gap analysis da tela atual vs estrutura ideal"
+
+    tasks:
+      - name: mapear-resultado
+        agent: cro-specialist
+        entrada:
+          - todas as seções da ResultScreen
+          - oferta-copy.md
+          - provas-sociais.md
+          - faq-resultado.md
+        saida: docs/conteudo/resultado/mapa-resultado.md
+        confidence: 0.94
+        status: pendente
+
+      - name: criar-sticky-cta
+        agent: cro-specialist
+        entrada: [perfil_id, cta-variacoes.md]
+        saida: docs/conteudo/resultado/sticky-cta-variacoes.md
+        confidence: 0.92
+        status: pendente
+
+      - name: analisar-hipoteses
+        agent: cro-specialist
+        entrada: [mapa-resultado.md, metricas_hipoteticas]
+        saida: docs/conteudo/resultado/hipoteses-ab.md
+        confidence: 0.91
+        status: pendente
+
+      - name: criar-urgencia
+        agent: cro-specialist
+        entrada: [perfil_id, gatilhos_eticos]
+        saida: docs/conteudo/resultado/urgencia-copy.md
+        confidence: 0.88
+        status: pendente
+
+    existing_outputs:
+      - docs/conteudo/resultado/provas-sociais.md    # ✓ concluído
+      - docs/conteudo/resultado/faq-resultado.md     # ✓ concluído
+      - docs/conteudo/resultado/oferta-copy.md       # ✓ concluído
+
+metadata:
+  created_at: "2026-02-24"
+  created_by: "@squad-creator (Craft)"
+  source_docs:
+    - docs/squad-strategy.md
+    - docs/referencias/publico-alvo/persona.md
+    - docs/referencias/branding/tom-de-voz.md
+    - docs/conteudo/diagnostico/matriz-perfil-problema.md
+    - docs/conteudo/copy-resultado/hero-por-perfil.md
+    - docs/conteudo/quiz/perguntas-v2.md
+  user_adjustments: 1
+  overall_confidence: 0.94
+
+next_steps:
+  1: "*create-squad skinbella-diagnostico --from-design ./squads/.designs/skinbella-squads-design.yaml"
+  2: "*create-squad skinbella-copy --from-design ./squads/.designs/skinbella-squads-design.yaml"
+  3: "*create-squad skinbella-quiz --from-design ./squads/.designs/skinbella-squads-design.yaml"
+  4: "*create-squad skinbella-resultado --from-design ./squads/.designs/skinbella-squads-design.yaml"

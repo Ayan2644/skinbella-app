@@ -1,0 +1,56 @@
+name: skinbella-copy
+version: 1.0.0
+description: >
+  Squad de copy e resultado — escreve todos os textos da tela de resultado
+  do quiz, personalizados por perfil, com foco em conversão e identificação
+  emocional. Camada 1 (Fundação). Depende de skinbella-diagnostico.
+author: SKINBELLA Content Team
+license: UNLICENSED
+slashPrefix: skinbella-copy
+
+aios:
+  minVersion: "2.1.0"
+  type: squad
+
+global_rules:
+  - "Todos os outputs são documentos Markdown (.md) APENAS"
+  - "Nenhum squad gera ou modifica código"
+  - "Validação humana obrigatória antes de qualquer handoff ao @dev"
+  - "Tom de voz: consultar docs/referencias/branding/tom-de-voz.md sempre"
+
+components:
+  agents:
+    - copywriter.md
+  tasks:
+    - copywriter-escrever-hero.md
+    - copywriter-escrever-significado.md
+    - copywriter-escrever-projecao.md
+    - copywriter-escrever-nutrientes.md
+    - copywriter-escrever-depoimentos.md
+    - copywriter-escrever-cta.md
+    - copywriter-escrever-faq.md
+    - copywriter-escrever-oferta.md
+  checklists:
+    - copywriter-quality-gate.md
+  data:
+    - refs-hero-existente.md
+    - refs-tom-de-voz.md
+    - refs-persona.md
+    - refs-matriz-perfil.md
+    - refs-substancias-caps.md
+    - refs-substancias-serum.md
+
+config:
+  extends: extend
+  coding-standards: config/coding-standards.md
+
+dependencies:
+  squads:
+    - skinbella-diagnostico
+
+tags:
+  - skinbella
+  - copy
+  - resultado
+  - conversao
+  - camada-1

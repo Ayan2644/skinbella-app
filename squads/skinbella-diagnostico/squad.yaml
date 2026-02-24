@@ -1,0 +1,53 @@
+name: skinbella-diagnostico
+version: 1.0.0
+description: >
+  Squad de ciência e diagnóstico — define o conhecimento científico que
+  fundamenta todas as recomendações e diagnósticos do produto SKINBELLA.
+  Camada 1 (Fundação) — base de todos os outros squads.
+author: SKINBELLA Content Team
+license: UNLICENSED
+slashPrefix: skinbella-diagnostico
+
+aios:
+  minVersion: "2.1.0"
+  type: squad
+
+global_rules:
+  - "Todos os outputs são documentos Markdown (.md) APENAS"
+  - "Nenhum squad gera ou modifica código"
+  - "Validação humana obrigatória antes de qualquer handoff ao @dev"
+  - "Claims científicos devem ter referência publicada ou base defensável"
+
+components:
+  agents:
+    - cientista.md
+  tasks:
+    - cientista-criar-rotinas.md
+    - cientista-criar-recomendacoes-nutri.md
+    - cientista-validar-claims.md
+    - cientista-criar-biblioteca-frases.md
+    - cientista-criar-dieta-por-perfil.md
+  workflows: []
+  checklists:
+    - cientista-quality-gate.md
+  templates:
+    - rotina-output-tmpl.md
+  data:
+    - refs-substancias-caps.md
+    - refs-substancias-serum.md
+    - refs-matriz-perfil.md
+
+config:
+  extends: extend
+  coding-standards: config/coding-standards.md
+  tech-stack: config/tech-stack.md
+
+dependencies:
+  squads: []
+
+tags:
+  - skinbella
+  - diagnostico
+  - ciencia
+  - conteudo
+  - camada-1
