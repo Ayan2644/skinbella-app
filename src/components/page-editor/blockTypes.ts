@@ -51,6 +51,17 @@ export const SECTION_STYLE_VARIANTS = [
   { value: "gradient", label: "Gradiente", description: "Gradiente accent suave" },
 ] as const;
 
+/** Background variants for inner_section child blocks */
+export const INNER_SECTION_BG_VARIANTS = [
+  { value: "warm", label: "Bege Quente", description: "Como a seção de projeção" },
+  { value: "accent", label: "Accent Suave", description: "Fundo com cor accent" },
+  { value: "dark", label: "Escuro", description: "Fundo escuro com texto claro" },
+  { value: "muted", label: "Neutro", description: "Fundo muted sutil" },
+  { value: "custom", label: "Cor Customizada", description: "Escolha sua cor" },
+] as const;
+
+export type InnerSectionBgVariant = (typeof INNER_SECTION_BG_VARIANTS)[number]["value"];
+
 export type SectionStyleVariant = (typeof SECTION_STYLE_VARIANTS)[number]["value"];
 
 /** Common Lucide icon names available in the icon selector */
@@ -222,6 +233,25 @@ export const CHILD_BLOCK_TYPES: readonly ChildBlockDef[] = [
     category: "layout",
     defaultContent: { height: 24 },
     defaultStyles: {},
+  },
+  {
+    type: "inner_section",
+    label: "Seção Interna",
+    icon: LayoutTemplate,
+    category: "layout",
+    defaultContent: {
+      bgVariant: "warm",
+      children: [
+        {
+          id: crypto.randomUUID(),
+          block_type: "heading",
+          content: { text: "Você pode reverter de 2 a 4 anos na aparência da sua pele!", level: "h2" },
+          styles: { fontSize: "18px", fontFamily: "Playfair Display", textAlign: "center", padding: "4px 0" },
+          is_visible: true,
+        },
+      ],
+    },
+    defaultStyles: { padding: "0" },
   },
   {
     type: "divider",

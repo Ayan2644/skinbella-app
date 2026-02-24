@@ -14,7 +14,7 @@ import MiniFAQ from "@/components/quiz/result/MiniFAQ";
 import ResultCard from "@/components/quiz/result/ResultCard";
 import { getLucideIcon } from "./LucideIconPicker";
 import type { PageBlock } from "@/hooks/usePageBlocks";
-import type { SectionStyleVariant } from "./blockTypes";
+import type { SectionStyleVariant, InnerSectionBgVariant } from "./blockTypes";
 
 interface BlockRendererProps {
   block: PageBlock;
@@ -267,6 +267,35 @@ function ChildBlockRenderer({ child, profile, onAction }: { child: any; profile?
           <span className="text-sm text-foreground/80">
             <strong className="text-foreground">+{content.count}</strong> {content.text}
           </span>
+        </div>
+      );
+    }
+
+    case "inner_section": {
+      const bgVariant = (content.bgVariant || "warm") as InnerSectionBgVariant;
+      const bgMap: Record<string, string> = {
+        warm: "bg-[#FDF8F3] border-[#f0e6d6]",
+        accent: "bg-accent/10 border-accent/20",
+        dark: "bg-[#1a1a2e] border-[#2a2a3e] text-white",
+        muted: "bg-muted/50 border-border/30",
+        custom: "",
+      };
+      const bgCls = bgMap[bgVariant] || bgMap.warm;
+      const customBg = bgVariant === "custom" && content.customBgColor ? { backgroundColor: content.customBgColor } : {};
+      const innerChildren: any[] = content.children || [];
+      return (
+        <div
+          style={{ ...st, ...customBg }}
+          className={cn("rounded-2xl border p-5 space-y-1", bgCls)}
+        >
+          {innerChildren
+            .filter((c: any) => c.is_visible !== false)
+            .map((child: any, idx: number) => (
+              <ChildBlockRenderer key={child.id || idx} child={child} profile={profile} onAction={onAction} />
+            ))}
+          {innerChildren.length === 0 && (
+            <p className="text-sm text-muted-foreground/50 text-center py-4 italic">Seção interna vazia</p>
+          )}
         </div>
       );
     }
