@@ -15,9 +15,10 @@ const Today = () => {
   const { toast } = useToast();
   const streak = storage.getStreak();
   const morningDone = storage.getRoutineStatus('morning');
-  const checklist = storage.getChecklist() ?? [];
-  const doneCount = checklist.filter(c => c.done).length;
-  const totalCount = checklist.length || 4;
+  const checklist = storage.getChecklist();
+  const safeChecklist = Array.isArray(checklist) ? checklist : [];
+  const doneCount = safeChecklist.filter(c => c.done).length;
+  const totalCount = safeChecklist.length || 4;
   const progressPercent = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
   const fileRef = useRef<HTMLInputElement>(null);
 

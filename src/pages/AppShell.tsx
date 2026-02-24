@@ -208,7 +208,7 @@ const AppShell = () => {
       {/* Content */}
       <main className="flex-1 pb-20 md:pb-0 overflow-auto">
         <div className={`mx-auto px-5 py-6 animate-fade-in ${location.pathname.startsWith('/app/admin') ? 'max-w-6xl md:px-8' : 'max-w-2xl'}`}>
-          <ErrorBoundary>
+          <ErrorBoundary key={location.pathname}>
             <Outlet />
           </ErrorBoundary>
         </div>
