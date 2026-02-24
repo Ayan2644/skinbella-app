@@ -50,8 +50,8 @@ export default function BlockCanvas({
 
   // Get the selected block to check for children
   const selectedBlock = blocks.find((b) => b.id === selectedId);
-  const isCustomSection = selectedBlock?.block_type === "section_custom";
-  const sectionChildren: any[] = isCustomSection ? (selectedBlock?.content?.children || []) : [];
+  const isSectionWithChildren = selectedBlock?.block_type.startsWith("section_") && selectedBlock?.block_type !== "section_hero";
+  const sectionChildren: any[] = isSectionWithChildren ? (selectedBlock?.content?.children || []) : [];
 
   // Check if selectedChildId is an inner_section
   const selectedChildBlock = sectionChildren.find((c: any) => c.id === selectedChildId);
@@ -100,7 +100,7 @@ export default function BlockCanvas({
                     />
 
                     {/* Expanded children area for selected custom section */}
-                    {block.id === selectedId && block.block_type === "section_custom" && (
+                    {block.id === selectedId && block.block_type.startsWith("section_") && block.block_type !== "section_hero" && (
                       <div className="ml-6 mt-1 mb-2 pl-3 border-l-2 border-primary/30">
                         <p className="text-[9px] uppercase tracking-widest text-primary/60 font-semibold mb-1 px-1">
                           Blocos internos
@@ -130,7 +130,7 @@ export default function BlockCanvas({
                     )}
 
                     {/* Inner section children */}
-                    {block.id === selectedId && block.block_type === "section_custom" && isInnerSection && selectedChildId && (
+                    {block.id === selectedId && block.block_type.startsWith("section_") && block.block_type !== "section_hero" && isInnerSection && selectedChildId && (
                       <div className="ml-12 mt-1 mb-2 pl-3 border-l-2 border-accent/30">
                         <p className="text-[9px] uppercase tracking-widest text-accent/60 font-semibold mb-1 px-1">
                           Blocos da seção interna

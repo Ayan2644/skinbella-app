@@ -71,7 +71,7 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
 
   const activeContent = activeBlock?.content || {};
   const activeStyles = activeBlock?.styles || {};
-  const isSection = block.block_type === "section_custom" && !editingChild;
+  const isSection = block.block_type.startsWith("section_") && block.block_type !== "section_hero" && !editingChild;
 
   // Helper for list-based items
   const updateItemAt = (key: string, idx: number, val: any) => {
@@ -103,7 +103,7 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
         </div>
       )}
 
-      {/* === Section Custom Properties === */}
+      {/* === Section Properties (all sections except hero) === */}
       {isSection && (
         <>
           <div>
@@ -128,9 +128,9 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
         </>
       )}
 
-      {/* Pre-built section info */}
-      {block.block_type.startsWith("section_") && block.block_type !== "section_custom" && !editingChild && (
-        <p className="text-[11px] text-muted-foreground leading-relaxed">Seção pré-montada. Oculte, reordene ou exclua usando os controles.</p>
+      {/* Hero section info */}
+      {block.block_type === "section_hero" && !editingChild && (
+        <p className="text-[11px] text-muted-foreground leading-relaxed">Seção Hero é fixa e vinculada ao resultado do quiz. Reordene ou oculte usando os controles.</p>
       )}
 
       {/* === heading / text === */}
@@ -248,7 +248,24 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
       {/* === checklist === */}
       {activeType === "checklist" && (
         <div>
-          <Label className="text-xs">Itens do checklist</Label>
+          <Label className="text-xs">Estilo do marcador</Label>
+          <Select value={activeContent.bulletStyle || "check"} onValueChange={(v) => updateContent("bulletStyle", v)}>
+            <SelectTrigger className="mt-1 text-xs h-8"><SelectValue /></SelectTrigger>
+            <SelectContent className="bg-popover z-50">
+              <SelectItem value="check">✓ Check</SelectItem>
+              <SelectItem value="dot">● Ponto</SelectItem>
+              <SelectItem value="dash">— Traço</SelectItem>
+              <SelectItem value="number">1. Número</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="mt-2">
+            <Label className="text-xs">Cor do marcador</Label>
+            <div className="flex gap-2 mt-1">
+              <input type="color" value={activeContent.checkColor || "#10b981"} onChange={(e) => updateContent("checkColor", e.target.value)} className="w-8 h-8 rounded border cursor-pointer" />
+              <Input value={activeContent.checkColor || ""} onChange={(e) => updateContent("checkColor", e.target.value)} className="text-xs h-8 flex-1" placeholder="Padrão" />
+            </div>
+          </div>
+          <Label className="text-xs mt-3 block">Itens do checklist</Label>
           <div className="space-y-1.5 mt-2">
             {(activeContent.items || []).map((item: string, i: number) => (
               <div key={i} className="flex gap-1">

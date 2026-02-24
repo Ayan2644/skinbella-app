@@ -149,19 +149,33 @@ function ChildBlockRenderer({ child, profile, onAction }: { child: any; profile?
       );
     }
 
-    case "checklist":
+    case "checklist": {
+      const bulletStyle = content.bulletStyle || "check";
+      const checkColor = content.checkColor || "";
       return (
         <div style={st} className="space-y-2.5">
           {(content.items || []).map((item: string, i: number) => (
             <div key={i} className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Check className="w-3 h-3 text-emerald-400" />
-              </div>
+              {bulletStyle === "dot" ? (
+                <span
+                  className="w-[6px] h-[6px] rounded-full flex-shrink-0 mt-[7px]"
+                  style={{ backgroundColor: checkColor || '#C8A96B' }}
+                />
+              ) : bulletStyle === "number" ? (
+                <span className="text-sm font-bold flex-shrink-0 mt-0.5" style={{ color: checkColor || undefined }}>{i + 1}.</span>
+              ) : bulletStyle === "dash" ? (
+                <span className="text-sm flex-shrink-0 mt-0.5" style={{ color: checkColor || undefined }}>—</span>
+              ) : (
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: checkColor ? `${checkColor}20` : 'rgba(16,185,129,0.2)' }}>
+                  <Check className="w-3 h-3" style={{ color: checkColor || '#34d399' }} />
+                </div>
+              )}
               <span className="text-sm text-foreground/80">{replaceVars(item, profile)}</span>
             </div>
           ))}
         </div>
       );
+    }
 
     case "checklist_emoji":
       return (
@@ -349,20 +363,41 @@ export default function BlockRenderer({ block, profile, onAction }: BlockRendere
   switch (block_type) {
     case "section_hero":
       return <HeroResult skinAge={Number(profile?.skinAge ?? 35)} scores={scoreSnapshot} />;
+
     case "section_meaning":
-      return <MeaningCard skinAge={Number(profile?.skinAge ?? 35)} />;
     case "section_projection":
-      return <ProjectionCard skinAge={Number(profile?.skinAge ?? 35)} onAccess={onCheckout} />;
     case "section_protocol":
-      return <ProtocolBrandCard />;
     case "section_locked_report":
-      return <LockedReportCard />;
     case "section_offer":
-      return <OfferCard onAccess={onCheckout} />;
     case "section_testimonials":
-      return <Testimonials />;
-    case "section_faq":
-      return <MiniFAQ />;
+    case "section_faq": {
+      const hasChildren = content.children && content.children.length > 0;
+      if (hasChildren) {
+        const sectionStyle = (content.sectionStyle || "premium") as SectionStyleVariant;
+        return (
+          <SectionWrapper variant={sectionStyle} title={content.title}>
+            <div className="space-y-1">
+              {content.children
+                .filter((c: any) => c.is_visible !== false)
+                .map((child: any, idx: number) => (
+                  <ChildBlockRenderer key={child.id || idx} child={child} profile={profile} onAction={onAction} />
+                ))}
+            </div>
+          </SectionWrapper>
+        );
+      }
+      // Fallback to static components for backward compatibility
+      switch (block_type) {
+        case "section_meaning": return <MeaningCard skinAge={Number(profile?.skinAge ?? 35)} />;
+        case "section_projection": return <ProjectionCard skinAge={Number(profile?.skinAge ?? 35)} onAccess={onCheckout} />;
+        case "section_protocol": return <ProtocolBrandCard />;
+        case "section_locked_report": return <LockedReportCard />;
+        case "section_offer": return <OfferCard onAccess={onCheckout} />;
+        case "section_testimonials": return <Testimonials />;
+        case "section_faq": return <MiniFAQ />;
+        default: return null;
+      }
+    }
 
     case "sticky_cta": {
       const badges: string[] = content.badges || ["Checkout seguro", "Acesso imediato", "Suporte"];

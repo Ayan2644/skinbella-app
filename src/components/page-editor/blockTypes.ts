@@ -275,7 +275,7 @@ export const CHILD_BLOCK_TYPES: readonly ChildBlockDef[] = [
     label: "Checklist",
     icon: ListChecks,
     category: "lists",
-    defaultContent: { items: ["Benefício número um", "Benefício número dois", "Benefício número três"] },
+    defaultContent: { items: ["Benefício número um", "Benefício número dois", "Benefício número três"], bulletStyle: "check", checkColor: "#10b981" },
     defaultStyles: { padding: "8px 0" },
   },
   {
@@ -407,13 +407,13 @@ export const CHILD_BLOCK_CATEGORIES: { key: ChildBlockCategory; label: string }[
 /** Top-level blocks shown in the toolbar (sections) */
 export const BLOCK_TYPES = [
   { type: "section_hero", label: "Seção: Hero", icon: LayoutTemplate, defaultContent: {}, defaultStyles: {} },
-  { type: "section_meaning", label: "Seção: Significado", icon: CircleDot, defaultContent: {}, defaultStyles: {} },
-  { type: "section_projection", label: "Seção: Projeção", icon: TrendingUp, defaultContent: {}, defaultStyles: {} },
-  { type: "section_protocol", label: "Seção: Protocolo", icon: Sparkles, defaultContent: {}, defaultStyles: {} },
-  { type: "section_locked_report", label: "Seção: Relatório", icon: Lock, defaultContent: {}, defaultStyles: {} },
-  { type: "section_offer", label: "Seção: Oferta", icon: Tag, defaultContent: {}, defaultStyles: {} },
-  { type: "section_testimonials", label: "Seção: Depoimentos", icon: MessageSquare, defaultContent: {}, defaultStyles: {} },
-  { type: "section_faq", label: "Seção: FAQ", icon: HelpCircle, defaultContent: {}, defaultStyles: {} },
+  { type: "section_meaning", label: "Seção: Significado", icon: CircleDot, defaultContent: { title: "O que isso significa", sectionStyle: "premium" as SectionStyleVariant, children: [] as any[] }, defaultStyles: {} },
+  { type: "section_projection", label: "Seção: Projeção", icon: TrendingUp, defaultContent: { title: "Projeção com o Protocolo", sectionStyle: "premium" as SectionStyleVariant, children: [] as any[] }, defaultStyles: {} },
+  { type: "section_protocol", label: "Seção: Protocolo", icon: Sparkles, defaultContent: { title: "", sectionStyle: "simple" as SectionStyleVariant, children: [] as any[] }, defaultStyles: {} },
+  { type: "section_locked_report", label: "Seção: Relatório", icon: Lock, defaultContent: { title: "", sectionStyle: "premium" as SectionStyleVariant, children: [] as any[] }, defaultStyles: {} },
+  { type: "section_offer", label: "Seção: Oferta", icon: Tag, defaultContent: { title: "", sectionStyle: "premium" as SectionStyleVariant, children: [] as any[] }, defaultStyles: {} },
+  { type: "section_testimonials", label: "Seção: Depoimentos", icon: MessageSquare, defaultContent: { title: "", sectionStyle: "transparent" as SectionStyleVariant, children: [] as any[] }, defaultStyles: {} },
+  { type: "section_faq", label: "Seção: FAQ", icon: HelpCircle, defaultContent: { title: "", sectionStyle: "transparent" as SectionStyleVariant, children: [] as any[] }, defaultStyles: {} },
   {
     type: "section_custom",
     label: "✨ Nova Seção",

@@ -36,17 +36,17 @@ export default function PageEditor() {
     }
   }
 
-  // Is selected block a custom section?
+  // Is selected block a section with children?
   const selectedBlock = blocks.find((b) => b.id === selectedId) ?? null;
-  const isCustomSection = selectedBlock?.block_type === "section_custom";
-  const selectedSectionId = isCustomSection ? selectedId : null;
+  const isSectionWithChildren = selectedBlock?.block_type.startsWith("section_") && selectedBlock?.block_type !== "section_hero";
+  const selectedSectionId = isSectionWithChildren ? selectedId : null;
 
   // Selected child block
   const selectedChild = useMemo(() => {
-    if (!isCustomSection || !selectedChildId || !selectedBlock) return null;
+    if (!isSectionWithChildren || !selectedChildId || !selectedBlock) return null;
     const children: any[] = selectedBlock.content?.children || [];
     return children.find((c: any) => c.id === selectedChildId) ?? null;
-  }, [isCustomSection, selectedChildId, selectedBlock]);
+  }, [isSectionWithChildren, selectedChildId, selectedBlock]);
 
   // Is the selected child an inner_section? If so, toolbar should target it
   const isSelectedChildInnerSection = selectedChild?.block_type === "inner_section";
