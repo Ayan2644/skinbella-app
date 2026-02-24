@@ -1,182 +1,187 @@
 
 
-# Editor de Pagina Profissional (Estilo Elementor) - Pagina de Resultado do Quiz
+# Plano: Expansao dos Blocos Filhos para Secoes Customizadas
 
-## Visao Geral
+## Contexto
 
-Criar um editor visual completo na area admin para customizar a pagina de resultado do quiz. O editor permitira drag-and-drop de blocos, edicao de textos, fontes, cores, tamanhos, upload de imagens e um elemento de codigo customizado -- tudo salvo no banco de dados.
+Hoje o `section_custom` suporta 8 tipos de blocos filhos basicos (heading, text, image, button, spacer, chart, code, divider). Precisamos expandir drasticamente a paleta inspirando-nos nos elementos que ja existem nas secoes pre-montadas (Offer, Testimonials, LockedReport, Projection, FAQ), criando versoes modulares e editaveis desses mesmos padroes.
 
 ---
 
-## Arquitetura
+## Novos Blocos Filhos a Adicionar
 
-O sistema tera 3 partes:
+Baseado nos componentes existentes, esses sao os novos child block types:
 
 ```text
-+------------------+       +------------------+       +-------------------+
-|  ADMIN           |       |  BANCO DE DADOS  |       |  RESULTADO QUIZ   |
-|  Page Builder     | --->  |  page_blocks     | <---  |  Renderer          |
-|  (drag-and-drop)  |       |  page_assets     |       |  (le do DB e       |
-|  /app/admin/      |       |  Storage bucket  |       |   renderiza)       |
-|  page-editor      |       |                  |       |  ResultScreen.tsx   |
-+------------------+       +------------------+       +-------------------+
+BLOCO FILHO          INSPIRADO EM                   CAMPOS EDITAVEIS
+─────────────────────────────────────────────────────────────────────
+headline_icon        ProtocolBrandCard header        texto, subtexto, icone (lucide name), nivel (h2/h3)
+headline_trigger     OfferCard header                texto, badge texto, badge cor, icone
+checklist            ProjectionCard checklist        items[]: {texto, checked}
+checklist_emoji      LockedReportCard items           items[]: {emoji, texto}
+pricing              OfferCard pricing               precoOriginal, preco, sufixo, legenda
+trust_badges         OfferCard trust badges          items[]: {icone, texto}
+testimonial          Testimonials cards              items[]: {nome, texto, estrelas(1-5), imagemUrl}
+faq_item             MiniFAQ                         items[]: {pergunta, resposta}
+social_proof         Testimonials footer             icone, texto, contagem
+badge_label          OfferCard -52% badge            texto, cor (accent/success/warning)
+icon_block           ProtocolBrandCard icon circle   icone (lucide), tamanho, corFundo
 ```
 
-### Fluxo:
-1. Admin abre o editor, carrega os blocos do banco
-2. Edita visualmente (arrastar, editar texto, subir imagem, mudar estilo)
-3. Salva no banco
-4. Quando um usuario completa o quiz, o ResultScreen le os blocos do banco e renderiza dinamicamente
-5. Se nao houver blocos salvos, exibe o layout hardcoded atual como fallback
+### Detalhes de Cada Bloco
+
+**1. `headline_icon`** — Titulo com icone circular (como ProtocolBrandCard)
+- Circulo com icone Lucide acima + h2 Playfair + subtexto
+- Props: `icon` (nome lucide), `text`, `subtitle`, `level`
+
+**2. `headline_trigger`** — Headline com gatilho/badge (como OfferCard header)
+- Titulo grande + badge flutuante tipo "-52% HOJE"
+- Props: `text`, `badgeText`, `badgeColor`, `icon`
+
+**3. `checklist`** — Lista com checks verdes (como ProjectionCard)
+- Items com circulo verde + check icon + texto
+- Props: `items[]` array de strings
+
+**4. `checklist_emoji`** — Lista com emojis (como LockedReportCard)
+- Items com emoji + texto
+- Props: `items[]` array de `{emoji, text}`
+
+**5. `pricing`** — Bloco de preco (como OfferCard pricing)
+- Preco original riscado + preco atual grande + sufixo + legenda
+- Props: `originalPrice`, `price`, `suffix`, `caption`
+
+**6. `trust_badges`** — Badges de confianca (como OfferCard footer)
+- Row horizontal com icone + texto cada
+- Props: `items[]` array de `{icon, text}`
+
+**7. `testimonial`** — Bloco de depoimentos (como Testimonials)
+- Lista de cards com avatar/imagem, nome, estrelas, texto
+- Botao "Adicionar depoimento" no painel de propriedades
+- Props: `items[]`, `headerText`
+
+**8. `faq_item`** — Bloco FAQ (como MiniFAQ)
+- Cards de pergunta/resposta empilhados
+- Botao "Adicionar pergunta" no painel
+- Props: `items[]`, `headerText`
+
+**9. `social_proof`** — Prova social inline (como "+12.400 mulheres...")
+- Icone + contagem + texto
+- Props: `icon`, `count`, `text`
+
+**10. `badge_label`** — Badge/etiqueta solta
+- Badge pill com texto e cor
+- Props: `text`, `variant` (accent/success/warning/muted)
+
+**11. `icon_block`** — Bloco de icone decorativo
+- Circulo com icone Lucide centralizado
+- Props: `icon`, `size` (sm/md/lg), `bgColor`
 
 ---
 
-## Banco de Dados
+## Arquivos a Modificar
 
-### Tabela: `page_blocks`
+### 1. `src/components/page-editor/blockTypes.ts`
+- Adicionar os 11 novos tipos ao array `CHILD_BLOCK_TYPES` com `defaultContent` e `defaultStyles` adequados
+- Importar icones Lucide necessarios (List, ListChecks, DollarSign, ShieldCheck, Quote, MessageCircle, Users, Award, CircleDot)
 
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid | PK |
-| page_id | text | Identificador da pagina (ex: "quiz_result") |
-| block_type | text | Tipo do bloco (heading, text, image, button, spacer, chart, code, offer, testimonials, faq, divider) |
-| sort_order | integer | Posicao no layout |
-| content | jsonb | Conteudo do bloco (texto, URL da imagem, codigo, etc.) |
-| styles | jsonb | Estilos (fontSize, fontFamily, color, bgColor, padding, margin, borderRadius, textAlign, maxWidth) |
-| is_visible | boolean | Se o bloco esta visivel na pagina |
-| created_at | timestamptz | |
-| updated_at | timestamptz | |
+### 2. `src/components/page-editor/BlockRenderer.tsx` — `ChildBlockRenderer`
+- Adicionar cases no switch para cada novo tipo
+- Renderizar com o visual premium identico aos componentes existentes
+- Para `testimonial`: renderizar cards no estilo `TestimonialCard` com avatar, estrelas, texto
+- Para `checklist`: renderizar com circulo verde + Check icon
+- Para `pricing`: layout de preco riscado + preco grande + sufixo
+- Para `trust_badges`: row flex horizontal com icones
 
-Exemplo de `content` por tipo:
-- **heading**: `{ "text": "Seu Resultado", "level": "h1" }`
-- **text**: `{ "text": "Baseado na analise de 12 fatores", "html": false }`
-- **image**: `{ "src": "https://...", "alt": "Foto", "objectFit": "cover" }`
-- **button**: `{ "text": "Comecar agora", "action": "checkout", "icon": "sparkles" }`
-- **spacer**: `{ "height": 32 }`
-- **chart**: `{ "chartType": "rejuvenation", "config": {} }`
-- **code**: `{ "html": "<div>...</div>", "css": "...", "description": "Widget customizado" }`
-- **offer**: `{ "title": "...", "price": "29", "originalPrice": "59", "items": [...] }`
-- **testimonials**: `{ "items": [{ "name": "Ana", "text": "...", "stars": 5 }] }`
-- **faq**: `{ "items": [{ "q": "...", "a": "..." }] }`
-- **divider**: `{ "style": "line" | "dots" | "gradient" }`
+### 3. `src/components/page-editor/BlockProperties.tsx`
+- Adicionar paineis de edicao para cada novo tipo
+- Para tipos com `items[]` (checklist, checklist_emoji, testimonial, faq_item, trust_badges):
+  - Interface de lista com botao "Adicionar item" e "Remover item"
+  - Cada item editavel inline (nao JSON bruto)
+- Para `pricing`: campos separados (preco original, preco atual, sufixo, legenda)
+- Para `headline_icon` e `headline_trigger`: campo de selecao de icone (dropdown com icones comuns)
+- Para `badge_label`: selector de variante de cor
 
-### RLS Policies:
-- SELECT: admins podem ler, usuarios anonimos tambem podem ler (para renderizar a pagina)
-- INSERT/UPDATE/DELETE: apenas admins
+### 4. `src/components/page-editor/SectionChildPreview.tsx`
+- Expandir a logica de preview para mostrar resumos dos novos tipos (ex: "3 depoimentos", "5 itens", "R$ 29/mes")
 
-### Storage Bucket: `page-assets`
-- Bucket publico para imagens uploadadas pelo editor
-- RLS: admins podem fazer upload, todos podem ler
+### 5. `src/components/page-editor/BlockToolbar.tsx`
+- Os novos tipos aparecem automaticamente porque o toolbar ja itera `CHILD_BLOCK_TYPES`
+- Organizar em sub-grupos visuais: "Conteudo", "Listas", "Conversao", "Prova Social"
 
 ---
 
-## Interface do Editor (Admin)
+## Detalhes Tecnicos
 
-### Nova rota: `/app/admin/page-editor`
-
-Layout em 3 colunas:
-
+### Selecao de Icones Lucide
+Para campos de icone (headline_icon, trust_badges, etc), criar um mini-selector com ~20 icones comuns pre-definidos:
 ```text
-+------------+------------------------+--------------+
-|  BLOCOS    |   CANVAS / PREVIEW     |  PROPRIEDADES|
-| (toolbar)  |   (drag-and-drop)      |  (sidebar)   |
-|            |                        |              |
-| + Heading  |  [Bloco 1: Heading]    | Texto: ___   |
-| + Texto    |  [Bloco 2: Image  ]    | Fonte: ___   |
-| + Imagem   |  [Bloco 3: Chart  ]    | Cor:   ___   |
-| + Botao    |  [Bloco 4: Offer  ]    | Tamanho: ___ |
-| + Espaco   |  [Bloco 5: FAQ    ]    | Padding: ___ |
-| + Grafico  |  [Bloco 6: Button ]    | BG: ___      |
-| + Codigo   |                        | Visivel: [x] |
-| + Oferta   |                        |              |
-| + Depoimt  |                        |              |
-| + FAQ      |                        |              |
-| + Divisor  |                        |              |
-+------------+------------------------+--------------+
+Sparkles, Shield, Zap, Heart, Star, Check, Lock, Users,
+HeadphonesIcon, Gift, Award, TrendingUp, Eye, Clock,
+ThumbsUp, Flame, Crown, Target, Gem, Coffee
+```
+Renderizar usando o pattern `icons[name]` do lucide-react.
+
+### Estrutura de Content para tipos com items[]
+```typescript
+// testimonial
+content: {
+  headerText: "O que dizem nossas usuarias",
+  items: [
+    { name: "Ana C.", text: "Minha pele mudou...", stars: 5, image: "" },
+  ]
+}
+
+// checklist_emoji
+content: {
+  items: [
+    { emoji: "💆", text: "Plano de skincare personalizado" },
+  ]
+}
+
+// pricing
+content: {
+  originalPrice: "59",
+  price: "29",
+  suffix: "/mes",
+  caption: "Cancele quando quiser • Acesso imediato"
+}
 ```
 
-### Funcionalidades:
-1. **Toolbar esquerda**: Lista de tipos de bloco para adicionar (clique para inserir no canvas)
-2. **Canvas central**: Lista vertical dos blocos com drag-and-drop (@dnd-kit, ja instalado)
-3. **Sidebar direita**: Painel de propriedades do bloco selecionado
-   - Editor de texto (input/textarea)
-   - Seletor de fonte (Playfair Display, Inter, system)
-   - Seletor de cor (input color)
-   - Tamanho da fonte (slider/input)
-   - Padding e margem
-   - Cor de fundo
-   - Alinhamento do texto
-   - Largura maxima
-   - Toggle de visibilidade
-   - Botao de deletar bloco
-4. **Upload de imagens**: Usa o Storage bucket para subir imagens diretamente
-5. **Elemento de codigo**: Textarea com HTML/CSS que sera renderizado via dangerouslySetInnerHTML (com sanitizacao basica)
-6. **Preview**: Os blocos no canvas mostram uma pre-visualizacao aproximada
+### Organizacao da Toolbar (Blocos da Secao)
+```text
+── Conteudo ──
+  Titulo
+  Titulo + Icone
+  Titulo + Gatilho
+  Texto
+  Imagem
+  Icone Decorativo
 
-### Barra superior:
-- Botao "Salvar" (salva todos os blocos no banco)
-- Botao "Restaurar padrao" (apaga os blocos e volta ao layout hardcoded)
-- Botao "Visualizar" (abre a pagina de resultado em nova aba com preview)
+── Listas ──
+  Checklist (check)
+  Checklist (emoji)
+  FAQ
 
----
+── Conversao ──
+  Botao
+  Preco
+  Badge/Etiqueta
 
-## Renderer (ResultScreen)
+── Prova Social ──
+  Depoimentos
+  Trust Badges
+  Prova Social
 
-O `ResultScreen.tsx` sera atualizado para:
-1. Fazer fetch dos blocos da tabela `page_blocks` onde `page_id = 'quiz_result'` e `is_visible = true`, ordenados por `sort_order`
-2. Se encontrar blocos, renderiza dinamicamente usando um componente `BlockRenderer`
-3. Se nao encontrar (tabela vazia), renderiza o layout hardcoded atual como fallback
-
-### BlockRenderer
-Componente que recebe um bloco e renderiza baseado no `block_type`:
-- `heading` -> `<h1>`, `<h2>`, etc. com estilos customizados
-- `text` -> `<p>` com estilos
-- `image` -> `<img>` com estilos
-- `button` -> `<Button>` com acao configuravel
-- `spacer` -> `<div>` com altura fixa
-- `chart` -> Renderiza o `RejuvenationChart` existente, passando skinAge do perfil
-- `code` -> `<div dangerouslySetInnerHTML>` com CSS inline
-- `offer` -> Renderiza card de oferta com dados do bloco
-- `testimonials` -> Renderiza depoimentos do bloco
-- `faq` -> Renderiza FAQ do bloco
-- `divider` -> Linha decorativa
-
-Variaveis dinamicas no texto (substituidas em runtime):
-- `{{skinAge}}` -> idade da pele do usuario
-- `{{hidratacao}}` -> score de hidratacao
-- `{{textura}}` -> score de textura
+── Layout ──
+  Espaco
+  Divisor
+  Grafico
+  Codigo
+```
 
 ---
 
-## Arquivos a Criar/Modificar
+## Resumo
 
-### Novos arquivos (7):
-1. `src/pages/admin/PageEditor.tsx` -- Pagina principal do editor
-2. `src/components/page-editor/BlockToolbar.tsx` -- Toolbar lateral de tipos de bloco
-3. `src/components/page-editor/BlockCanvas.tsx` -- Canvas central com drag-and-drop
-4. `src/components/page-editor/BlockProperties.tsx` -- Sidebar de propriedades
-5. `src/components/page-editor/BlockPreview.tsx` -- Preview de cada bloco no canvas
-6. `src/components/page-editor/BlockRenderer.tsx` -- Renderizador para producao
-7. `src/hooks/usePageBlocks.ts` -- Hook para CRUD de blocos (React Query + Supabase)
-
-### Arquivos modificados (3):
-1. `src/App.tsx` -- Adicionar rota `/app/admin/page-editor`
-2. `src/pages/AppShell.tsx` -- Adicionar item no menu admin
-3. `src/components/quiz/ResultScreen.tsx` -- Integrar com BlockRenderer (fallback para layout atual)
-
-### Migracao SQL (1):
-- Criar tabela `page_blocks` com RLS
-- Criar bucket `page-assets`
-
----
-
-## Ordem de Implementacao
-
-1. Migracoes SQL (tabela + bucket + RLS)
-2. Hook `usePageBlocks` (CRUD)
-3. `BlockRenderer` (renderizador de producao)
-4. Atualizar `ResultScreen` para usar blocos dinamicos
-5. Componentes do editor (Toolbar, Canvas, Properties, Preview)
-6. Pagina `PageEditor` montando os 3 paineis
-7. Rotas e navegacao
+Nenhuma secao existente sera alterada. Os novos blocos filhos sao modulos reutilizaveis dentro de `section_custom`, permitindo montar qualquer layout que hoje so existe hardcoded. O admin pode criar uma secao de depoimentos arrastando o bloco "Depoimentos" para dentro de uma Nova Secao, e ela automaticamente assume o visual premium com cards, estrelas e avatares — tudo editavel pelo painel de propriedades.
 
