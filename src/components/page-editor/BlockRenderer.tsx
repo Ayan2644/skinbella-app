@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Star, Check } from "lucide-react";
+import { Sparkles, Star, Check, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import RejuvenationChart from "@/components/quiz/result/RejuvenationChart";
 import HeroResult from "@/components/quiz/result/HeroResult";
@@ -363,6 +363,44 @@ export default function BlockRenderer({ block, profile, onAction }: BlockRendere
       return <Testimonials />;
     case "section_faq":
       return <MiniFAQ />;
+
+    case "sticky_cta": {
+      const badges: string[] = content.badges || ["Checkout seguro", "Acesso imediato", "Suporte"];
+      return (
+        <div className="px-4 pb-4">
+          <div className="bg-background/92 backdrop-blur-md border border-border/40 rounded-[var(--radius-card)] shadow-elegant px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-foreground truncate">
+                  {replaceVars(content.offerText || "Plano hoje com", profile)}{" "}
+                  <span className="text-destructive font-bold">{content.discountText || "-52%"}</span>
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  {content.priceText || "R$ 29/mês"} • {content.subtitleText || "Cancele quando quiser"}
+                </p>
+              </div>
+              <Button onClick={onCheckout} className="rounded-2xl h-11 px-5 text-sm font-semibold shadow-elegant flex-shrink-0">
+                {content.buttonText || "Desbloquear"}
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+            {badges.length > 0 && (
+              <div className="mt-2 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
+                {badges.map((badge: string, i: number) => (
+                  <React.Fragment key={i}>
+                    {i > 0 && <span className="opacity-50">•</span>}
+                    <span className="inline-flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                      {badge}
+                    </span>
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
 
     case "section_custom": {
       const sectionStyle = (content.sectionStyle || "premium") as SectionStyleVariant;
