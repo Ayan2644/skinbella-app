@@ -112,14 +112,17 @@ export async function getCurrentUser() {
  */
 export async function signOut(): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await supabase.auth.signOut()
-    if (error) return { success: false, error: error.message }
+    const { error } = await supabase.auth.signOut({ scope: 'local' })
+    if (error) {
+      console.warn('signOut error:', error.message)
+      // Force local cleanup even on error
+      return { success: true }
+    }
     return { success: true }
   } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Erro ao sair'
-    }
+    console.warn('signOut exception:', error)
+    // Always succeed locally so the UI can reset
+    return { success: true }
   }
 }
 
@@ -144,20 +147,22 @@ export async function getSubscriptionStatus(userId: string) {
 }
 
 /**
- * Check if user has admin role (uses user_roles table)
+ * Check if user has admin role (uses has_role SECURITY DEFINER function — bypasses RLS)
  */
 export async function checkIsAdmin(userId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .eq('role', 'admin')
-      .single()
+    const { data, error } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'admin'
+    })
 
-    if (error || !data) return false
-    return true
-  } catch {
+    if (error) {
+      console.warn('checkIsAdmin rpc error:', error.message)
+      return false
+    }
+    return data === true
+  } catch (err) {
+    console.warn('checkIsAdmin exception:', err)
     return false
   }
 }
