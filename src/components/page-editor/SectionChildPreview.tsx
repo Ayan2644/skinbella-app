@@ -25,10 +25,55 @@ export default function SectionChildPreview({ child, isSelected, onSelect, onDel
 
   // Build a preview string
   let preview = "";
-  if (child.content?.text) preview = child.content.text.slice(0, 40);
-  else if (child.block_type === "spacer") preview = `${child.content?.height || 24}px`;
-  else if (child.block_type === "image") preview = child.content?.src ? "Imagem" : "Sem imagem";
-  else if (child.block_type === "button") preview = child.content?.text || "Botão";
+  const c = child.content || {};
+  switch (child.block_type) {
+    case "heading":
+    case "text":
+      preview = (c.text || "").slice(0, 40);
+      break;
+    case "headline_icon":
+      preview = (c.text || "").slice(0, 30);
+      break;
+    case "headline_trigger":
+      preview = `${(c.text || "").slice(0, 20)} ${c.badgeText || ""}`;
+      break;
+    case "spacer":
+      preview = `${c.height || 24}px`;
+      break;
+    case "image":
+      preview = c.src ? "Imagem" : "Sem imagem";
+      break;
+    case "button":
+      preview = c.text || "Botão";
+      break;
+    case "checklist":
+      preview = `${(c.items || []).length} itens`;
+      break;
+    case "checklist_emoji":
+      preview = `${(c.items || []).length} itens`;
+      break;
+    case "testimonial":
+      preview = `${(c.items || []).length} depoimentos`;
+      break;
+    case "faq_item":
+      preview = `${(c.items || []).length} perguntas`;
+      break;
+    case "trust_badges":
+      preview = `${(c.items || []).length} badges`;
+      break;
+    case "pricing":
+      preview = `R$ ${c.price || "0"}${c.suffix || ""}`;
+      break;
+    case "badge_label":
+      preview = c.text || "";
+      break;
+    case "social_proof":
+      preview = `+${c.count || "0"} ${(c.text || "").slice(0, 20)}`;
+      break;
+    case "icon_block":
+      preview = c.icon || "Sparkles";
+      break;
+  }
 
   return (
     <div
