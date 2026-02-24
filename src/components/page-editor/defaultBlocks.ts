@@ -24,7 +24,7 @@ function child(block_type: string, content: Record<string, any>, styles: Record<
  * Generate default children for each predefined section,
  * replicating the static components' content exactly.
  */
-function getDefaultChildren(sectionType: string): any[] {
+export function getDefaultChildrenForSection(sectionType: string): any[] {
   switch (sectionType) {
     case "section_meaning":
       return [
@@ -210,7 +210,7 @@ export function getDefaultBlocks(): PageBlock[] {
     const content = { ...(defaultContentMap[block_type] || {}) };
 
     // Populate children for editable sections
-    const children = getDefaultChildren(block_type);
+    const children = getDefaultChildrenForSection(block_type);
     if (children.length > 0) {
       content.children = children;
     }
