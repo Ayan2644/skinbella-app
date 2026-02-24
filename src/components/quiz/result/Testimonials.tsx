@@ -1,7 +1,7 @@
-import { Star, Users } from 'lucide-react';
-import ResultCard from './ResultCard';
-import testimonial1Img from '@/assets/result/testimonial-1.jpg';
-import testimonial2Img from '@/assets/result/testimonial-2.jpg';
+import { Star, Users } from "lucide-react";
+import ResultCard from "./ResultCard";
+import testimonial1Img from "@/assets/result/testimonial-1.jpg";
+import testimonial2Img from "@/assets/result/testimonial-2.jpg";
 
 interface TestimonialData {
   name: string;
@@ -12,20 +12,20 @@ interface TestimonialData {
 
 const testimonials: TestimonialData[] = [
   {
-    name: 'Ana C.',
-    text: 'Minha pele mudou completamente em 30 dias seguindo o plano!',
+    name: "Ana C.",
+    text: "Minha pele mudou completamente em 30 dias seguindo o plano!",
     stars: 5,
     image: testimonial1Img,
   },
   {
-    name: 'Mariana S.',
-    text: 'O diagnóstico foi super preciso. Nunca me cuidei tão bem!',
+    name: "Mariana S.",
+    text: "O diagnóstico foi super preciso. Nunca me cuidei tão bem!",
     stars: 5,
     image: testimonial2Img,
   },
   {
-    name: 'Juliana R.',
-    text: 'Achei que era mais um quiz, mas o plano diário realmente funciona. Estou no dia 18!',
+    name: "Juliana R.",
+    text: "Achei que era mais um quiz, mas o plano diário realmente funciona. Estou no dia 18!",
     stars: 5,
   },
 ];
@@ -38,8 +38,8 @@ function TestimonialCard({ name, text, stars, image }: TestimonialData) {
           <img
             src={image}
             alt={`Resultado de ${name}`}
-            className="w-14 h-14 rounded-2xl object-cover flex-shrink-0"
-            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+            loading="lazy"
+            className="w-14 h-14 rounded-2xl object-cover flex-shrink-0 border border-border/50"
           />
         ) : (
           <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center text-sm font-bold text-secondary-foreground flex-shrink-0">
@@ -51,7 +51,7 @@ function TestimonialCard({ name, text, stars, image }: TestimonialData) {
             <span className="text-sm font-semibold text-foreground">{name}</span>
             <div className="flex gap-0.5">
               {Array.from({ length: stars }).map((_, i) => (
-                <Star key={i} className="w-3 h-3" style={{ fill: '#C8A96B', color: '#C8A96B' }} />
+                <Star key={i} className="w-3 h-3 fill-accent text-accent" />
               ))}
             </div>
           </div>
