@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { RotateCcw, ArrowRight } from "lucide-react";
 import { usePublicPageBlocks } from "@/hooks/usePageBlocks";
+import { STRUCTURED_LAYOUT_BLOCKS } from "@/components/page-editor/blockTypes";
 import BlockRenderer from "@/components/page-editor/BlockRenderer";
 
 import HeroResult from "./result/HeroResult";
@@ -23,7 +24,12 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
 
   if (!profile) return null;
 
-  const useCustomLayout = !isLoading && blocks && blocks.length > 0;
+  const useCustomLayout =
+    !isLoading &&
+    Array.isArray(blocks) &&
+    blocks.some((block) =>
+      STRUCTURED_LAYOUT_BLOCKS.includes(block.block_type as (typeof STRUCTURED_LAYOUT_BLOCKS)[number])
+    );
 
   const handleAction = (action: string) => {
     if (action === "checkout") onAccess();
@@ -37,7 +43,7 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
           <div className="absolute inset-0 gradient-hero" />
           <div
             className="absolute -top-24 left-1/2 h-[320px] w-[520px] -translate-x-1/2 rounded-full blur-3xl opacity-[0.35]"
-            style={{ background: "radial-gradient(circle at 50% 50%, hsl(var(--porcelain) / 0.22), transparent 60%)" }}
+            style={{ background: "radial-gradient(circle at 50% 50%, hsl(var(--surface-strong) / 0.35), transparent 60%)" }}
           />
           <div
             className="absolute top-[220px] left-[-160px] h-[360px] w-[360px] rounded-full blur-3xl opacity-[0.25]"
@@ -105,11 +111,17 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
                 </Button>
               </div>
               <div className="mt-2 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-primary/60" />Checkout seguro</span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />Checkout seguro
+                </span>
                 <span className="opacity-50">•</span>
-                <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-primary/60" />Acesso imediato</span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />Acesso imediato
+                </span>
                 <span className="opacity-50">•</span>
-                <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-primary/60" />Suporte</span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />Suporte
+                </span>
               </div>
             </div>
           </div>

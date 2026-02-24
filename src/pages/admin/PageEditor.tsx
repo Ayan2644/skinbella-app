@@ -2,12 +2,17 @@ import { useState, useCallback, useRef } from "react";
 import { Save, RotateCcw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageBlocks, type PageBlock } from "@/hooks/usePageBlocks";
-import { BLOCK_TYPES } from "@/components/page-editor/blockTypes";
+import { BLOCK_TYPES, STRUCTURED_LAYOUT_BLOCKS } from "@/components/page-editor/blockTypes";
 import { getDefaultBlocks } from "@/components/page-editor/defaultBlocks";
 import BlockToolbar from "@/components/page-editor/BlockToolbar";
 import BlockCanvas from "@/components/page-editor/BlockCanvas";
 import BlockProperties from "@/components/page-editor/BlockProperties";
 import { toast } from "sonner";
+
+const hasStructuredLayout = (blocks: PageBlock[]) =>
+  blocks.some((block) =>
+    STRUCTURED_LAYOUT_BLOCKS.includes(block.block_type as (typeof STRUCTURED_LAYOUT_BLOCKS)[number])
+  );
 
 export default function PageEditor() {
   const { blocks: savedBlocks, isLoading, saveAll, resetToDefault } = usePageBlocks();
@@ -18,52 +23,67 @@ export default function PageEditor() {
   // Use local state if user has made edits, otherwise DB data
   const blocks = localBlocks ?? savedBlocks;
 
-  // Sync from DB when first loaded — if DB is empty, seed with defaults
+  // Sync from DB when first loaded — if DB is empty OR in legacy mode, seed with structured defaults
   if (!didInit.current && localBlocks === null && !isLoading) {
     didInit.current = true;
+
     if (savedBlocks.length > 0) {
-      setLocalBlocks([...savedBlocks]);
+      setLocalBlocks(hasStructuredLayout(savedBlocks) ? [...savedBlocks] : getDefaultBlocks());
     } else {
       setLocalBlocks(getDefaultBlocks());
     }
   }
 
-  const addBlock = useCallback((type: string) => {
-    const def = BLOCK_TYPES.find((b) => b.type === type);
-    if (!def) return;
-    const newBlock: PageBlock = {
-      id: crypto.randomUUID(),
-      page_id: "quiz_result",
-      block_type: type,
-      sort_order: blocks.length,
-      content: { ...def.defaultContent },
-      styles: { ...def.defaultStyles },
-      is_visible: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    setLocalBlocks([...blocks, newBlock]);
-    setSelectedId(newBlock.id);
-  }, [blocks]);
+  const addBlock = useCallback(
+    (type: string) => {
+      const def = BLOCK_TYPES.find((b) => b.type === type);
+      if (!def) return;
 
-  const updateBlock = useCallback((updated: PageBlock) => {
-    setLocalBlocks(blocks.map((b) => (b.id === updated.id ? updated : b)));
-  }, [blocks]);
+      const newBlock: PageBlock = {
+        id: crypto.randomUUID(),
+        page_id: "quiz_result",
+        block_type: type,
+        sort_order: blocks.length,
+        content: { ...def.defaultContent },
+        styles: { ...def.defaultStyles },
+        is_visible: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-  const deleteBlock = useCallback((id: string) => {
-    setLocalBlocks(blocks.filter((b) => b.id !== id));
-    if (selectedId === id) setSelectedId(null);
-  }, [blocks, selectedId]);
+      setLocalBlocks([...blocks, newBlock]);
+      setSelectedId(newBlock.id);
+    },
+    [blocks]
+  );
 
-  const toggleVisibility = useCallback((id: string) => {
-    setLocalBlocks(blocks.map((b) => (b.id === id ? { ...b, is_visible: !b.is_visible } : b)));
-  }, [blocks]);
+  const updateBlock = useCallback(
+    (updated: PageBlock) => {
+      setLocalBlocks(blocks.map((b) => (b.id === updated.id ? updated : b)));
+    },
+    [blocks]
+  );
+
+  const deleteBlock = useCallback(
+    (id: string) => {
+      setLocalBlocks(blocks.filter((b) => b.id !== id));
+      if (selectedId === id) setSelectedId(null);
+    },
+    [blocks, selectedId]
+  );
+
+  const toggleVisibility = useCallback(
+    (id: string) => {
+      setLocalBlocks(blocks.map((b) => (b.id === id ? { ...b, is_visible: !b.is_visible } : b)));
+    },
+    [blocks]
+  );
 
   const handleSave = async () => {
     try {
       await saveAll.mutateAsync(blocks);
       toast.success("Página salva com sucesso!");
-    } catch (err) {
+    } catch {
       toast.error("Erro ao salvar");
     }
   };
@@ -74,7 +94,7 @@ export default function PageEditor() {
       setLocalBlocks(getDefaultBlocks());
       setSelectedId(null);
       toast.success("Layout restaurado ao padrão");
-    } catch (err) {
+    } catch {
       toast.error("Erro ao restaurar");
     }
   };
@@ -119,11 +139,7 @@ export default function PageEditor() {
           onToggleVisibility={toggleVisibility}
           onDelete={deleteBlock}
         />
-        <BlockProperties
-          block={selectedBlock}
-          onChange={updateBlock}
-          onDelete={deleteBlock}
-        />
+        <BlockProperties block={selectedBlock} onChange={updateBlock} onDelete={deleteBlock} />
       </div>
     </div>
   );
