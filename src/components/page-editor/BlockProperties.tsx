@@ -515,11 +515,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
           {/* Font Family */}
           <div>
             <Label className="text-xs">Fonte</Label>
-            <Select value={activeStyles.fontFamily || ""} onValueChange={(v) => updateStyles("fontFamily", v)}>
+            <Select value={activeStyles.fontFamily || "__default__"} onValueChange={(v) => updateStyles("fontFamily", v === "__default__" ? "" : v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
               <SelectContent className="bg-popover z-50 max-h-60">
                 {FONT_OPTIONS.map((f) => (
-                  <SelectItem key={f.value} value={f.value || "default"}>
+                  <SelectItem key={f.value || "__default__"} value={f.value || "__default__"}>
                     <span style={{ fontFamily: f.value || "inherit" }}>{f.label}</span>
                   </SelectItem>
                 ))}
@@ -533,11 +533,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
           {/* Font Weight */}
           <div>
             <Label className="text-xs">Peso da fonte</Label>
-            <Select value={activeStyles.fontWeight || ""} onValueChange={(v) => updateStyles("fontWeight", v)}>
+            <Select value={activeStyles.fontWeight || "__default__"} onValueChange={(v) => updateStyles("fontWeight", v === "__default__" ? "" : v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
               <SelectContent className="bg-popover z-50">
                 {FONT_WEIGHT_OPTIONS.map((w) => (
-                  <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>
+                  <SelectItem key={w.value || "__default__"} value={w.value || "__default__"}>{w.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -552,11 +552,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
           {/* Letter Spacing */}
           <div>
             <Label className="text-xs">Espaçamento letras</Label>
-            <Select value={activeStyles.letterSpacing || ""} onValueChange={(v) => updateStyles("letterSpacing", v)}>
+            <Select value={activeStyles.letterSpacing || "__default__"} onValueChange={(v) => updateStyles("letterSpacing", v === "__default__" ? "" : v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
               <SelectContent className="bg-popover z-50">
                 {LETTER_SPACING_OPTIONS.map((ls) => (
-                  <SelectItem key={ls.value} value={ls.value || "default"}>{ls.label}</SelectItem>
+                  <SelectItem key={ls.value || "__default__"} value={ls.value || "__default__"}>{ls.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -565,11 +565,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
           {/* Line Height */}
           <div>
             <Label className="text-xs">Altura da linha</Label>
-            <Select value={activeStyles.lineHeight || ""} onValueChange={(v) => updateStyles("lineHeight", v)}>
+            <Select value={activeStyles.lineHeight || "__default__"} onValueChange={(v) => updateStyles("lineHeight", v === "__default__" ? "" : v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
               <SelectContent className="bg-popover z-50">
                 {LINE_HEIGHT_OPTIONS.map((lh) => (
-                  <SelectItem key={lh.value} value={lh.value || "default"}>{lh.label}</SelectItem>
+                  <SelectItem key={lh.value || "__default__"} value={lh.value || "__default__"}>{lh.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -578,11 +578,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
           {/* Text Transform */}
           <div>
             <Label className="text-xs">Transformação de texto</Label>
-            <Select value={activeStyles.textTransform || ""} onValueChange={(v) => updateStyles("textTransform", v)}>
+            <Select value={activeStyles.textTransform || "__default__"} onValueChange={(v) => updateStyles("textTransform", v === "__default__" ? "" : v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Padrão" /></SelectTrigger>
               <SelectContent className="bg-popover z-50">
                 {TEXT_TRANSFORM_OPTIONS.map((tt) => (
-                  <SelectItem key={tt.value} value={tt.value || "default"}>{tt.label}</SelectItem>
+                  <SelectItem key={tt.value || "__default__"} value={tt.value || "__default__"}>{tt.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -625,11 +625,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
           {/* Background Gradient */}
           <div>
             <Label className="text-xs">Gradiente de fundo</Label>
-            <Select value={activeStyles.bgGradient || ""} onValueChange={(v) => updateStyles("bgGradient", v)}>
+            <Select value={activeStyles.bgGradient || "__none__"} onValueChange={(v) => updateStyles("bgGradient", v === "__none__" ? "" : v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Nenhum" /></SelectTrigger>
               <SelectContent className="bg-popover z-50 max-h-60">
                 {GRADIENT_PRESETS.map((g) => (
-                  <SelectItem key={g.value || "none"} value={g.value || "none"}>
+                  <SelectItem key={g.value || "__none__"} value={g.value || "__none__"}>
                     <div className="flex items-center gap-2">
                       {g.value && <div className="w-4 h-4 rounded-full border border-border/50 flex-shrink-0" style={{ background: g.value }} />}
                       <span>{g.label}</span>
@@ -661,11 +661,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
           {/* Opacity */}
           <div>
             <Label className="text-xs">Opacidade</Label>
-            <Select value={activeStyles.opacity || ""} onValueChange={(v) => updateStyles("opacity", v)}>
+            <Select value={activeStyles.opacity || "__default__"} onValueChange={(v) => updateStyles("opacity", v === "__default__" ? "" : v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="100%" /></SelectTrigger>
               <SelectContent className="bg-popover z-50">
                 {OPACITY_OPTIONS.map((o) => (
-                  <SelectItem key={o.value || "full"} value={o.value || "full"}>{o.label}</SelectItem>
+                  <SelectItem key={o.value || "__default__"} value={o.value || "__default__"}>{o.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -686,11 +686,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
           {/* Border Style */}
           <div>
             <Label className="text-xs">Estilo da borda</Label>
-            <Select value={activeStyles.borderStyle || ""} onValueChange={(v) => updateStyles("borderStyle", v)}>
+            <Select value={activeStyles.borderStyle || "__none__"} onValueChange={(v) => updateStyles("borderStyle", v === "__none__" ? "" : v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Nenhuma" /></SelectTrigger>
               <SelectContent className="bg-popover z-50">
                 {BORDER_STYLE_OPTIONS.map((bs) => (
-                  <SelectItem key={bs.value || "none"} value={bs.value || "none"}>{bs.label}</SelectItem>
+                  <SelectItem key={bs.value || "__none__"} value={bs.value || "__none__"}>{bs.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -715,11 +715,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
           {/* Box Shadow */}
           <div>
             <Label className="text-xs">Sombra</Label>
-            <Select value={activeStyles.boxShadow || ""} onValueChange={(v) => updateStyles("boxShadow", v)}>
+            <Select value={activeStyles.boxShadow || "__none__"} onValueChange={(v) => updateStyles("boxShadow", v === "__none__" ? "" : v)}>
               <SelectTrigger className="mt-1 text-xs h-8"><SelectValue placeholder="Nenhuma" /></SelectTrigger>
               <SelectContent className="bg-popover z-50">
                 {SHADOW_PRESETS.map((sh) => (
-                  <SelectItem key={sh.value || "none"} value={sh.value || "none"}>{sh.label}</SelectItem>
+                  <SelectItem key={sh.value || "__none__"} value={sh.value || "__none__"}>{sh.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

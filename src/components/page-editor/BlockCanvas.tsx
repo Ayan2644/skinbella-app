@@ -8,8 +8,10 @@ interface BlockCanvasProps {
   blocks: PageBlock[];
   selectedId: string | null;
   selectedChildId: string | null;
+  selectedInnerChildId: string | null;
   onSelect: (id: string) => void;
   onSelectChild: (childId: string) => void;
+  onSelectInnerChild: (innerChildId: string) => void;
   onReorder: (blocks: PageBlock[]) => void;
   onReorderChildren: (children: any[]) => void;
   onReorderInnerChildren?: (innerChildren: any[]) => void;
@@ -23,8 +25,10 @@ export default function BlockCanvas({
   blocks,
   selectedId,
   selectedChildId,
+  selectedInnerChildId,
   onSelect,
   onSelectChild,
+  onSelectInnerChild,
   onReorder,
   onReorderChildren,
   onReorderInnerChildren,
@@ -147,8 +151,8 @@ export default function BlockCanvas({
                                   <SectionChildPreview
                                     key={child.id}
                                     child={child}
-                                    isSelected={false}
-                                    onSelect={() => {}}
+                                    isSelected={selectedInnerChildId === child.id}
+                                    onSelect={() => onSelectInnerChild(child.id)}
                                     onDelete={() => onDeleteInnerChild?.(child.id)}
                                   />
                                 ))}

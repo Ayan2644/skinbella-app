@@ -51,6 +51,7 @@ export default function PageEditor() {
   const [localBlocks, setLocalBlocks] = useState<PageBlock[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [selectedInnerChildId, setSelectedInnerChildId] = useState<string | null>(null);
   const didInit = useRef(false);
 
   // ── Undo stack ──
@@ -104,6 +105,13 @@ export default function PageEditor() {
 
   const isSelectedChildInnerSection = selectedChild?.block_type === "inner_section";
   const innerSectionTargetId = isSelectedChildInnerSection ? selectedChildId : null;
+
+  // Selected inner child block (block inside inner_section)
+  const selectedInnerChild = useMemo(() => {
+    if (!isSelectedChildInnerSection || !selectedInnerChildId || !selectedChild) return null;
+    const innerChildren: any[] = selectedChild.content?.children || [];
+    return innerChildren.find((c: any) => c.id === selectedInnerChildId) ?? null;
+  }, [isSelectedChildInnerSection, selectedInnerChildId, selectedChild]);
 
   // --- Top-level block operations ---
   const addBlock = useCallback(
@@ -288,11 +296,38 @@ export default function PageEditor() {
   const handleSelect = useCallback((id: string) => {
     setSelectedId(id);
     setSelectedChildId(null);
+    setSelectedInnerChildId(null);
   }, []);
 
   const handleSelectChild = useCallback((childId: string) => {
     setSelectedChildId(childId);
+    setSelectedInnerChildId(null);
   }, []);
+
+  const handleSelectInnerChild = useCallback((innerChildId: string) => {
+    setSelectedInnerChildId(innerChildId);
+  }, []);
+
+  // Update a block inside an inner_section
+  const updateInnerChildBlock = useCallback(
+    (updatedInnerChild: any) => {
+      if (!selectedSectionId || !innerSectionTargetId) return;
+      setBlocksWithUndo(
+        blocks.map((b) => {
+          if (b.id !== selectedSectionId) return b;
+          const children = (b.content?.children || []).map((c: any) => {
+            if (c.id !== innerSectionTargetId) return c;
+            const innerChildren = (c.content?.children || []).map((ic: any) =>
+              ic.id === updatedInnerChild.id ? updatedInnerChild : ic
+            );
+            return { ...c, content: { ...c.content, children: innerChildren } };
+          });
+          return { ...b, content: { ...b.content, children } };
+        })
+      );
+    },
+    [blocks, selectedSectionId, innerSectionTargetId, setBlocksWithUndo]
+  );
 
   const handleSave = async () => {
     try {
@@ -356,8 +391,10 @@ export default function PageEditor() {
           blocks={blocks}
           selectedId={selectedId}
           selectedChildId={selectedChildId}
+          selectedInnerChildId={selectedInnerChildId}
           onSelect={handleSelect}
           onSelectChild={handleSelectChild}
+          onSelectInnerChild={handleSelectInnerChild}
           onReorder={(newBlocks) => setBlocksWithUndo(newBlocks)}
           onReorderChildren={reorderChildren}
           onReorderInnerChildren={reorderInnerChildren}
@@ -368,11 +405,11 @@ export default function PageEditor() {
         />
         <BlockProperties
           block={selectedBlock}
-          childBlock={selectedChild}
+          childBlock={selectedInnerChild || selectedChild}
           onChange={updateBlock}
-          onChangeChild={updateChildBlock}
+          onChangeChild={selectedInnerChild ? updateInnerChildBlock : updateChildBlock}
           onDelete={deleteBlock}
-          onDeleteChild={deleteChildBlock}
+          onDeleteChild={selectedInnerChild ? (id) => deleteInnerChild(id) : deleteChildBlock}
         />
       </div>
     </div>
