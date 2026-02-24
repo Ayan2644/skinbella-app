@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { QuizQuestion, QuestionType, QuizOption, quizQuestions, QuizQuestionStyles } from '@/lib/quizData';
+import { QuizQuestion, QuestionType, QuizOption, quizQuestions, QuizQuestionStyles, OptionLayout } from '@/lib/quizData';
 import { useQuizQuestions } from '@/hooks/useQuizQuestions';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -160,21 +160,41 @@ function QuestionPreview({ question }: { question: QuizQuestion }) {
             {question.sliderMax ?? 10}
           </span>
         </div>
-      ) : question.options?.slice(0, 3).map((opt, i) => (
-        <div
-          key={i}
-          className="flex items-center gap-2 p-2 mb-1.5 rounded-xl border text-xs"
-          style={{
-            backgroundColor: s.optionBgColor || undefined,
-            borderColor: s.optionBorderColor || undefined,
-          }}
-        >
-          {opt.emoji && <span className="text-sm">{opt.emoji}</span>}
-          <span className="font-medium">{opt.label}</span>
+      ) : s.optionLayout === 'horizontal' ? (
+        <div className="grid grid-cols-2 gap-1.5">
+          {question.options?.slice(0, 4).map((opt, i) => (
+            <div
+              key={i}
+              className="flex flex-col items-center gap-1 p-2 rounded-xl border text-xs text-center"
+              style={{
+                backgroundColor: s.optionBgColor || undefined,
+                borderColor: s.optionBorderColor || undefined,
+              }}
+            >
+              {opt.emoji && <span className="text-sm">{opt.emoji}</span>}
+              <span className="font-medium">{opt.label}</span>
+            </div>
+          ))}
         </div>
-      ))}
-      {(question.options?.length ?? 0) > 3 && (
-        <p className="text-[10px] text-muted-foreground text-center mt-1">+{(question.options?.length ?? 0) - 3} mais...</p>
+      ) : (
+        <>
+          {question.options?.slice(0, 3).map((opt, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2 p-2 mb-1.5 rounded-xl border text-xs"
+              style={{
+                backgroundColor: s.optionBgColor || undefined,
+                borderColor: s.optionBorderColor || undefined,
+              }}
+            >
+              {opt.emoji && <span className="text-sm">{opt.emoji}</span>}
+              <span className="font-medium">{opt.label}</span>
+            </div>
+          ))}
+          {(question.options?.length ?? 0) > 3 && (
+            <p className="text-[10px] text-muted-foreground text-center mt-1">+{(question.options?.length ?? 0) - 3} mais...</p>
+          )}
+        </>
       )}
     </div>
   );
@@ -423,19 +443,6 @@ const QuizEditor = () => {
 
                   {/* ── Content Tab ── */}
                   <TabsContent value="content" className="space-y-4 mt-4">
-                    {/* Type */}
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-medium text-muted-foreground">Tipo de Componente</label>
-                      <Select value={selected.type} onValueChange={(v) => updateQuestion(selectedIdx, { type: v as QuestionType })}>
-                        <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(typeLabels).map(([key, { label }]) => (
-                            <SelectItem key={key} value={key}>{label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
                     {/* ID */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium text-muted-foreground">ID (identificador único)</label>
@@ -502,6 +509,64 @@ const QuizEditor = () => {
 
                   {/* ── Style Tab ── */}
                   <TabsContent value="style" className="space-y-4 mt-4">
+                    {/* Question Type */}
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                        <LayoutGrid className="w-3 h-3" /> Tipo de Pergunta
+                      </p>
+                      <Select value={selected.type} onValueChange={(v) => updateQuestion(selectedIdx, { type: v as QuestionType })}>
+                        <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(typeLabels).map(([key, { label }]) => (
+                            <SelectItem key={key} value={key}>{label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Option Layout */}
+                    {!['slider', 'selfie'].includes(selected.type) && (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Layout das Respostas</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {([
+                            { value: 'vertical' as OptionLayout, label: 'Vertical', desc: 'Lista completa' },
+                            { value: 'horizontal' as OptionLayout, label: 'Horizontal', desc: 'Grade lado a lado' },
+                          ]).map((opt) => {
+                            const isActive = (selected.styles?.optionLayout ?? 'vertical') === opt.value;
+                            return (
+                              <button
+                                key={opt.value}
+                                onClick={() => updateStyles(selectedIdx, { optionLayout: opt.value })}
+                                className={`p-3 rounded-xl border-2 text-left transition-all ${
+                                  isActive
+                                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                                    : 'border-border/40 hover:border-primary/30'
+                                }`}
+                              >
+                                <div className="flex flex-col gap-1">
+                                  {opt.value === 'vertical' ? (
+                                    <div className="flex flex-col gap-0.5">
+                                      <div className="h-1.5 w-full rounded bg-muted-foreground/20" />
+                                      <div className="h-1.5 w-full rounded bg-muted-foreground/20" />
+                                      <div className="h-1.5 w-full rounded bg-muted-foreground/20" />
+                                    </div>
+                                  ) : (
+                                    <div className="grid grid-cols-2 gap-0.5">
+                                      <div className="h-3 rounded bg-muted-foreground/20" />
+                                      <div className="h-3 rounded bg-muted-foreground/20" />
+                                    </div>
+                                  )}
+                                </div>
+                                <p className="text-xs font-semibold mt-2">{opt.label}</p>
+                                <p className="text-[10px] text-muted-foreground">{opt.desc}</p>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Typography */}
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
