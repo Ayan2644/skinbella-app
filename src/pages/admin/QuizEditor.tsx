@@ -33,7 +33,7 @@ const typeLabels: Record<QuestionType, { label: string; icon: typeof SlidersHori
 };
 
 const FONT_OPTIONS = [
-  { value: '', label: 'Padrão (Playfair)' },
+  { value: 'default', label: 'Padrão (Playfair)' },
   { value: 'Playfair Display', label: 'Playfair Display' },
   { value: 'Cormorant Garamond', label: 'Cormorant Garamond' },
   { value: 'Inter', label: 'Inter' },
@@ -54,7 +54,7 @@ const FONT_OPTIONS = [
 ];
 
 const GRADIENT_PRESETS = [
-  { label: 'Nenhum', value: '' },
+  { label: 'Nenhum', value: 'none' },
   { label: 'Rosa suave', value: 'linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%)' },
   { label: 'Lavanda', value: 'linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%)' },
   { label: 'Mint', value: 'linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%)' },
@@ -510,11 +510,11 @@ const QuizEditor = () => {
                       <div className="space-y-3">
                         <div className="space-y-1.5">
                           <label className="text-xs font-medium text-muted-foreground">Fonte do título</label>
-                          <Select value={selected.styles?.fontFamily ?? ''} onValueChange={(v) => updateStyles(selectedIdx, { fontFamily: v })}>
+                          <Select value={selected.styles?.fontFamily || 'default'} onValueChange={(v) => updateStyles(selectedIdx, { fontFamily: v === 'default' ? '' : v })}>
                             <SelectTrigger className="rounded-xl"><SelectValue placeholder="Padrão" /></SelectTrigger>
                             <SelectContent>
                               {FONT_OPTIONS.map(f => (
-                                <SelectItem key={f.value} value={f.value} style={{ fontFamily: f.value || undefined }}>{f.label}</SelectItem>
+                                <SelectItem key={f.value} value={f.value} style={{ fontFamily: f.value === 'default' ? undefined : f.value }}>{f.label}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -522,10 +522,10 @@ const QuizEditor = () => {
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-muted-foreground">Tamanho</label>
-                            <Select value={selected.styles?.fontSize ?? ''} onValueChange={(v) => updateStyles(selectedIdx, { fontSize: v })}>
+                            <Select value={selected.styles?.fontSize || 'default'} onValueChange={(v) => updateStyles(selectedIdx, { fontSize: v === 'default' ? '' : v })}>
                               <SelectTrigger className="rounded-xl"><SelectValue placeholder="Padrão" /></SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="">Padrão</SelectItem>
+                                <SelectItem value="default">Padrão</SelectItem>
                                 <SelectItem value="1rem">Pequeno</SelectItem>
                                 <SelectItem value="1.25rem">Médio</SelectItem>
                                 <SelectItem value="1.5rem">Grande</SelectItem>
@@ -536,10 +536,10 @@ const QuizEditor = () => {
                           </div>
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-muted-foreground">Peso</label>
-                            <Select value={selected.styles?.fontWeight ?? ''} onValueChange={(v) => updateStyles(selectedIdx, { fontWeight: v })}>
+                            <Select value={selected.styles?.fontWeight || 'default'} onValueChange={(v) => updateStyles(selectedIdx, { fontWeight: v === 'default' ? '' : v })}>
                               <SelectTrigger className="rounded-xl"><SelectValue placeholder="Padrão" /></SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="">Padrão</SelectItem>
+                                <SelectItem value="default">Padrão</SelectItem>
                                 <SelectItem value="400">Normal</SelectItem>
                                 <SelectItem value="500">Médio</SelectItem>
                                 <SelectItem value="600">Semibold</SelectItem>
@@ -596,16 +596,16 @@ const QuizEditor = () => {
                         {GRADIENT_PRESETS.map((g) => (
                           <button
                             key={g.label}
-                            onClick={() => updateStyles(selectedIdx, { bgGradient: g.value })}
+                            onClick={() => updateStyles(selectedIdx, { bgGradient: g.value === 'none' ? '' : g.value })}
                             className={`h-10 rounded-xl border-2 transition-all text-[9px] font-medium ${
-                              (selected.styles?.bgGradient ?? '') === g.value
+                              (selected.styles?.bgGradient ?? '') === (g.value === 'none' ? '' : g.value)
                                 ? 'border-primary ring-1 ring-primary/30'
                                 : 'border-border/30 hover:border-primary/30'
                             }`}
-                            style={{ background: g.value || 'var(--background)' }}
+                            style={{ background: g.value === 'none' ? 'var(--background)' : g.value }}
                             title={g.label}
                           >
-                            {!g.value && '✕'}
+                            {g.value === 'none' && '✕'}
                           </button>
                         ))}
                       </div>
