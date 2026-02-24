@@ -293,6 +293,81 @@ export default function PageEditor() {
     [blocks, selectedSectionId, innerSectionTargetId, setBlocksWithUndo]
   );
 
+  // --- Duplicate operations ---
+  const duplicateBlock = useCallback(
+    (id: string) => {
+      const block = blocks.find((b) => b.id === id);
+      if (!block) return;
+      const deepClone = JSON.parse(JSON.stringify(block));
+      const newId = crypto.randomUUID();
+      // Regenerate IDs for children too
+      if (deepClone.content?.children) {
+        deepClone.content.children = deepClone.content.children.map((c: any) => {
+          const clonedChild = { ...c, id: crypto.randomUUID() };
+          if (clonedChild.content?.children) {
+            clonedChild.content.children = clonedChild.content.children.map((ic: any) => ({ ...ic, id: crypto.randomUUID() }));
+          }
+          return clonedChild;
+        });
+      }
+      const idx = blocks.findIndex((b) => b.id === id);
+      const newBlock: PageBlock = { ...deepClone, id: newId, sort_order: idx + 1, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+      const newBlocks = [...blocks];
+      newBlocks.splice(idx + 1, 0, newBlock);
+      setBlocksWithUndo(newBlocks);
+      setSelectedId(newId);
+      toast.success("Seção duplicada!");
+    },
+    [blocks, setBlocksWithUndo]
+  );
+
+  const duplicateChildBlock = useCallback(
+    (childId: string) => {
+      if (!selectedSectionId) return;
+      setBlocksWithUndo(
+        blocks.map((b) => {
+          if (b.id !== selectedSectionId) return b;
+          const children = [...(b.content?.children || [])];
+          const idx = children.findIndex((c: any) => c.id === childId);
+          if (idx < 0) return b;
+          const clone = JSON.parse(JSON.stringify(children[idx]));
+          clone.id = crypto.randomUUID();
+          if (clone.content?.children) {
+            clone.content.children = clone.content.children.map((ic: any) => ({ ...ic, id: crypto.randomUUID() }));
+          }
+          children.splice(idx + 1, 0, clone);
+          return { ...b, content: { ...b.content, children } };
+        })
+      );
+      toast.success("Bloco duplicado!");
+    },
+    [blocks, selectedSectionId, setBlocksWithUndo]
+  );
+
+  const duplicateInnerChild = useCallback(
+    (innerChildId: string) => {
+      if (!selectedSectionId || !innerSectionTargetId) return;
+      setBlocksWithUndo(
+        blocks.map((b) => {
+          if (b.id !== selectedSectionId) return b;
+          const children = (b.content?.children || []).map((c: any) => {
+            if (c.id !== innerSectionTargetId) return c;
+            const innerChildren = [...(c.content?.children || [])];
+            const idx = innerChildren.findIndex((ic: any) => ic.id === innerChildId);
+            if (idx < 0) return c;
+            const clone = JSON.parse(JSON.stringify(innerChildren[idx]));
+            clone.id = crypto.randomUUID();
+            innerChildren.splice(idx + 1, 0, clone);
+            return { ...c, content: { ...c.content, children: innerChildren } };
+          });
+          return { ...b, content: { ...b.content, children } };
+        })
+      );
+      toast.success("Bloco duplicado!");
+    },
+    [blocks, selectedSectionId, innerSectionTargetId, setBlocksWithUndo]
+  );
+
   const handleSelect = useCallback((id: string) => {
     setSelectedId(id);
     setSelectedChildId(null);
@@ -402,6 +477,9 @@ export default function PageEditor() {
           onDelete={deleteBlock}
           onDeleteChild={deleteChildBlock}
           onDeleteInnerChild={deleteInnerChild}
+          onDuplicate={duplicateBlock}
+          onDuplicateChild={duplicateChildBlock}
+          onDuplicateInnerChild={duplicateInnerChild}
         />
         <BlockProperties
           block={selectedBlock}

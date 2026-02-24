@@ -1,4 +1,4 @@
-import { GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Trash2, Copy } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { CHILD_BLOCK_TYPES } from "./blockTypes";
@@ -8,9 +8,10 @@ interface SectionChildPreviewProps {
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
 }
 
-export default function SectionChildPreview({ child, isSelected, onSelect, onDelete }: SectionChildPreviewProps) {
+export default function SectionChildPreview({ child, isSelected, onSelect, onDelete, onDuplicate }: SectionChildPreviewProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: child.id });
 
   const style = {
@@ -99,8 +100,16 @@ export default function SectionChildPreview({ child, isSelected, onSelect, onDel
       </div>
 
       <button
+        onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+        className="p-0.5 rounded hover:bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+        title="Duplicar"
+      >
+        <Copy className="w-3 h-3 text-muted-foreground" />
+      </button>
+      <button
         onClick={(e) => { e.stopPropagation(); onDelete(); }}
         className="p-0.5 rounded hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+        title="Excluir"
       >
         <Trash2 className="w-3 h-3 text-destructive" />
       </button>

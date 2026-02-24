@@ -1,4 +1,4 @@
-import { GripVertical, Eye, EyeOff, Trash2 } from "lucide-react";
+import { GripVertical, Eye, EyeOff, Trash2, Copy } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import BlockRenderer from "./BlockRenderer";
@@ -10,9 +10,10 @@ interface BlockPreviewProps {
   onSelect: () => void;
   onToggleVisibility: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
 }
 
-export default function BlockPreview({ block, isSelected, onSelect, onToggleVisibility, onDelete }: BlockPreviewProps) {
+export default function BlockPreview({ block, isSelected, onSelect, onToggleVisibility, onDelete, onDuplicate }: BlockPreviewProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
 
   const style = {
@@ -40,7 +41,10 @@ export default function BlockPreview({ block, isSelected, onSelect, onToggleVisi
         <button onClick={(e) => { e.stopPropagation(); onToggleVisibility(); }} className="p-1 rounded hover:bg-muted">
           {block.is_visible ? <Eye className="w-3.5 h-3.5 text-muted-foreground" /> : <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />}
         </button>
-        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1 rounded hover:bg-destructive/10">
+        <button onClick={(e) => { e.stopPropagation(); onDuplicate(); }} className="p-1 rounded hover:bg-primary/10" title="Duplicar">
+          <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1 rounded hover:bg-destructive/10" title="Excluir">
           <Trash2 className="w-3.5 h-3.5 text-destructive" />
         </button>
       </div>
