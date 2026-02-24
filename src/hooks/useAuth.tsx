@@ -1,12 +1,13 @@
 /**
  * useAuth Hook - Authentication State Management
  * Real Supabase Auth only — no mock/localStorage bypasses.
+ * Centralizes isAdmin check to avoid race conditions.
  */
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
-import { signOut as authSignOut, getSubscriptionStatus } from '@/lib/auth'
+import { signOut as authSignOut, getSubscriptionStatus, checkIsAdmin } from '@/lib/auth'
 
 interface AuthContextType {
   user: User | null
@@ -15,6 +16,8 @@ interface AuthContextType {
   signOut: () => Promise<void>
   hasActiveSubscription: boolean
   subscriptionStatus: string | null
+  isAdmin: boolean
+  adminLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -26,6 +29,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadingRef = { current: true }
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminLoading, setAdminLoading] = useState(true)
 
   const checkSubscription = async (userId: string) => {
     try {
@@ -46,21 +51,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const checkAdmin = async (userId: string) => {
+    setAdminLoading(true)
+    try {
+      const result = await checkIsAdmin(userId)
+      console.log('[useAuth] checkIsAdmin result:', result, 'for user:', userId)
+      setIsAdmin(result)
+    } catch (err) {
+      console.warn('[useAuth] Admin check failed:', err)
+      setIsAdmin(false)
+    } finally {
+      setAdminLoading(false)
+    }
+  }
+
   useEffect(() => {
     let mounted = true
 
     const {
       data: { subscription }
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return
       setSession(session)
       setUser(session?.user ?? null)
 
       if (session?.user) {
-        await checkSubscription(session.user.id)
+        // Fire-and-forget: don't block onAuthStateChange callback
+        const userId = session.user.id
+        checkSubscription(userId)
+        checkAdmin(userId)
       } else {
         setHasActiveSubscription(false)
         setSubscriptionStatus(null)
+        setIsAdmin(false)
+        setAdminLoading(false)
       }
 
       setLoading(false)
@@ -71,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (mounted && loadingRef.current) {
         console.warn('⏱️ Auth session check timed out, setting loading=false')
         setLoading(false)
+        setAdminLoading(false)
         loadingRef.current = false
       }
     }, 3000)
@@ -82,15 +107,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null)
 
       if (session?.user) {
-        checkSubscription(session.user.id)
+        Promise.all([
+          checkSubscription(session.user.id),
+          checkAdmin(session.user.id)
+        ]).then(() => {
+          if (mounted) {
+            setLoading(false)
+            loadingRef.current = false
+          }
+        })
+      } else {
+        setAdminLoading(false)
+        setLoading(false)
+        loadingRef.current = false
       }
-
-      setLoading(false)
-      loadingRef.current = false
     }).catch(() => {
       if (mounted) {
         clearTimeout(timeout)
         setLoading(false)
+        setAdminLoading(false)
       }
     })
 
@@ -107,13 +142,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null)
     setHasActiveSubscription(false)
     setSubscriptionStatus(null)
+    setIsAdmin(false)
+    setAdminLoading(false)
   }
 
   return (
     <AuthContext.Provider value={{
       user, session, loading,
       signOut: handleSignOut,
-      hasActiveSubscription, subscriptionStatus
+      hasActiveSubscription, subscriptionStatus,
+      isAdmin, adminLoading
     }}>
       {children}
     </AuthContext.Provider>
