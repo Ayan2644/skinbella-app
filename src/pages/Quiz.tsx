@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import QuizProgress from '@/components/quiz/QuizProgress';
 import QuestionRenderer from '@/components/quiz/QuestionRenderer';
 import ResultScreen from '@/components/quiz/ResultScreen';
-import { quizStorage } from '@/lib/quizStorage';
+import { usePublicQuizQuestions } from '@/hooks/useQuizQuestions';
 import { generateProfile } from '@/lib/skinEngine';
 import { storage } from '@/lib/storage';
 import { KIWIFY_CHECKOUT_URL } from '@/lib/auth';
@@ -20,9 +20,10 @@ const Quiz = () => {
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [profile, setProfile] = useState<any>(null);
 
-  const activeQuestions = quizStorage.getActiveQuestions();
-  const currentQ = activeQuestions[step];
-  const totalSteps = activeQuestions.length;
+  const { data: activeQuestions, isLoading } = usePublicQuizQuestions();
+  const questions = activeQuestions ?? [];
+  const currentQ = questions[step];
+  const totalSteps = questions.length;
 
   const handleAnswer = useCallback((value: any) => {
     setAnswers((prev) => ({ ...prev, [currentQ.id]: value }));
@@ -60,6 +61,11 @@ const Quiz = () => {
     }
   }, [phase, answers]);
 
+  if (isLoading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
+    </div>
+  );
   if (phase === 'intro') return <IntroScreen onStart={() => setPhase('quiz')} />;
   if (phase === 'processing') return <ProcessingScreen />;
   if (phase === 'result') return (
@@ -70,8 +76,12 @@ const Quiz = () => {
     />
   );
 
+  if (!currentQ) return null;
+
+  const qStyles = currentQ.styles ?? {};
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col" style={{ background: qStyles.bgGradient || qStyles.bgColor || undefined }}>
       {/* Header with progress */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border/30">
         <div className="max-w-lg mx-auto">
@@ -80,13 +90,23 @@ const Quiz = () => {
       </header>
 
       {/* Question */}
-      <main className="flex-1 flex flex-col max-w-lg mx-auto w-full px-5 py-8 animate-fade-in" key={step}>
+      <main className="flex-1 flex flex-col max-w-lg mx-auto w-full px-5 py-8 animate-fade-in" key={step} style={{ padding: qStyles.padding || undefined }}>
         <div className="mb-8 text-center">
-          <h2 className="text-2xl font-bold text-foreground font-['Playfair_Display'] mb-2 leading-tight">
+          <h2
+            className="text-2xl font-bold text-foreground mb-2 leading-tight"
+            style={{
+              fontFamily: qStyles.fontFamily || "'Playfair Display'",
+              fontSize: qStyles.fontSize || undefined,
+              fontWeight: (qStyles.fontWeight as any) || undefined,
+              color: qStyles.titleColor || undefined,
+            }}
+          >
             {currentQ.title}
           </h2>
           {currentQ.subtitle && (
-            <p className="text-sm text-muted-foreground leading-relaxed">{currentQ.subtitle}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed" style={{ color: qStyles.subtitleColor || undefined }}>
+              {currentQ.subtitle}
+            </p>
           )}
         </div>
 

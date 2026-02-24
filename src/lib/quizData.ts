@@ -7,6 +7,20 @@ export interface QuizOption {
   emoji?: string;
 }
 
+export interface QuizQuestionStyles {
+  fontFamily?: string;
+  fontSize?: string;
+  fontWeight?: string;
+  titleColor?: string;
+  subtitleColor?: string;
+  bgColor?: string;
+  bgGradient?: string;
+  optionBgColor?: string;
+  optionBorderColor?: string;
+  optionSelectedColor?: string;
+  padding?: string;
+}
+
 export interface QuizQuestion {
   id: string;
   type: QuestionType;
@@ -17,6 +31,7 @@ export interface QuizQuestion {
   sliderMax?: number;
   sliderUnit?: string;
   multiSelect?: boolean;
+  styles?: QuizQuestionStyles;
 }
 
 export const quizQuestions: QuizQuestion[] = [

@@ -29,6 +29,7 @@ const QuestionRenderer = ({ question, value, onChange }: QuestionRendererProps) 
 
 /* ── Full-width cards with emoji + label + description ── */
 function CardsQuestion({ question, value, onChange }: QuestionRendererProps) {
+  const s = question.styles ?? {};
   return (
     <div className="flex flex-col gap-3">
       {question.options?.map((opt) => {
@@ -42,6 +43,10 @@ function CardsQuestion({ question, value, onChange }: QuestionRendererProps) {
                 ? 'border-primary bg-primary/5 shadow-elegant'
                 : 'border-border/60 bg-card hover:border-primary/30 hover:shadow-soft'
             }`}
+            style={{
+              backgroundColor: !isSelected && s.optionBgColor ? s.optionBgColor : undefined,
+              borderColor: !isSelected && s.optionBorderColor ? s.optionBorderColor : undefined,
+            }}
           >
             <span className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-xl bg-secondary/60">
               {opt.emoji}
@@ -77,6 +82,7 @@ function CardsQuestion({ question, value, onChange }: QuestionRendererProps) {
 /* ── Multi-select chips with emoji ── */
 function MultiChipsQuestion({ question, value, onChange }: { question: QuizQuestion; value?: string[]; onChange: (v: string[]) => void }) {
   const selected = value ?? [];
+  const s = question.styles ?? {};
   const toggle = (v: string) => {
     onChange(selected.includes(v) ? selected.filter((s) => s !== v) : [...selected, v]);
   };
@@ -93,6 +99,10 @@ function MultiChipsQuestion({ question, value, onChange }: { question: QuizQuest
                 ? 'border-primary bg-primary/5 shadow-elegant'
                 : 'border-border/60 bg-card hover:border-primary/30 hover:shadow-soft'
             }`}
+            style={{
+              backgroundColor: !isSelected && s.optionBgColor ? s.optionBgColor : undefined,
+              borderColor: !isSelected && s.optionBorderColor ? s.optionBorderColor : undefined,
+            }}
           >
             <span className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary/60">
               {opt.emoji}
