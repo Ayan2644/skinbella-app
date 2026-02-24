@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Save, RotateCcw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageBlocks, type PageBlock } from "@/hooks/usePageBlocks";
 import { BLOCK_TYPES } from "@/components/page-editor/blockTypes";
+import { getDefaultBlocks } from "@/components/page-editor/defaultBlocks";
 import BlockToolbar from "@/components/page-editor/BlockToolbar";
 import BlockCanvas from "@/components/page-editor/BlockCanvas";
 import BlockProperties from "@/components/page-editor/BlockProperties";
@@ -12,13 +13,19 @@ export default function PageEditor() {
   const { blocks: savedBlocks, isLoading, saveAll, resetToDefault } = usePageBlocks();
   const [localBlocks, setLocalBlocks] = useState<PageBlock[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const didInit = useRef(false);
 
   // Use local state if user has made edits, otherwise DB data
   const blocks = localBlocks ?? savedBlocks;
 
-  // Sync from DB when first loaded
-  if (localBlocks === null && savedBlocks.length > 0 && !isLoading) {
-    setLocalBlocks([...savedBlocks]);
+  // Sync from DB when first loaded — if DB is empty, seed with defaults
+  if (!didInit.current && localBlocks === null && !isLoading) {
+    didInit.current = true;
+    if (savedBlocks.length > 0) {
+      setLocalBlocks([...savedBlocks]);
+    } else {
+      setLocalBlocks(getDefaultBlocks());
+    }
   }
 
   const addBlock = useCallback((type: string) => {
@@ -64,7 +71,7 @@ export default function PageEditor() {
   const handleReset = async () => {
     try {
       await resetToDefault.mutateAsync();
-      setLocalBlocks([]);
+      setLocalBlocks(getDefaultBlocks());
       setSelectedId(null);
       toast.success("Layout restaurado ao padrão");
     } catch (err) {
