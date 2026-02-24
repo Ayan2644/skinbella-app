@@ -19,6 +19,9 @@ interface BlockCanvasProps {
   onDelete: (id: string) => void;
   onDeleteChild: (childId: string) => void;
   onDeleteInnerChild?: (innerChildId: string) => void;
+  onDuplicate: (id: string) => void;
+  onDuplicateChild: (childId: string) => void;
+  onDuplicateInnerChild?: (innerChildId: string) => void;
 }
 
 export default function BlockCanvas({
@@ -36,6 +39,9 @@ export default function BlockCanvas({
   onDelete,
   onDeleteChild,
   onDeleteInnerChild,
+  onDuplicate,
+  onDuplicateChild,
+  onDuplicateInnerChild,
 }: BlockCanvasProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -101,6 +107,7 @@ export default function BlockCanvas({
                       onSelect={() => onSelect(block.id)}
                       onToggleVisibility={() => onToggleVisibility(block.id)}
                       onDelete={() => onDelete(block.id)}
+                      onDuplicate={() => onDuplicate(block.id)}
                     />
 
                     {/* Expanded children area for selected custom section */}
@@ -124,6 +131,7 @@ export default function BlockCanvas({
                                     isSelected={selectedChildId === child.id}
                                     onSelect={() => onSelectChild(child.id)}
                                     onDelete={() => onDeleteChild(child.id)}
+                                    onDuplicate={() => onDuplicateChild(child.id)}
                                   />
                                 ))}
                               </div>
@@ -154,6 +162,7 @@ export default function BlockCanvas({
                                     isSelected={selectedInnerChildId === child.id}
                                     onSelect={() => onSelectInnerChild(child.id)}
                                     onDelete={() => onDeleteInnerChild?.(child.id)}
+                                    onDuplicate={() => onDuplicateInnerChild?.(child.id)}
                                   />
                                 ))}
                               </div>
