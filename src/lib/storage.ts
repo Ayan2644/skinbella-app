@@ -35,24 +35,59 @@ export const storage = {
   isLoggedIn: () => get<{ loggedIn: boolean }>(KEYS.auth)?.loggedIn ?? false,
   isAdmin: () => get<{ isAdmin?: boolean }>(KEYS.auth)?.isAdmin ?? false,
 
-  saveChecklist: (items: { id: string; label: string; done: boolean }[]) => set(KEYS.checklist, items),
-  getChecklist: () => {
-    const saved = get<{ id: string; label: string; done: boolean }[]>(KEYS.checklist);
-    // Se não existir, retornar checklist padrão
-    if (!saved) {
-      const defaultChecklist = [
-        { id: '1', label: 'Beber 2L de água 💧', done: false },
-        { id: '2', label: 'Aplicar protetor solar ☀️', done: false },
-        { id: '3', label: 'Fazer rotina da manhã 🌅', done: false },
-        { id: '4', label: 'Fazer rotina da noite 🌙', done: false },
-        { id: '5', label: 'Dormir 8 horas 😴', done: false },
-        { id: '6', label: 'Evitar açúcar e alimentos processados 🥗', done: false },
-      ];
-      // Salvar a checklist padrão
+  saveChecklist: (items: { id: string; label: string; done: boolean }[]) => {
+    // Sanitize before saving
+    const safe = Array.isArray(items) ? items.map(i => ({ id: String(i.id), label: String(i.label), done: Boolean(i.done) })) : [];
+    set(KEYS.checklist, safe);
+  },
+  getChecklist: (): { id: string; label: string; done: boolean }[] => {
+    const defaultChecklist = [
+      { id: '1', label: 'Beber 2L de água 💧', done: false },
+      { id: '2', label: 'Aplicar protetor solar ☀️', done: false },
+      { id: '3', label: 'Fazer rotina da manhã 🌅', done: false },
+      { id: '4', label: 'Fazer rotina da noite 🌙', done: false },
+      { id: '5', label: 'Dormir 8 horas 😴', done: false },
+      { id: '6', label: 'Evitar açúcar e alimentos processados 🥗', done: false },
+    ];
+
+    try {
+      const raw = localStorage.getItem(KEYS.checklist);
+      if (!raw) {
+        set(KEYS.checklist, defaultChecklist);
+        return defaultChecklist;
+      }
+      const parsed = JSON.parse(raw);
+
+      // Normalize: must be array of valid items
+      if (!Array.isArray(parsed)) {
+        // Try legacy format { items: [...] }
+        if (parsed && typeof parsed === 'object' && Array.isArray(parsed.items)) {
+          const migrated = parsed.items.filter((i: any) => i && typeof i === 'object' && 'id' in i && 'label' in i)
+            .map((i: any) => ({ id: String(i.id), label: String(i.label), done: Boolean(i.done) }));
+          if (migrated.length > 0) {
+            set(KEYS.checklist, migrated);
+            return migrated;
+          }
+        }
+        // Unrecoverable - reset
+        set(KEYS.checklist, defaultChecklist);
+        return defaultChecklist;
+      }
+
+      // Validate each item in array
+      const validated = parsed.filter((i: any) => i && typeof i === 'object' && 'id' in i && 'label' in i)
+        .map((i: any) => ({ id: String(i.id), label: String(i.label), done: Boolean(i.done) }));
+
+      if (validated.length === 0) {
+        set(KEYS.checklist, defaultChecklist);
+        return defaultChecklist;
+      }
+
+      return validated;
+    } catch {
       set(KEYS.checklist, defaultChecklist);
       return defaultChecklist;
     }
-    return saved;
   },
 
   saveStreak: (n: number) => set(KEYS.streak, n),

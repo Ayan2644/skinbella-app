@@ -6,7 +6,10 @@ import { Flame } from 'lucide-react';
 
 const Checklist = () => {
   const { toast } = useToast();
-  const [items, setItems] = useState(storage.getChecklist());
+  const [items, setItems] = useState(() => {
+    const data = storage.getChecklist();
+    return Array.isArray(data) ? data : [];
+  });
   const [streak, setStreak] = useState(storage.getStreak());
   const hasCompletedRef = useRef(storage.getStreakData().completedToday);
 
