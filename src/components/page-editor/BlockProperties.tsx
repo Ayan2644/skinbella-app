@@ -7,7 +7,7 @@ import { Trash2, Upload, Plus, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { uploadPageAsset } from "@/hooks/usePageBlocks";
-import { SECTION_STYLE_VARIANTS, BADGE_VARIANTS } from "./blockTypes";
+import { SECTION_STYLE_VARIANTS, BADGE_VARIANTS, INNER_SECTION_BG_VARIANTS } from "./blockTypes";
 import LucideIconPicker from "./LucideIconPicker";
 import type { PageBlock } from "@/hooks/usePageBlocks";
 
@@ -390,6 +390,36 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
       {/* === spacer === */}
       {activeType === "spacer" && (
         <div><Label className="text-xs">Altura (px)</Label><Input type="number" value={activeContent.height || 24} onChange={(e) => updateContent("height", Number(e.target.value))} className="mt-1 text-xs h-8" /></div>
+      )}
+
+      {/* === inner_section === */}
+      {activeType === "inner_section" && (
+        <>
+          <div>
+            <Label className="text-xs">Fundo da seção</Label>
+            <Select value={activeContent.bgVariant || "warm"} onValueChange={(v) => updateContent("bgVariant", v)}>
+              <SelectTrigger className="mt-1 text-xs h-8"><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                {INNER_SECTION_BG_VARIANTS.map((sv) => (
+                  <SelectItem key={sv.value} value={sv.value}>
+                    <span className="font-medium">{sv.label}</span>
+                    <span className="ml-1 text-muted-foreground text-[10px]">— {sv.description}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {activeContent.bgVariant === "custom" && (
+            <div>
+              <Label className="text-xs">Cor de fundo</Label>
+              <div className="flex gap-2 mt-1">
+                <input type="color" value={activeContent.customBgColor || "#FDF8F3"} onChange={(e) => updateContent("customBgColor", e.target.value)} className="w-8 h-8 rounded border cursor-pointer" />
+                <Input value={activeContent.customBgColor || ""} onChange={(e) => updateContent("customBgColor", e.target.value)} className="text-xs h-8 flex-1" />
+              </div>
+            </div>
+          )}
+          <p className="text-[10px] text-muted-foreground">Os blocos dentro desta seção interna são editados diretamente no painel de propriedades ao selecioná-los.</p>
+        </>
       )}
 
       {/* === code === */}

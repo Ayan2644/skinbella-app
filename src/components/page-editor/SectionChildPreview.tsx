@@ -73,6 +73,9 @@ export default function SectionChildPreview({ child, isSelected, onSelect, onDel
     case "icon_block":
       preview = c.icon || "Sparkles";
       break;
+    case "inner_section":
+      preview = `${(c.children || []).length} blocos internos`;
+      break;
   }
 
   return (
