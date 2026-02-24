@@ -83,6 +83,42 @@ export type Database = {
         }
         Relationships: []
       }
+      page_blocks: {
+        Row: {
+          block_type: string
+          content: Json
+          created_at: string
+          id: string
+          is_visible: boolean
+          page_id: string
+          sort_order: number
+          styles: Json
+          updated_at: string
+        }
+        Insert: {
+          block_type: string
+          content?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          page_id?: string
+          sort_order?: number
+          styles?: Json
+          updated_at?: string
+        }
+        Update: {
+          block_type?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          page_id?: string
+          sort_order?: number
+          styles?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       quiz_results: {
         Row: {
           answers: Json | null
