@@ -42,13 +42,21 @@ const AppShell = () => {
 
   useEffect(() => {
     if (!user?.id) {
+      console.log('[AppShell] No user.id, setting isAdmin=false');
       setIsAdmin(false);
       return;
     }
 
+    console.log('[AppShell] Checking admin for user:', user.id);
     checkIsAdmin(user.id)
-      .then(setIsAdmin)
-      .catch(() => setIsAdmin(false));
+      .then((result) => {
+        console.log('[AppShell] checkIsAdmin result:', result);
+        setIsAdmin(result);
+      })
+      .catch((err) => {
+        console.error('[AppShell] checkIsAdmin error:', err);
+        setIsAdmin(false);
+      });
   }, [user?.id]);
 
   const isActive = (path: string) => {
@@ -57,8 +65,12 @@ const AppShell = () => {
   };
 
   const handleLogout = async () => {
-    await authSignOut();
-    navigate('/');
+    try {
+      await authSignOut();
+    } catch (e) {
+      console.warn('Logout error:', e);
+    }
+    navigate('/', { replace: true });
   };
 
   const displayEmail = user?.email || 'Usuário';
