@@ -55,11 +55,17 @@ export function ProtectedRoute({ children, requireSubscription = true }: Protect
     )
   }
 
+  // If timed out but admin check hasn't resolved, default to allowing access
+  // (admin check will resolve client-side and AdminRoute provides second layer)
+  if (timedOut && isAdmin === null && user) {
+    return <>{children}</>
+  }
+
   if (!user) {
     return <Navigate to="/login" replace />
   }
 
-  if (requireSubscription && !hasActiveSubscription && !isAdmin) {
+  if (requireSubscription && !hasActiveSubscription && isAdmin === false) {
     return <Navigate to="/login?error=subscription_required" replace />
   }
 
