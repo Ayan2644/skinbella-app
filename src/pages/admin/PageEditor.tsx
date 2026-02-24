@@ -46,6 +46,10 @@ export default function PageEditor() {
     return children.find((c: any) => c.id === selectedChildId) ?? null;
   }, [isCustomSection, selectedChildId, selectedBlock]);
 
+  // Is the selected child an inner_section? If so, toolbar should target it
+  const isSelectedChildInnerSection = selectedChild?.block_type === "inner_section";
+  const innerSectionTargetId = isSelectedChildInnerSection ? selectedChildId : null;
+
   // --- Top-level block operations ---
   const addBlock = useCallback(
     (type: string) => {
@@ -97,17 +101,33 @@ export default function PageEditor() {
   // --- Child block operations (inside section_custom) ---
   const addChildBlock = useCallback(
     (childType: string) => {
-      if (!selectedSectionId) return;
       const def = CHILD_BLOCK_TYPES.find((b) => b.type === childType);
       if (!def) return;
 
       const newChild = {
         id: crypto.randomUUID(),
         block_type: childType,
-        content: { ...def.defaultContent },
+        content: JSON.parse(JSON.stringify(def.defaultContent)),
         styles: { ...def.defaultStyles },
         is_visible: true,
       };
+
+      // If an inner_section child is selected, add inside it
+      if (innerSectionTargetId && selectedSectionId) {
+        setLocalBlocks(
+          blocks.map((b) => {
+            if (b.id !== selectedSectionId) return b;
+            const children = (b.content?.children || []).map((c: any) => {
+              if (c.id !== innerSectionTargetId) return c;
+              return { ...c, content: { ...c.content, children: [...(c.content?.children || []), newChild] } };
+            });
+            return { ...b, content: { ...b.content, children } };
+          })
+        );
+        return;
+      }
+
+      if (!selectedSectionId) return;
 
       setLocalBlocks(
         blocks.map((b) => {
@@ -118,7 +138,7 @@ export default function PageEditor() {
       );
       setSelectedChildId(newChild.id);
     },
-    [blocks, selectedSectionId]
+    [blocks, selectedSectionId, innerSectionTargetId]
   );
 
   const updateChildBlock = useCallback(
@@ -163,6 +183,41 @@ export default function PageEditor() {
       );
     },
     [blocks, selectedSectionId]
+  );
+
+  const deleteInnerChild = useCallback(
+    (innerChildId: string) => {
+      if (!selectedSectionId || !innerSectionTargetId) return;
+      setLocalBlocks(
+        blocks.map((b) => {
+          if (b.id !== selectedSectionId) return b;
+          const children = (b.content?.children || []).map((c: any) => {
+            if (c.id !== innerSectionTargetId) return c;
+            const innerChildren = (c.content?.children || []).filter((ic: any) => ic.id !== innerChildId);
+            return { ...c, content: { ...c.content, children: innerChildren } };
+          });
+          return { ...b, content: { ...b.content, children } };
+        })
+      );
+    },
+    [blocks, selectedSectionId, innerSectionTargetId]
+  );
+
+  const reorderInnerChildren = useCallback(
+    (newInnerChildren: any[]) => {
+      if (!selectedSectionId || !innerSectionTargetId) return;
+      setLocalBlocks(
+        blocks.map((b) => {
+          if (b.id !== selectedSectionId) return b;
+          const children = (b.content?.children || []).map((c: any) => {
+            if (c.id !== innerSectionTargetId) return c;
+            return { ...c, content: { ...c.content, children: newInnerChildren } };
+          });
+          return { ...b, content: { ...b.content, children } };
+        })
+      );
+    },
+    [blocks, selectedSectionId, innerSectionTargetId]
   );
 
   const handleSelect = useCallback((id: string) => {
@@ -228,6 +283,7 @@ export default function PageEditor() {
           onAdd={addBlock}
           selectedSectionId={selectedSectionId}
           onAddChild={addChildBlock}
+          innerSectionSelected={isSelectedChildInnerSection}
         />
         <BlockCanvas
           blocks={blocks}
@@ -237,9 +293,11 @@ export default function PageEditor() {
           onSelectChild={handleSelectChild}
           onReorder={setLocalBlocks}
           onReorderChildren={reorderChildren}
+          onReorderInnerChildren={reorderInnerChildren}
           onToggleVisibility={toggleVisibility}
           onDelete={deleteBlock}
           onDeleteChild={deleteChildBlock}
+          onDeleteInnerChild={deleteInnerChild}
         />
         <BlockProperties
           block={selectedBlock}

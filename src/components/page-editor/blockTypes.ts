@@ -241,15 +241,7 @@ export const CHILD_BLOCK_TYPES: readonly ChildBlockDef[] = [
     category: "layout",
     defaultContent: {
       bgVariant: "warm",
-      children: [
-        {
-          id: crypto.randomUUID(),
-          block_type: "heading",
-          content: { text: "Você pode reverter de 2 a 4 anos na aparência da sua pele!", level: "h2" },
-          styles: { fontSize: "18px", fontFamily: "Playfair Display", textAlign: "center", padding: "4px 0" },
-          is_visible: true,
-        },
-      ],
+      children: [] as any[],
     },
     defaultStyles: { padding: "0" },
   },

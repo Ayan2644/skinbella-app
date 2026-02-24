@@ -12,9 +12,11 @@ interface BlockCanvasProps {
   onSelectChild: (childId: string) => void;
   onReorder: (blocks: PageBlock[]) => void;
   onReorderChildren: (children: any[]) => void;
+  onReorderInnerChildren?: (innerChildren: any[]) => void;
   onToggleVisibility: (id: string) => void;
   onDelete: (id: string) => void;
   onDeleteChild: (childId: string) => void;
+  onDeleteInnerChild?: (innerChildId: string) => void;
 }
 
 export default function BlockCanvas({
@@ -25,9 +27,11 @@ export default function BlockCanvas({
   onSelectChild,
   onReorder,
   onReorderChildren,
+  onReorderInnerChildren,
   onToggleVisibility,
   onDelete,
   onDeleteChild,
+  onDeleteInnerChild,
 }: BlockCanvasProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -49,6 +53,11 @@ export default function BlockCanvas({
   const isCustomSection = selectedBlock?.block_type === "section_custom";
   const sectionChildren: any[] = isCustomSection ? (selectedBlock?.content?.children || []) : [];
 
+  // Check if selectedChildId is an inner_section
+  const selectedChildBlock = sectionChildren.find((c: any) => c.id === selectedChildId);
+  const isInnerSection = selectedChildBlock?.block_type === "inner_section";
+  const innerChildren: any[] = isInnerSection ? (selectedChildBlock?.content?.children || []) : [];
+
   function handleChildDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -56,6 +65,16 @@ export default function BlockCanvas({
     const newIndex = sectionChildren.findIndex((c: any) => c.id === over.id);
     if (oldIndex >= 0 && newIndex >= 0) {
       onReorderChildren(arrayMove(sectionChildren, oldIndex, newIndex));
+    }
+  }
+
+  function handleInnerChildDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = innerChildren.findIndex((c: any) => c.id === active.id);
+    const newIndex = innerChildren.findIndex((c: any) => c.id === over.id);
+    if (oldIndex >= 0 && newIndex >= 0) {
+      onReorderInnerChildren?.(arrayMove(innerChildren, oldIndex, newIndex));
     }
   }
 
@@ -101,6 +120,36 @@ export default function BlockCanvas({
                                     isSelected={selectedChildId === child.id}
                                     onSelect={() => onSelectChild(child.id)}
                                     onDelete={() => onDeleteChild(child.id)}
+                                  />
+                                ))}
+                              </div>
+                            </SortableContext>
+                          </DndContext>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Inner section children */}
+                    {block.id === selectedId && block.block_type === "section_custom" && isInnerSection && selectedChildId && (
+                      <div className="ml-12 mt-1 mb-2 pl-3 border-l-2 border-accent/30">
+                        <p className="text-[9px] uppercase tracking-widest text-accent/60 font-semibold mb-1 px-1">
+                          Blocos da seção interna
+                        </p>
+                        {innerChildren.length === 0 ? (
+                          <div className="text-xs text-muted-foreground/50 text-center py-3 italic">
+                            Use a barra lateral para adicionar blocos
+                          </div>
+                        ) : (
+                          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleInnerChildDragEnd}>
+                            <SortableContext items={innerChildren.map((c: any) => c.id)} strategy={verticalListSortingStrategy}>
+                              <div className="space-y-0.5">
+                                {innerChildren.map((child: any) => (
+                                  <SectionChildPreview
+                                    key={child.id}
+                                    child={child}
+                                    isSelected={false}
+                                    onSelect={() => {}}
+                                    onDelete={() => onDeleteInnerChild?.(child.id)}
                                   />
                                 ))}
                               </div>
