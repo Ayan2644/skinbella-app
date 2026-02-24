@@ -31,8 +31,53 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
       STRUCTURED_LAYOUT_BLOCKS.includes(block.block_type as (typeof STRUCTURED_LAYOUT_BLOCKS)[number])
     );
 
+  // Find sticky_cta block from saved blocks
+  const stickyCta = Array.isArray(blocks) ? blocks.find((b) => b.block_type === "sticky_cta" && b.is_visible) : null;
+  const ctaContent = stickyCta?.content || {};
+
   const handleAction = (action: string) => {
     if (action === "checkout") onAccess();
+  };
+
+  // Render sticky CTA (from block or fallback)
+  const renderStickyCta = () => {
+    const offerText = ctaContent.offerText || "Plano hoje com";
+    const discountText = ctaContent.discountText || "-52%";
+    const priceText = ctaContent.priceText || "R$ 29/mês";
+    const subtitleText = ctaContent.subtitleText || "Cancele quando quiser";
+    const buttonText = ctaContent.buttonText || "Desbloquear";
+    const badges: string[] = ctaContent.badges || ["Checkout seguro", "Acesso imediato", "Suporte"];
+
+    return (
+      <div className="absolute bottom-0 left-0 right-0 z-50">
+        <div className="px-4 pb-4">
+          <div className="bg-background/92 backdrop-blur-md border border-border/40 rounded-[var(--radius-card)] shadow-elegant px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-foreground truncate">
+                  {offerText} <span className="text-destructive font-bold">{discountText}</span>
+                </p>
+                <p className="text-[11px] text-muted-foreground">{priceText} • {subtitleText}</p>
+              </div>
+              <Button onClick={onAccess} className="rounded-2xl h-11 px-5 text-sm font-semibold shadow-elegant flex-shrink-0">
+                {buttonText}
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+            {badges.length > 0 && (
+              <div className="mt-2 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
+                {badges.map((badge, i) => (
+                  <span key={i} className="inline-flex items-center gap-1">
+                    {i > 0 && <span className="opacity-50 mr-3">•</span>}
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />{badge}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -54,14 +99,16 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
         <div className="relative z-10 flex flex-col pb-28">
           {useCustomLayout ? (
             <div className="px-2 pt-2 space-y-4">
-              {blocks.map((block) => (
-                <BlockRenderer
-                  key={block.id}
-                  block={block}
-                  profile={{ skinAge: profile.skinAge, scores: profile.scores }}
-                  onAction={handleAction}
-                />
-              ))}
+              {blocks
+                .filter((block) => block.block_type !== "sticky_cta")
+                .map((block) => (
+                  <BlockRenderer
+                    key={block.id}
+                    block={block}
+                    profile={{ skinAge: profile.skinAge, scores: profile.scores }}
+                    onAction={handleAction}
+                  />
+                ))}
               {/* REDO */}
               <div className="pb-6 px-3">
                 <Button variant="ghost" onClick={onRedo} className="w-full rounded-2xl h-11 text-muted-foreground text-sm">
@@ -95,37 +142,7 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
         </div>
 
         {/* STICKY CTA */}
-        <div className="absolute bottom-0 left-0 right-0 z-50">
-          <div className="px-4 pb-4">
-            <div className="bg-background/92 backdrop-blur-md border border-border/40 rounded-[var(--radius-card)] shadow-elegant px-4 py-3">
-              <div className="flex items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-foreground truncate">
-                    Plano hoje com <span className="text-destructive font-bold">-52%</span>
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">R$ 29/mês • Cancele quando quiser</p>
-                </div>
-                <Button onClick={onAccess} className="rounded-2xl h-11 px-5 text-sm font-semibold shadow-elegant flex-shrink-0">
-                  Desbloquear
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </div>
-              <div className="mt-2 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />Checkout seguro
-                </span>
-                <span className="opacity-50">•</span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />Acesso imediato
-                </span>
-                <span className="opacity-50">•</span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />Suporte
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {renderStickyCta()}
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ import {
   Code,
   SeparatorHorizontal,
   SquarePlus,
+  PanelBottomDashed,
   // New icons for expanded child blocks
   Heading,
   ListChecks,
@@ -39,6 +40,7 @@ export const STRUCTURED_LAYOUT_BLOCKS = [
   "section_testimonials",
   "section_faq",
   "section_custom",
+  "sticky_cta",
 ] as const;
 
 export type StructuredLayoutBlockType = (typeof STRUCTURED_LAYOUT_BLOCKS)[number];
@@ -422,6 +424,21 @@ export const BLOCK_TYPES = [
       children: [] as any[],
     },
     defaultStyles: { padding: "20px" },
+  },
+  {
+    type: "sticky_cta",
+    label: "🔒 CTA Fixo (rodapé)",
+    icon: PanelBottomDashed,
+    defaultContent: {
+      offerText: "Plano hoje com",
+      discountText: "-52%",
+      priceText: "R$ 29/mês",
+      subtitleText: "Cancele quando quiser",
+      buttonText: "Desbloquear",
+      buttonAction: "checkout",
+      badges: ["Checkout seguro", "Acesso imediato", "Suporte"],
+    },
+    defaultStyles: {},
   },
 ] as const;
 

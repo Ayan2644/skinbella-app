@@ -450,6 +450,26 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
         </div>
       )}
 
+      {/* === sticky_cta === */}
+      {activeType === "sticky_cta" && !editingChild && (
+        <>
+          <div><Label className="text-xs">Texto da oferta</Label><Input value={activeContent.offerText || ""} onChange={(e) => updateContent("offerText", e.target.value)} className="mt-1 text-xs h-8" placeholder="Plano hoje com" /></div>
+          <div><Label className="text-xs">Texto do desconto</Label><Input value={activeContent.discountText || ""} onChange={(e) => updateContent("discountText", e.target.value)} className="mt-1 text-xs h-8" placeholder="-52%" /></div>
+          <div><Label className="text-xs">Preço</Label><Input value={activeContent.priceText || ""} onChange={(e) => updateContent("priceText", e.target.value)} className="mt-1 text-xs h-8" placeholder="R$ 29/mês" /></div>
+          <div><Label className="text-xs">Subtítulo</Label><Input value={activeContent.subtitleText || ""} onChange={(e) => updateContent("subtitleText", e.target.value)} className="mt-1 text-xs h-8" placeholder="Cancele quando quiser" /></div>
+          <div><Label className="text-xs">Texto do botão</Label><Input value={activeContent.buttonText || ""} onChange={(e) => updateContent("buttonText", e.target.value)} className="mt-1 text-xs h-8" placeholder="Desbloquear" /></div>
+          <div>
+            <Label className="text-xs">Badges (separados por vírgula)</Label>
+            <Input
+              value={(activeContent.badges || []).join(", ")}
+              onChange={(e) => updateContent("badges", e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean))}
+              className="mt-1 text-xs h-8"
+              placeholder="Checkout seguro, Acesso imediato, Suporte"
+            />
+          </div>
+        </>
+      )}
+
       {/* === Legacy types === */}
       {activeType === "offer" && (
         <>
