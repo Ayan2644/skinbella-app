@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { Save, RotateCcw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageBlocks, type PageBlock } from "@/hooks/usePageBlocks";
-import { BLOCK_TYPES, STRUCTURED_LAYOUT_BLOCKS } from "@/components/page-editor/blockTypes";
+import { BLOCK_TYPES, CHILD_BLOCK_TYPES, STRUCTURED_LAYOUT_BLOCKS } from "@/components/page-editor/blockTypes";
 import { getDefaultBlocks } from "@/components/page-editor/defaultBlocks";
 import BlockToolbar from "@/components/page-editor/BlockToolbar";
 import BlockCanvas from "@/components/page-editor/BlockCanvas";
@@ -18,15 +18,15 @@ export default function PageEditor() {
   const { blocks: savedBlocks, isLoading, saveAll, resetToDefault } = usePageBlocks();
   const [localBlocks, setLocalBlocks] = useState<PageBlock[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** When editing a child inside section_custom, track both parent & child */
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const didInit = useRef(false);
 
-  // Use local state if user has made edits, otherwise DB data
   const blocks = localBlocks ?? savedBlocks;
 
-  // Sync from DB when first loaded — if DB is empty OR in legacy mode, seed with structured defaults
+  // Init
   if (!didInit.current && localBlocks === null && !isLoading) {
     didInit.current = true;
-
     if (savedBlocks.length > 0) {
       setLocalBlocks(hasStructuredLayout(savedBlocks) ? [...savedBlocks] : getDefaultBlocks());
     } else {
@@ -34,11 +34,23 @@ export default function PageEditor() {
     }
   }
 
+  // Is selected block a custom section?
+  const selectedBlock = blocks.find((b) => b.id === selectedId) ?? null;
+  const isCustomSection = selectedBlock?.block_type === "section_custom";
+  const selectedSectionId = isCustomSection ? selectedId : null;
+
+  // Selected child block
+  const selectedChild = useMemo(() => {
+    if (!isCustomSection || !selectedChildId || !selectedBlock) return null;
+    const children: any[] = selectedBlock.content?.children || [];
+    return children.find((c: any) => c.id === selectedChildId) ?? null;
+  }, [isCustomSection, selectedChildId, selectedBlock]);
+
+  // --- Top-level block operations ---
   const addBlock = useCallback(
     (type: string) => {
       const def = BLOCK_TYPES.find((b) => b.type === type);
       if (!def) return;
-
       const newBlock: PageBlock = {
         id: crypto.randomUUID(),
         page_id: "quiz_result",
@@ -50,9 +62,9 @@ export default function PageEditor() {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
-
       setLocalBlocks([...blocks, newBlock]);
       setSelectedId(newBlock.id);
+      setSelectedChildId(null);
     },
     [blocks]
   );
@@ -67,7 +79,10 @@ export default function PageEditor() {
   const deleteBlock = useCallback(
     (id: string) => {
       setLocalBlocks(blocks.filter((b) => b.id !== id));
-      if (selectedId === id) setSelectedId(null);
+      if (selectedId === id) {
+        setSelectedId(null);
+        setSelectedChildId(null);
+      }
     },
     [blocks, selectedId]
   );
@@ -78,6 +93,86 @@ export default function PageEditor() {
     },
     [blocks]
   );
+
+  // --- Child block operations (inside section_custom) ---
+  const addChildBlock = useCallback(
+    (childType: string) => {
+      if (!selectedSectionId) return;
+      const def = CHILD_BLOCK_TYPES.find((b) => b.type === childType);
+      if (!def) return;
+
+      const newChild = {
+        id: crypto.randomUUID(),
+        block_type: childType,
+        content: { ...def.defaultContent },
+        styles: { ...def.defaultStyles },
+        is_visible: true,
+      };
+
+      setLocalBlocks(
+        blocks.map((b) => {
+          if (b.id !== selectedSectionId) return b;
+          const children = [...(b.content?.children || []), newChild];
+          return { ...b, content: { ...b.content, children } };
+        })
+      );
+      setSelectedChildId(newChild.id);
+    },
+    [blocks, selectedSectionId]
+  );
+
+  const updateChildBlock = useCallback(
+    (updatedChild: any) => {
+      if (!selectedSectionId) return;
+      setLocalBlocks(
+        blocks.map((b) => {
+          if (b.id !== selectedSectionId) return b;
+          const children = (b.content?.children || []).map((c: any) =>
+            c.id === updatedChild.id ? updatedChild : c
+          );
+          return { ...b, content: { ...b.content, children } };
+        })
+      );
+    },
+    [blocks, selectedSectionId]
+  );
+
+  const deleteChildBlock = useCallback(
+    (childId: string) => {
+      if (!selectedSectionId) return;
+      setLocalBlocks(
+        blocks.map((b) => {
+          if (b.id !== selectedSectionId) return b;
+          const children = (b.content?.children || []).filter((c: any) => c.id !== childId);
+          return { ...b, content: { ...b.content, children } };
+        })
+      );
+      if (selectedChildId === childId) setSelectedChildId(null);
+    },
+    [blocks, selectedSectionId, selectedChildId]
+  );
+
+  const reorderChildren = useCallback(
+    (newChildren: any[]) => {
+      if (!selectedSectionId) return;
+      setLocalBlocks(
+        blocks.map((b) => {
+          if (b.id !== selectedSectionId) return b;
+          return { ...b, content: { ...b.content, children: newChildren } };
+        })
+      );
+    },
+    [blocks, selectedSectionId]
+  );
+
+  const handleSelect = useCallback((id: string) => {
+    setSelectedId(id);
+    setSelectedChildId(null);
+  }, []);
+
+  const handleSelectChild = useCallback((childId: string) => {
+    setSelectedChildId(childId);
+  }, []);
 
   const handleSave = async () => {
     try {
@@ -93,13 +188,12 @@ export default function PageEditor() {
       await resetToDefault.mutateAsync();
       setLocalBlocks(getDefaultBlocks());
       setSelectedId(null);
+      setSelectedChildId(null);
       toast.success("Layout restaurado ao padrão");
     } catch {
       toast.error("Erro ao restaurar");
     }
   };
-
-  const selectedBlock = blocks.find((b) => b.id === selectedId) ?? null;
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-64 text-muted-foreground">Carregando...</div>;
@@ -130,16 +224,31 @@ export default function PageEditor() {
 
       {/* Editor body */}
       <div className="flex flex-1 overflow-hidden">
-        <BlockToolbar onAdd={addBlock} />
+        <BlockToolbar
+          onAdd={addBlock}
+          selectedSectionId={selectedSectionId}
+          onAddChild={addChildBlock}
+        />
         <BlockCanvas
           blocks={blocks}
           selectedId={selectedId}
-          onSelect={setSelectedId}
+          selectedChildId={selectedChildId}
+          onSelect={handleSelect}
+          onSelectChild={handleSelectChild}
           onReorder={setLocalBlocks}
+          onReorderChildren={reorderChildren}
           onToggleVisibility={toggleVisibility}
           onDelete={deleteBlock}
+          onDeleteChild={deleteChildBlock}
         />
-        <BlockProperties block={selectedBlock} onChange={updateBlock} onDelete={deleteBlock} />
+        <BlockProperties
+          block={selectedBlock}
+          childBlock={selectedChild}
+          onChange={updateBlock}
+          onChangeChild={updateChildBlock}
+          onDelete={deleteBlock}
+          onDeleteChild={deleteChildBlock}
+        />
       </div>
     </div>
   );
