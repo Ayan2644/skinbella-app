@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { checkIsAdmin } from '@/lib/auth';
-import { Home, FileText, Droplets, Sun, CheckSquare, Apple, BookOpen, ShoppingBag, HelpCircle, LogOut, Menu, X, Shield, LayoutDashboard, Users, CreditCard, BarChart3, Bell, Sparkles, MoreHorizontal, PenTool } from 'lucide-react';
+import { Home, FileText, Droplets, Sun, CheckSquare, Apple, BookOpen, ShoppingBag, HelpCircle, LogOut, Menu, X, Shield, LayoutDashboard, Users, CreditCard, BarChart3, Bell, Sparkles, MoreHorizontal, PenTool, Layers } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
@@ -23,6 +23,7 @@ const adminNavItems = [
   { path: '/app/admin/assinaturas', label: 'Assinaturas', icon: CreditCard },
   { path: '/app/admin/funil', label: 'Funil', icon: BarChart3 },
   { path: '/app/admin/quiz-editor', label: 'Editor Quiz', icon: PenTool },
+  { path: '/app/admin/page-editor', label: 'Editor Página', icon: Layers },
 ];
 
 const bottomNavItems = [
