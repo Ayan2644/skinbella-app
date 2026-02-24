@@ -6,9 +6,10 @@ interface BlockToolbarProps {
   onAdd: (type: string) => void;
   selectedSectionId: string | null;
   onAddChild: (childType: string) => void;
+  innerSectionSelected?: boolean;
 }
 
-export default function BlockToolbar({ onAdd, selectedSectionId, onAddChild }: BlockToolbarProps) {
+export default function BlockToolbar({ onAdd, selectedSectionId, onAddChild, innerSectionSelected }: BlockToolbarProps) {
   const [sectionsOpen, setSectionsOpen] = useState(true);
   const [childOpen, setChildOpen] = useState(true);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({
@@ -56,13 +57,13 @@ export default function BlockToolbar({ onAdd, selectedSectionId, onAddChild }: B
             className="w-full flex items-center gap-1.5 px-1 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-primary hover:text-primary/80 transition-colors"
           >
             {childOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-            Blocos da Seção
+            {innerSectionSelected ? "Blocos da Seção Interna" : "Blocos da Seção"}
           </button>
 
           {childOpen && (
             <div className="space-y-1">
               <p className="px-3 py-1 text-[10px] text-muted-foreground">
-                Adicionar dentro da seção selecionada:
+                {innerSectionSelected ? "Adicionar dentro da seção interna:" : "Adicionar dentro da seção selecionada:"}
               </p>
               {CHILD_BLOCK_CATEGORIES.map((cat) => {
                 const blocks = CHILD_BLOCK_TYPES.filter((b) => b.category === cat.key);
