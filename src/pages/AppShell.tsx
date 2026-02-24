@@ -1,8 +1,7 @@
-import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { checkIsAdmin } from '@/lib/auth';
 import { Home, FileText, Droplets, Sun, CheckSquare, Apple, BookOpen, ShoppingBag, HelpCircle, LogOut, Menu, X, Shield, LayoutDashboard, Users, CreditCard, BarChart3, Bell, Sparkles, MoreHorizontal, PenTool, Layers } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 const navItems = [
@@ -36,28 +35,8 @@ const bottomNavItems = [
 const AppShell = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, signOut: authSignOut } = useAuth();
+  const { user, signOut: authSignOut, isAdmin } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (!user?.id) {
-      console.log('[AppShell] No user.id, setting isAdmin=false');
-      setIsAdmin(false);
-      return;
-    }
-
-    console.log('[AppShell] Checking admin for user:', user.id);
-    checkIsAdmin(user.id)
-      .then((result) => {
-        console.log('[AppShell] checkIsAdmin result:', result);
-        setIsAdmin(result);
-      })
-      .catch((err) => {
-        console.error('[AppShell] checkIsAdmin error:', err);
-        setIsAdmin(false);
-      });
-  }, [user?.id]);
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';
