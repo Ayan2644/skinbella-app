@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useMemo } from "react";
-import { Save, RotateCcw, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Save, RotateCcw, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePageBlocks, type PageBlock } from "@/hooks/usePageBlocks";
 import { BLOCK_TYPES, CHILD_BLOCK_TYPES, STRUCTURED_LAYOUT_BLOCKS } from "@/components/page-editor/blockTypes";
@@ -15,6 +16,7 @@ const hasStructuredLayout = (blocks: PageBlock[]) =>
   );
 
 export default function PageEditor() {
+  const navigate = useNavigate();
   const { blocks: savedBlocks, isLoading, saveAll, resetToDefault } = usePageBlocks();
   const [localBlocks, setLocalBlocks] = useState<PageBlock[] | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -264,11 +266,9 @@ export default function PageEditor() {
             <RotateCcw className="w-3.5 h-3.5 mr-1" />
             Restaurar
           </Button>
-          <Button variant="outline" size="sm" asChild>
-            <a href="/" target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="w-3.5 h-3.5 mr-1" />
-              Visualizar
-            </a>
+          <Button variant="outline" size="sm" onClick={() => navigate("/app/admin/result-preview")}>
+            <Eye className="w-3.5 h-3.5 mr-1" />
+            Visualizar
           </Button>
           <Button size="sm" onClick={handleSave} disabled={saveAll.isPending}>
             <Save className="w-3.5 h-3.5 mr-1" />
