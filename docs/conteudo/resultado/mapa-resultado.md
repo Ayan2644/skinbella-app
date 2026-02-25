@@ -353,10 +353,10 @@ CONVERSÃO TARDIA
 | ProtocolBrandCard | ✓ Existe | Mostrar ativos específicos do perfil |
 | NutrientCards | ✓ Existe | Copy de benefício por perfil |
 | LockedReportCard | ✓ Existe | Itens desbloqueáveis mais específicos |
-| OfferCard | ✓ Existe | CTA personalizada, preço correto (R$19 vs R$29) |
+| OfferCard | ✓ Existe | CTA personalizada, preço correto (R$19/mês ✅ confirmado) |
 | Testimonials | ✓ Existe | Segmentar por perfil detectado |
 | MiniFAQ | ✓ Existe | Adicionar perguntas do perfil |
 | Sticky CTA | ✓ Existe | Testar variações por perfil |
 | **Exit Intent** | ❌ Não existe | Implementar popup ao sair |
 
-**Nota crítica:** Preço inconsistente — `ESSENCIAL.md` diz R$19/mês, `OfferCard.tsx` mostra R$29/mês. **Decisão necessária antes de qualquer validação.**
+**Nota crítica:** Preço confirmado: R$19/mês

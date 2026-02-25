@@ -98,7 +98,7 @@ Priorizar as melhorias por impacto × esforço:
 ### Step 6: Alertas e Bloqueadores
 
 Documentar o que bloqueia progresso:
-- ⚠️ **CRÍTICO:** Preço R$19 vs R$29 — decisão ANTES de qualquer validação de copy de oferta
+- ⚠️ **CRÍTICO:** Preço R$19/mês ✅ confirmado — decisão ANTES de qualquer validação de copy de oferta
 - ⚠️ **IMPORTANTE:** Diagnóstico de expiração — confirmar se existe tecnicamente
 - Outros bloqueadores identificados
 

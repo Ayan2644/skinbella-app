@@ -42,7 +42,7 @@ Status: PENDENTE de confirmação técnica
 ## Categoria B: Urgência de Preço
 Base: preço de lançamento / promoção por tempo
 Status: PENDENTE de decisão de negócio
-⚠️ Bloqueado pelo conflito R$19 vs R$29
+⚠️ Bloqueado pelo conflito R$19/mês ✅ confirmado
 
 ## Categoria C: Urgência de Contexto
 Base: "a cada dia sem protocolo, {problema continua}"

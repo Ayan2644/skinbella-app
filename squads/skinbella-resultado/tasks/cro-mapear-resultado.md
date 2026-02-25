@@ -101,7 +101,7 @@ Comparar estado atual vs. ideal:
 - Documento com 9 seções mapeadas
 - Fluxo de conversão documentado
 - Gap analysis v1 → v2
-- ⚠️ Nota sobre preço (R$19 vs R$29 — decidir antes de validar)
+- ⚠️ Nota sobre preço (R$19/mês ✅ confirmado — decidir antes de validar)
 - Salvar em `docs/conteudo/resultado/mapa-resultado.md`
 
 ## Regras

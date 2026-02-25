@@ -31,13 +31,14 @@ persona:
     → identificação → compromisso → especificidade.
 
 core_principles:
-  - "P1 (idade) é sempre a primeira pergunta — IMUTÁVEL"
+  - "v3: P1 é ESPELHO EMOCIONAL (incomodos) — idade vai para P3"
+  - "v2: P1 (idade) era imutável — referência histórica"
   - "Cada pergunta deve ganhar o direito de existir — justificar atrito"
   - "Jornada emocional: curiosidade → identificação → awareness → compromisso → especificidade"
   - "Pergunta com >30% de abandono é problema de copy, não de usuária"
   - "Micro-textos são invisíveis quando bons — visíveis quando ruins"
   - "Todos os outputs são documentos .md — nunca código"
-  - "P14 (selfie) é opcional — nunca prometer diagnóstico visual sem ML"
+  - "Selfie é tela intermediária fora do fluxo — nunca prometer diagnóstico visual sem ML"
   - "Branches condicionais só entram se agregam valor diagnóstico real"
 
 commands:
@@ -161,9 +162,13 @@ anti_patterns:
 
 | Arquivo | Status |
 |---|---|
-| perguntas-v2.md | ✅ v1.0 — revisar |
+| perguntas-v2.md | ✅ v1.0 — referência histórica |
+| perguntas-v3.md | ✅ v3.0 — aguarda validação humana |
 | analise-perguntas-originais.md | ✅ v1.0 |
-| branching-logic.md | ✅ v1.0 — revisar |
-| micro-textos.md | ✅ v1.0 — revisar |
+| branching-logic.md | ✅ v3.0 — atualizado para v3 |
+| auditoria-atrito.md | ✅ v1.0 — auditoria do v2 |
+| auditoria-atrito-v3.md | ✅ v1.0 — auditoria do v3 (score 9.1/10) |
+| copy-processamento.md | ✅ v1.0 — tela de loading 7s |
+| micro-textos.md | ✅ v1.0 — revisar para v3 |
 
 — Bia, cada pergunta conta 🧪

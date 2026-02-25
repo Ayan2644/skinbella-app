@@ -96,7 +96,7 @@ Para cada teste, documentar:
 - Documento com todas as hipóteses priorizadas
 - Matriz ICE
 - Roadmap de testes em 3 fases
-- ⚠️ Nota: preço R$19 vs R$29 deve ser resolvido antes de testar copy de oferta
+- ⚠️ Nota: preço R$19/mês ✅ confirmado deve ser resolvido antes de testar copy de oferta
 - Salvar em `docs/conteudo/resultado/hipoteses-ab.md`
 
 ## Regras

@@ -72,7 +72,7 @@ Variação que inclui preço:
 ```
 "Começar por R${X}/mês"
 ```
-⚠️ **BLOQUEADA** até resolução do preço R$19 vs R$29
+⚠️ **BLOQUEADA** até resolução do preço R$19/mês ✅ confirmado
 
 ### Step 4: Comportamento de Animação
 

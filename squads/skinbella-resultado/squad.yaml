@@ -15,7 +15,7 @@ aios:
 global_rules:
   - "Todos os outputs são documentos Markdown (.md) APENAS"
   - "Urgência APENAS se baseada em algo real e documentado"
-  - "ALERTA: Preço inconsistente R$19 vs R$29 — decisão necessária antes de validar"
+  - "Preço confirmado: R$19/mês (plano ESSENCIAL)"
   - "Cada hipótese de A/B tem variação A, B, métrica e critério de winner"
 
 components:

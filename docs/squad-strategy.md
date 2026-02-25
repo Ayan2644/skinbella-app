@@ -250,7 +250,7 @@ docs/metricas/
 SEMANA 1-2:
   [X] Documentos de base (substâncias, persona, tom de voz) ← FEITO AGORA
   [ ] Squad Diagnóstico Científico → criar matrizes e biblioteca de frases
-  [ ] Definir preço final (R$19 vs R$29) → Squad Funil
+  [ ] Definir preço final (R$19/mês ✅ confirmado) → Squad Funil
 
 SEMANA 3-4:
   [ ] Squad Copy & Resultado → escrever copy dos 8 perfis
