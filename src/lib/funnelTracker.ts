@@ -4,7 +4,7 @@
  * Events: quiz_started, question_answered, quiz_completed, result_viewed, cta_clicked
  * All events include session_id and preset_id for per-preset analytics.
  */
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 let _sessionId: string | null = null;
 let _presetId: string = 'main';

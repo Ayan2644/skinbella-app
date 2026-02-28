@@ -86,7 +86,7 @@ const Quiz = () => {
       resetFunnelSession();
       trackedQuestions.current.clear();
       // Detect active preset
-      import('@/integrations/supabase/client').then(({ supabase }) => {
+      import('@/lib/supabase').then(({ supabase }) => {
         supabase.from('quiz_presets').select('preset_id').eq('is_active', true).limit(1).single()
           .then(({ data }) => { setFunnelPreset(data?.preset_id ?? 'main'); });
       });
