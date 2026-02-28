@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
 import type { QuizQuestion } from '@/lib/quizData';
 import { Camera, Upload, ScanFace } from 'lucide-react';
+import FaceMapQuestion from './FaceMapQuestion';
 
 interface QuestionRendererProps {
   question: QuizQuestion;
@@ -22,6 +23,8 @@ const QuestionRenderer = ({ question, value, onChange }: QuestionRendererProps) 
       return <SliderQuestion question={question} value={value} onChange={onChange} />;
     case 'selfie':
       return <SelfieQuestion value={value} onChange={onChange} />;
+    case 'face-map':
+      return <FaceMapQuestion question={question} value={value as string[] | undefined} onChange={onChange} />;
     default:
       return null;
   }

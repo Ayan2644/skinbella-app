@@ -1,10 +1,13 @@
-export type QuestionType = 'cards-emoji' | 'cards-image' | 'chips' | 'slider' | 'multi-chips' | 'selfie';
+export type QuestionType = 'cards-emoji' | 'cards-image' | 'chips' | 'slider' | 'multi-chips' | 'selfie' | 'face-map';
+
+export type FaceRegion = 'whole_face' | 'forehead' | 'eyebrows' | 'eyes' | 'nose' | 'mouth' | 'neck';
 
 export interface QuizOption {
   value: string;
   label: string;
   description?: string;
   emoji?: string;
+  faceRegion?: FaceRegion;
 }
 
 export type OptionLayout = 'vertical' | 'horizontal';
