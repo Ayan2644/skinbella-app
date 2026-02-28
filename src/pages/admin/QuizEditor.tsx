@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { QuizQuestion, QuestionType, QuizOption, quizQuestions, QuizQuestionStyles, OptionLayout } from '@/lib/quizData';
 import { useQuizQuestions } from '@/hooks/useQuizQuestions';
+import { useQuizPresets, QuizPreset } from '@/hooks/useQuizPresets';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +19,7 @@ import { CSS } from '@dnd-kit/utilities';
 import {
   GripVertical, Plus, Trash2, Undo2, Save, ChevronRight, Copy,
   SlidersHorizontal, LayoutGrid, Hash, Camera, CheckSquare, List,
-  Palette, Type, Eye,
+  Palette, Type, Eye, Layers, Check, Pencil, FolderPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -202,17 +203,33 @@ function QuestionPreview({ question }: { question: QuizQuestion }) {
 
 /* ── Main Editor ── */
 const QuizEditor = () => {
-  const { questions: dbQuestions, hasCustom, isLoading, saveAll, resetToDefault } = useQuizQuestions();
+  const { presets, activePreset, isLoading: presetsLoading, createPreset, renamePreset, activatePreset, deletePreset } = useQuizPresets();
+  const [currentPresetId, setCurrentPresetId] = useState<string>('main');
+  const { questions: dbQuestions, hasCustom, isLoading, saveAll, resetToDefault } = useQuizQuestions(currentPresetId);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const undoStack = useRef<QuizQuestion[][]>([]);
 
+  // Preset management state
+  const [showNewPreset, setShowNewPreset] = useState(false);
+  const [newPresetName, setNewPresetName] = useState('');
+  const [copyFromPreset, setCopyFromPreset] = useState<string | undefined>(undefined);
+  const [renamingPresetId, setRenamingPresetId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
+
+  // Sync current preset to active on load
+  useEffect(() => {
+    if (!presetsLoading && activePreset) {
+      setCurrentPresetId(activePreset.preset_id);
+    }
+  }, [presetsLoading, activePreset]);
 
   // Load from DB
   useEffect(() => {
@@ -385,6 +402,171 @@ const QuizEditor = () => {
           </Button>
         </div>
       </div>
+
+      {/* Preset Selector */}
+      <Card className="rounded-2xl border-border/30">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Layers className="w-4 h-4 text-muted-foreground" />
+            <p className="text-sm font-semibold text-foreground">Predefinições</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-auto h-7 gap-1 text-xs rounded-lg"
+              onClick={() => { setShowNewPreset(true); setNewPresetName(''); setCopyFromPreset(undefined); }}
+            >
+              <FolderPlus className="w-3.5 h-3.5" /> Nova
+            </Button>
+          </div>
+
+          {/* New preset form */}
+          {showNewPreset && (
+            <div className="flex items-center gap-2 mb-3 p-3 rounded-xl bg-muted/30 border border-border/20">
+              <Input
+                value={newPresetName}
+                onChange={(e) => setNewPresetName(e.target.value)}
+                placeholder="Nome da predefinição..."
+                className="rounded-lg text-sm flex-1"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newPresetName.trim()) {
+                    createPreset.mutateAsync({ name: newPresetName.trim(), copyFromId: copyFromPreset }).then(() => {
+                      setShowNewPreset(false);
+                      toast.success('Predefinição criada!');
+                    });
+                  }
+                  if (e.key === 'Escape') setShowNewPreset(false);
+                }}
+              />
+              <Select value={copyFromPreset ?? 'empty'} onValueChange={(v) => setCopyFromPreset(v === 'empty' ? undefined : v)}>
+                <SelectTrigger className="w-40 rounded-lg text-xs"><SelectValue placeholder="Copiar de..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="empty">Vazio</SelectItem>
+                  {presets.map((p) => (
+                    <SelectItem key={p.preset_id} value={p.preset_id}>Copiar: {p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                size="sm"
+                className="rounded-lg h-8"
+                disabled={!newPresetName.trim() || createPreset.isPending}
+                onClick={() => {
+                  createPreset.mutateAsync({ name: newPresetName.trim(), copyFromId: copyFromPreset }).then(() => {
+                    setShowNewPreset(false);
+                    toast.success('Predefinição criada!');
+                  });
+                }}
+              >
+                {createPreset.isPending ? '...' : 'Criar'}
+              </Button>
+              <Button variant="ghost" size="sm" className="rounded-lg h-8" onClick={() => setShowNewPreset(false)}>✕</Button>
+            </div>
+          )}
+
+          {/* Preset list */}
+          <div className="flex flex-wrap gap-2">
+            {presets.map((preset) => {
+              const isEditing = currentPresetId === preset.preset_id;
+              const isActive = preset.is_active;
+              const isRenaming = renamingPresetId === preset.preset_id;
+
+              return (
+                <div
+                  key={preset.preset_id}
+                  className={`group relative flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 cursor-pointer transition-all text-sm ${
+                    isEditing
+                      ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                      : 'border-border/30 hover:border-primary/30'
+                  }`}
+                  onClick={() => {
+                    if (!isRenaming) {
+                      setCurrentPresetId(preset.preset_id);
+                      setSelectedIdx(null);
+                      setHasChanges(false);
+                    }
+                  }}
+                >
+                  {isActive && <Check className="w-3.5 h-3.5 text-green-500 shrink-0" />}
+                  {isRenaming ? (
+                    <Input
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      className="h-6 text-xs rounded px-1 w-28"
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && renameValue.trim()) {
+                          renamePreset.mutateAsync({ presetId: preset.preset_id, name: renameValue.trim() });
+                          setRenamingPresetId(null);
+                        }
+                        if (e.key === 'Escape') setRenamingPresetId(null);
+                      }}
+                      onBlur={() => {
+                        if (renameValue.trim()) {
+                          renamePreset.mutateAsync({ presetId: preset.preset_id, name: renameValue.trim() });
+                        }
+                        setRenamingPresetId(null);
+                      }}
+                    />
+                  ) : (
+                    <span className="font-medium">{preset.name}</span>
+                  )}
+                  {isActive && <span className="text-[10px] text-green-600 font-semibold uppercase">Ativa</span>}
+
+                  {/* Actions (visible on hover when editing this preset) */}
+                  {isEditing && !isRenaming && (
+                    <div className="flex items-center gap-0.5 ml-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRenamingPresetId(preset.preset_id);
+                          setRenameValue(preset.name);
+                        }}
+                        className="p-0.5 hover:text-primary"
+                        title="Renomear"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                      {!isActive && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              activatePreset.mutateAsync(preset.preset_id).then(() => toast.success(`"${preset.name}" está ativa agora!`));
+                            }}
+                            className="p-0.5 hover:text-green-600"
+                            title="Ativar esta predefinição"
+                          >
+                            <Check className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm(`Deletar "${preset.name}"?`)) {
+                                deletePreset.mutateAsync(preset.preset_id).then(() => {
+                                  if (currentPresetId === preset.preset_id) {
+                                    setCurrentPresetId(activePreset?.preset_id ?? 'main');
+                                  }
+                                  toast.info('Predefinição removida');
+                                });
+                              }
+                            }}
+                            className="p-0.5 hover:text-destructive"
+                            title="Deletar"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {hasCustom && (
         <div className="text-xs text-accent bg-accent/10 px-3 py-2 rounded-xl">

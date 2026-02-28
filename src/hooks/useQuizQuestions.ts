@@ -77,11 +77,21 @@ export function useQuizQuestions(quizId = QUIZ_ID) {
   };
 }
 
-/** Public hook — read-only, with long staleTime */
-export function usePublicQuizQuestions(quizId = QUIZ_ID) {
+/** Public hook — read-only, with long staleTime. Auto-fetches active preset. */
+export function usePublicQuizQuestions() {
   return useQuery({
-    queryKey: ["quiz_questions_public", quizId],
+    queryKey: ["quiz_questions_public"],
     queryFn: async () => {
+      // Find the active preset
+      const { data: presetData } = await supabase
+        .from("quiz_presets")
+        .select("preset_id")
+        .eq("is_active", true)
+        .limit(1)
+        .single();
+
+      const quizId = presetData?.preset_id ?? QUIZ_ID;
+
       const { data, error } = await supabase
         .from("quiz_questions")
         .select("*")

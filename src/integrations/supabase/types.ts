@@ -119,6 +119,33 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_presets: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          preset_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          preset_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          preset_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       quiz_questions: {
         Row: {
           created_at: string
