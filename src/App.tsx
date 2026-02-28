@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,7 +31,20 @@ import ResultPreview from "./pages/admin/ResultPreview";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  // Prevent blank screen from unhandled auth refresh failures
+  useEffect(() => {
+    const handler = (event: PromiseRejectionEvent) => {
+      if (event.reason?.message === "Failed to fetch") {
+        event.preventDefault();
+        console.warn("[App] Suppressed unhandled fetch rejection (likely stale auth token)");
+      }
+    };
+    window.addEventListener("unhandledrejection", handler);
+    return () => window.removeEventListener("unhandledrejection", handler);
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -72,6 +86,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
