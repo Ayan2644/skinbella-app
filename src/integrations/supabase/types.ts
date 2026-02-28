@@ -56,6 +56,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          preset_id: string | null
           quiz_completed: boolean | null
           quiz_result_id: string | null
           source: string | null
@@ -66,6 +67,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          preset_id?: string | null
           quiz_completed?: boolean | null
           quiz_result_id?: string | null
           source?: string | null
@@ -76,6 +78,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          preset_id?: string | null
           quiz_completed?: boolean | null
           quiz_result_id?: string | null
           source?: string | null
@@ -116,6 +119,39 @@ export type Database = {
           sort_order?: number
           styles?: Json
           updated_at?: string
+        }
+        Relationships: []
+      }
+      quiz_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          preset_id: string
+          question_id: string | null
+          question_index: number | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          preset_id?: string
+          question_id?: string | null
+          question_index?: number | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          preset_id?: string
+          question_id?: string | null
+          question_index?: number | null
+          session_id?: string
         }
         Relationships: []
       }
