@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import QuizProgress from '@/components/quiz/QuizProgress';
@@ -8,6 +8,7 @@ import { usePublicQuizQuestions } from '@/hooks/useQuizQuestions';
 import { generateProfile } from '@/lib/skinEngine';
 import { storage } from '@/lib/storage';
 import { KIWIFY_CHECKOUT_URL } from '@/lib/auth';
+import { trackFunnelEvent, resetFunnelSession, setFunnelPreset } from '@/lib/funnelTracker';
 import heroImage from '@/assets/hero-skinbella.jpg';
 import { Sparkles, Shield, ArrowRight } from 'lucide-react';
 
@@ -19,6 +20,7 @@ const Quiz = () => {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [profile, setProfile] = useState<any>(null);
+  const trackedQuestions = useRef<Set<string>>(new Set());
 
   const { data: activeQuestions, isLoading } = usePublicQuizQuestions();
   const questions = activeQuestions ?? [];
@@ -37,10 +39,21 @@ const Quiz = () => {
   };
 
   const next = () => {
+    // Track question answered
+    if (currentQ && !trackedQuestions.current.has(`${step}_${currentQ.id}`)) {
+      trackFunnelEvent('question_answered', {
+        questionIndex: step,
+        questionId: currentQ.id,
+        metadata: { totalSteps },
+      });
+      trackedQuestions.current.add(`${step}_${currentQ.id}`);
+    }
+
     if (step < totalSteps - 1) {
       setStep((s) => s + 1);
     } else {
       storage.saveAnswers(answers);
+      trackFunnelEvent('quiz_completed', { metadata: { totalQuestions: totalSteps } });
       setPhase('processing');
     }
   };
@@ -56,6 +69,7 @@ const Quiz = () => {
         storage.saveProfile(p);
         setProfile(p);
         setPhase('result');
+        trackFunnelEvent('result_viewed');
       }, 7000);
       return () => clearTimeout(timer);
     }
@@ -66,13 +80,30 @@ const Quiz = () => {
       <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full" />
     </div>
   );
-  if (phase === 'intro') return <IntroScreen onStart={() => setPhase('quiz')} />;
+
+  if (phase === 'intro') return (
+    <IntroScreen onStart={() => {
+      resetFunnelSession();
+      trackedQuestions.current.clear();
+      // Detect active preset
+      import('@/integrations/supabase/client').then(({ supabase }) => {
+        supabase.from('quiz_presets').select('preset_id').eq('is_active', true).limit(1).single()
+          .then(({ data }) => { setFunnelPreset(data?.preset_id ?? 'main'); });
+      });
+      trackFunnelEvent('quiz_started');
+      setPhase('quiz');
+    }} />
+  );
+
   if (phase === 'processing') return <ProcessingScreen />;
   if (phase === 'result') return (
     <ResultScreen
       profile={profile}
       onRedo={() => { setPhase('intro'); setStep(0); setAnswers({}); }}
-      onAccess={() => window.open(KIWIFY_CHECKOUT_URL, '_blank')}
+      onAccess={() => {
+        trackFunnelEvent('cta_clicked');
+        window.open(KIWIFY_CHECKOUT_URL, '_blank');
+      }}
     />
   );
 
@@ -82,14 +113,12 @@ const Quiz = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col" style={{ background: qStyles.bgGradient || qStyles.bgColor || undefined }}>
-      {/* Header with progress */}
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border/30">
         <div className="max-w-lg mx-auto">
           <QuizProgress current={step + 1} total={totalSteps} />
         </div>
       </header>
 
-      {/* Question */}
       <main className="flex-1 flex flex-col max-w-lg mx-auto w-full px-5 py-8 animate-fade-in" key={step} style={{ padding: qStyles.padding || undefined }}>
         <div className="mb-8 text-center">
           <h2
@@ -109,13 +138,11 @@ const Quiz = () => {
             </p>
           )}
         </div>
-
         <div className="flex-1">
           <QuestionRenderer question={currentQ} value={answers[currentQ.id]} onChange={handleAnswer} />
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="sticky bottom-0 bg-background/95 backdrop-blur-md border-t border-border/30 p-4">
         <div className="max-w-lg mx-auto flex gap-3">
           {step > 0 && (
