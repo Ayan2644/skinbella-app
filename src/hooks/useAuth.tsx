@@ -161,7 +161,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    // Return safe defaults instead of throwing — prevents blank screen during HMR or race conditions
+    return {
+      user: null,
+      session: null,
+      loading: true,
+      signOut: async () => {},
+      hasActiveSubscription: false,
+      subscriptionStatus: null,
+      isAdmin: false,
+      adminLoading: true,
+    } as AuthContextType
   }
   return context
 }
