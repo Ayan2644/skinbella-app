@@ -31,6 +31,7 @@ const typeLabels: Record<QuestionType, { label: string; icon: typeof SlidersHori
   chips: { label: 'Chips', icon: Hash },
   'multi-chips': { label: 'Multi Chips', icon: CheckSquare },
   selfie: { label: 'Selfie', icon: Camera },
+  'face-map': { label: 'Face Map', icon: LayoutGrid },
 };
 
 const FONT_OPTIONS = [
