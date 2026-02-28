@@ -10,7 +10,7 @@ interface Props {
 
 /*
  * Face region coordinates as PERCENTAGES of the face image dimensions.
- * Calibrated for the 3/4 profile photo — shifted DOWN to match actual facial features.
+ * Calibrated for the 3/4 profile photo.
  */
 const FACE_REGIONS: Record<FaceRegion, { xPct: number; yPct: number }> = {
   whole_face: { xPct: 55, yPct: 42 },
@@ -19,29 +19,29 @@ const FACE_REGIONS: Record<FaceRegion, { xPct: number; yPct: number }> = {
   eyes:       { xPct: 62, yPct: 39 },
   nose:       { xPct: 52, yPct: 53 },
   mouth:      { xPct: 46, yPct: 65 },
-  neck:       { xPct: 38, yPct: 95 },
+  neck:       { xPct: 45, yPct: 88 },
 };
 
-/* SVG path for face contour outline (relative to image %, will be scaled) */
+/* Face contour as % of image — smoother oval following the jaw/forehead */
 const FACE_CONTOUR_POINTS = [
-  { x: 48, y: 10 },   // top of forehead center
-  { x: 58, y: 8 },    // forehead right
-  { x: 68, y: 12 },
-  { x: 76, y: 20 },   // temple right
-  { x: 80, y: 30 },
-  { x: 78, y: 40 },   // cheekbone
-  { x: 72, y: 50 },   // cheek
-  { x: 64, y: 60 },   // jaw
-  { x: 54, y: 68 },   // chin side
-  { x: 46, y: 72 },   // chin bottom
-  { x: 38, y: 68 },   // chin left
-  { x: 30, y: 60 },   // jaw left
-  { x: 26, y: 50 },   // cheek left
-  { x: 26, y: 40 },
-  { x: 30, y: 30 },   // temple left
-  { x: 36, y: 20 },
-  { x: 42, y: 12 },
-  { x: 48, y: 10 },   // close
+  { x: 50, y: 12 },
+  { x: 60, y: 10 },
+  { x: 70, y: 14 },
+  { x: 77, y: 22 },
+  { x: 80, y: 32 },
+  { x: 78, y: 42 },
+  { x: 73, y: 52 },
+  { x: 65, y: 60 },
+  { x: 56, y: 67 },
+  { x: 48, y: 70 },
+  { x: 40, y: 67 },
+  { x: 33, y: 60 },
+  { x: 28, y: 52 },
+  { x: 26, y: 42 },
+  { x: 28, y: 32 },
+  { x: 33, y: 22 },
+  { x: 40, y: 14 },
+  { x: 50, y: 12 },
 ];
 
 export default function FaceMapQuestion({ question, value, onChange }: Props) {
@@ -113,7 +113,6 @@ export default function FaceMapQuestion({ question, value, onChange }: Props) {
 
   const toggle = (val: string) => {
     if (val === 'rosto_todo') {
-      // "Whole face" toggles: if already selected, deselect it; otherwise select ONLY it
       if (selected.includes('rosto_todo')) {
         onChange([]);
       } else {
@@ -121,7 +120,6 @@ export default function FaceMapQuestion({ question, value, onChange }: Props) {
       }
       return;
     }
-    // If selecting a specific region, remove "rosto_todo" if present
     let next = selected.filter((v) => v !== 'rosto_todo');
     if (next.includes(val)) {
       next = next.filter((v) => v !== val);
@@ -137,25 +135,25 @@ export default function FaceMapQuestion({ question, value, onChange }: Props) {
     return `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
   };
 
-  // Build face contour SVG path from percentage points
+  // Build smooth closed contour path using catmull-rom-like curves
   const buildContourPath = () => {
     if (!imgRect) return '';
-    const points = FACE_CONTOUR_POINTS.map((p) => ({
+    const pts = FACE_CONTOUR_POINTS.map((p) => ({
       x: imgRect.left + imgRect.width * (p.x / 100),
       y: imgRect.top + imgRect.height * (p.y / 100),
     }));
-    if (points.length < 3) return '';
-    
-    let path = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      const cpx1 = prev.x + (curr.x - prev.x) * 0.5;
-      const cpy1 = prev.y;
-      const cpx2 = prev.x + (curr.x - prev.x) * 0.5;
-      const cpy2 = curr.y;
-      path += ` C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${curr.x} ${curr.y}`;
+    if (pts.length < 3) return '';
+
+    // Smooth closed path using quadratic bezier through midpoints
+    let path = `M ${(pts[0].x + pts[1].x) / 2} ${(pts[0].y + pts[1].y) / 2}`;
+    for (let i = 1; i < pts.length; i++) {
+      const curr = pts[i];
+      const next = pts[(i + 1) % pts.length];
+      const midX = (curr.x + next.x) / 2;
+      const midY = (curr.y + next.y) / 2;
+      path += ` Q ${curr.x} ${curr.y}, ${midX} ${midY}`;
     }
+    path += ' Z';
     return path;
   };
 
@@ -175,7 +173,6 @@ export default function FaceMapQuestion({ question, value, onChange }: Props) {
       {/* Options */}
       <div className="flex-1 flex flex-col justify-center gap-2 pl-4 py-2 relative" style={{ zIndex: 3 }}>
         {options.map((opt, i) => {
-          const isWholeOpt = opt.value === 'rosto_todo';
           const isActive = selected.includes(opt.value);
           return (
             <button
@@ -212,52 +209,60 @@ export default function FaceMapQuestion({ question, value, onChange }: Props) {
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ zIndex: 2 }}
       >
-        {/* Face contour when "whole face" is selected */}
-        {isWholeface && (
-          <path
-            d={buildContourPath()}
-            fill="hsl(var(--primary) / 0.08)"
-            stroke="hsl(var(--primary))"
-            strokeWidth="2.5"
-            pathLength="1"
-            strokeDasharray="1"
-            strokeDashoffset="0"
-            style={{
-              transition: 'stroke-dashoffset 0.6s ease-out',
-            }}
-          />
-        )}
+        {/* Face contour — ALWAYS rendered, animated via strokeDashoffset */}
+        <path
+          d={buildContourPath()}
+          fill={isWholeface ? 'hsl(var(--primary) / 0.06)' : 'none'}
+          stroke="hsl(var(--primary))"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pathLength={1}
+          strokeDasharray="1 1"
+          strokeDashoffset={isWholeface ? 0 : 1}
+          style={{
+            transition: 'stroke-dashoffset 0.6s ease-in-out, fill 0.3s ease',
+          }}
+        />
 
-        {/* Connection lines for individual regions */}
+        {/* Background lines (gray, always visible unless whole face) */}
+        {lines.map((line, i) => {
+          const opt = options[i];
+          if (!opt || opt.value === 'rosto_todo') return null;
+          return (
+            <path
+              key={`bg-${opt.value}`}
+              d={buildPath(line)}
+              fill="none"
+              stroke="hsl(var(--border))"
+              strokeWidth="1"
+              opacity={isWholeface ? 0 : 0.35}
+              style={{ transition: 'opacity 0.3s ease' }}
+            />
+          );
+        })}
+
+        {/* Active lines (colored, drawn on click) */}
         {lines.map((line, i) => {
           const opt = options[i];
           if (!opt || opt.value === 'rosto_todo') return null;
           const isActive = selected.includes(opt.value);
-          const path = buildPath(line);
 
           return (
-            <g key={opt.value}>
-              {/* Background line */}
+            <g key={`active-${opt.value}`}>
+              {/* Colored line — always rendered, animated */}
               <path
-                d={path}
-                fill="none"
-                stroke="hsl(var(--border))"
-                strokeWidth="1"
-                opacity={isWholeface ? 0 : 0.35}
-                style={{ transition: 'opacity 0.3s ease' }}
-              />
-              {/* Active line */}
-              <path
-                d={path}
+                d={buildPath(line)}
                 fill="none"
                 stroke="hsl(var(--primary))"
                 strokeWidth="1.5"
-                pathLength="1"
-                strokeDasharray="1"
+                strokeLinecap="round"
+                pathLength={1}
+                strokeDasharray="1 1"
                 strokeDashoffset={isActive ? 0 : 1}
-                style={{ transition: 'stroke-dashoffset 0.4s ease-out' }}
+                style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
               />
-              {/* Dot on face */}
+              {/* Dot on face — always rendered, animated via opacity/scale */}
               <circle
                 cx={line.x1}
                 cy={line.y1}
@@ -269,24 +274,24 @@ export default function FaceMapQuestion({ question, value, onChange }: Props) {
                 style={{
                   transform: isActive ? 'scale(1)' : 'scale(0)',
                   transformOrigin: `${line.x1}px ${line.y1}px`,
-                  transition: 'transform 0.3s ease-out 0.3s, opacity 0.2s ease-out 0.3s',
+                  transition: 'transform 0.3s ease-out 0.35s, opacity 0.2s ease-out 0.35s',
                 }}
               />
-              {isActive && (
-                <circle
-                  cx={line.x1}
-                  cy={line.y1}
-                  r="9"
-                  fill="none"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="1"
-                  opacity="0.3"
-                  style={{
-                    transformOrigin: `${line.x1}px ${line.y1}px`,
-                    transition: 'transform 0.4s ease-out 0.35s',
-                  }}
-                />
-              )}
+              {/* Outer ring */}
+              <circle
+                cx={line.x1}
+                cy={line.y1}
+                r="9"
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth="1"
+                opacity={isActive ? 0.3 : 0}
+                style={{
+                  transform: isActive ? 'scale(1)' : 'scale(0)',
+                  transformOrigin: `${line.x1}px ${line.y1}px`,
+                  transition: 'transform 0.4s ease-out 0.4s, opacity 0.3s ease-out 0.4s',
+                }}
+              />
             </g>
           );
         })}
