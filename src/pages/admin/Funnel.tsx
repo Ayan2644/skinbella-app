@@ -62,11 +62,11 @@ const Funnel = () => {
       try {
         const res = await supabase.from('users').select('*', { count: 'exact', head: true });
         signups = res.count || 0;
-      } catch {}
+      } catch { /* ignore */ }
       try {
         const res = await supabase.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active');
         paid = res.count || 0;
-      } catch {}
+      } catch { /* ignore */ }
 
       return {
         quizStarted: counts['quiz_started'] || 0,

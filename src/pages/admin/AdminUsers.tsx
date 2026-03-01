@@ -77,8 +77,8 @@ const AdminUsers = () => {
       if (!usersData || usersData.length === 0) return [];
 
       // Buscar dados complementares (podem falhar sem bloquear)
-      let subsMap = new Map<string, { status: string; plan_name: string | null }>();
-      let quizMap = new Map<string, number | null>();
+      const subsMap = new Map<string, { status: string; plan_name: string | null }>();
+      const quizMap = new Map<string, number | null>();
 
       try {
         const { data: subsData } = await supabase

@@ -67,7 +67,7 @@ const Subscriptions = () => {
 
       // Buscar emails dos usuários separadamente
       const userIds = [...new Set(data.map(s => s.user_id))];
-      let usersMap = new Map<string, { email: string; full_name: string | null }>();
+      const usersMap = new Map<string, { email: string; full_name: string | null }>();
       try {
         const { data: usersData } = await supabase
           .from('users')

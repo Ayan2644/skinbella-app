@@ -120,7 +120,7 @@ export default function PageEditor() {
       if (!def) return;
       
       // For predefined sections, seed with default children
-      let content = JSON.parse(JSON.stringify(def.defaultContent));
+      const content = JSON.parse(JSON.stringify(def.defaultContent));
       if (type.startsWith("section_") && type !== "section_hero" && type !== "section_custom") {
         const defaultChildren = getDefaultChildrenForSection(type);
         if (defaultChildren.length > 0 && (!content.children || content.children.length === 0)) {

@@ -500,11 +500,11 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
       )}
 
       {activeType === "testimonials" && (
-        <div><Label className="text-xs">Depoimentos (JSON)</Label><Textarea value={JSON.stringify(activeContent.items || [], null, 2)} onChange={(e) => { try { updateContent("items", JSON.parse(e.target.value)); } catch {} }} className="mt-1 text-xs min-h-[120px] font-mono" /></div>
+        <div><Label className="text-xs">Depoimentos (JSON)</Label><Textarea value={JSON.stringify(activeContent.items || [], null, 2)} onChange={(e) => { try { updateContent("items", JSON.parse(e.target.value)); } catch { /* ignore parse errors */ } }} className="mt-1 text-xs min-h-[120px] font-mono" /></div>
       )}
 
       {activeType === "faq" && (
-        <div><Label className="text-xs">FAQ (JSON)</Label><Textarea value={JSON.stringify(activeContent.items || [], null, 2)} onChange={(e) => { try { updateContent("items", JSON.parse(e.target.value)); } catch {} }} className="mt-1 text-xs min-h-[120px] font-mono" /></div>
+        <div><Label className="text-xs">FAQ (JSON)</Label><Textarea value={JSON.stringify(activeContent.items || [], null, 2)} onChange={(e) => { try { updateContent("items", JSON.parse(e.target.value)); } catch { /* ignore parse errors */ } }} className="mt-1 text-xs min-h-[120px] font-mono" /></div>
       )}
 
       {/* === Style fields === */}
