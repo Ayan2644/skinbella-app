@@ -132,20 +132,40 @@ const Today = () => {
             </p>
           </div>
 
-          {/* Avatar */}
-          <div
-            className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 mt-0.5"
+          {/* Avatar with edit button */}
+          <button
+            onClick={() => profilePhotoRef.current?.click()}
+            className="relative w-[52px] h-[52px] rounded-full shrink-0 mt-0.5 group"
             style={{
               border: '2.5px solid #FFFFFF',
               boxShadow: '0 4px 14px rgba(44,31,20,0.18)',
             }}
           >
-            <img
-              src={storage.getLatestSelfie() || avatarWoman}
-              alt="Perfil"
-              className="w-full h-full object-cover object-[50%_20%]"
+            <div className="w-full h-full rounded-full overflow-hidden">
+              <img
+                src={profilePhoto || avatarWoman}
+                alt="Perfil"
+                className="w-full h-full object-cover object-[50%_20%]"
+              />
+            </div>
+            <div
+              className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+              style={{
+                background: 'hsl(var(--primary))',
+                border: '2px solid #FFFFFF',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+              }}
+            >
+              <Pencil className="w-2.5 h-2.5 text-primary-foreground" />
+            </div>
+            <input
+              ref={profilePhotoRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleProfilePhotoChange}
             />
-          </div>
+          </button>
         </div>
 
         {/* ── Hero: Idade da Pele ── */}
