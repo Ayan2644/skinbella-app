@@ -19,7 +19,19 @@ function get<T>(key: string): T | null {
   } catch { return null; }
 }
 function set(key: string, value: unknown) {
-  localStorage.setItem(key, JSON.stringify(value));
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    // QuotaExceededError — clear old selfies/heavy data and retry
+    console.warn('[storage] Quota exceeded, clearing old data…');
+    try {
+      localStorage.removeItem(KEYS.selfieHistory);
+      localStorage.removeItem(KEYS.answers);
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      console.error('[storage] Still over quota after cleanup');
+    }
+  }
 }
 
 export const storage = {
