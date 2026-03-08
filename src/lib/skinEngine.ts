@@ -15,17 +15,36 @@ export interface SkinProfile {
 }
 
 export function generateProfile(answers: Record<string, any>): SkinProfile {
-  const realAge = answers.idade ?? 28;
-  const sono = answers.sono ?? 5;
+  // Map quiz question IDs to engine variables
+  const realAge = answers['faixa-etaria'] ?? answers.idade ?? 28;
+
+  // sono: quiz returns string "otimo"/"bom"/"regular"/"ruim" → map to numeric
+  const sonoMap: Record<string, number> = { otimo: 8, bom: 6, regular: 4, ruim: 2 };
+  const sonoRaw = answers.sono;
+  const sono = typeof sonoRaw === 'number' ? sonoRaw : (sonoMap[sonoRaw] ?? 5);
+
   const agua = answers.agua ?? 5;
-  const sol = answers.sol ?? 'media';
-  const estresse = answers.estresse ?? 'medio';
+
+  // exposicao_solar → sol
+  const sol = answers.exposicao_solar ?? answers.sol ?? 'media';
+
+  // estresse: quiz values "baixo"/"medio"/"alto"/"muito_alto"
+  const estresseRaw = answers.estresse ?? 'medio';
+  const estresse = estresseRaw === 'muito_alto' ? 'alto' : estresseRaw;
+
   const alimentacao = answers.alimentacao ?? 'ok';
   const acucar = answers.acucar ?? 'as_vezes';
-  const skincare = answers.skincare ?? 'as_vezes';
-  const protetor = answers.protetor ?? 'as_vezes';
+
+  // rotina_diaria → skincare: "nenhuma"→"nunca", "basica"→"as_vezes", "intermediaria"/"completa"→ok
+  const rotinaMap: Record<string, string> = { nenhuma: 'nunca', basica: 'as_vezes', intermediaria: 'regular', completa: 'regular' };
+  const skincare = rotinaMap[answers.rotina_diaria] ?? answers.skincare ?? 'as_vezes';
+
+  // protetor_solar → protetor
+  const protetorMap: Record<string, string> = { nunca: 'nunca', as_vezes: 'as_vezes', maioria: 'as_vezes', sempre: 'sempre' };
+  const protetor = protetorMap[answers.protetor_solar] ?? answers.protetor ?? 'as_vezes';
+
   const tipoPele = answers.tipo_pele ?? 'mista';
-  const incomodosArr: string[] = answers.incomodos ?? [];
+  const incomodosArr: string[] = answers.preocupacoes_pele ?? answers.incomodos ?? [];
 
   // ── Habit score → skin age offset ──
   let habitScore = 0;
