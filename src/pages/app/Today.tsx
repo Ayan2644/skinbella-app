@@ -93,6 +93,19 @@ const Today = () => {
     reader.readAsDataURL(f);
   };
 
+  const handleProfilePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const url = ev.target?.result as string;
+      storage.saveSelfie(url);
+      setProfilePhoto(url);
+      toast({ title: 'Foto atualizada! 📸', description: 'Sua nova foto de perfil foi salva.' });
+    };
+    reader.readAsDataURL(f);
+  }, [toast]);
+
   const firstName = auth?.name?.split(' ')[0] ?? 'linda';
 
   return (
