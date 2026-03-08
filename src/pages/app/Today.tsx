@@ -1,8 +1,8 @@
 import { storage } from '@/lib/storage';
 import { useNavigate } from 'react-router-dom';
-import { CheckSquare, Sun, Flame, Camera } from 'lucide-react';
+import { CheckSquare, Sun, Flame, Camera, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { OnboardingModal } from '@/components/OnboardingModal';
 
 import cardChecklistBg from '@/assets/card-checklist-bg.jpg';
