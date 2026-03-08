@@ -67,6 +67,10 @@ const Quiz = () => {
       const timer = setTimeout(() => {
         const p = generateProfile(answers);
         storage.saveProfile(p);
+        // Save quiz selfie to history so it appears on Home/Report
+        if (answers.selfie && typeof answers.selfie === 'string') {
+          storage.saveSelfie(answers.selfie);
+        }
         setProfile(p);
         setPhase('result');
         trackFunnelEvent('result_viewed');

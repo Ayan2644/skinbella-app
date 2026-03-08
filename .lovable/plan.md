@@ -1,33 +1,69 @@
 
 
-## Plan: Show User's Selfie in Circular Photo Spots (Home + Report)
+## Plano: Novo tipo de pergunta "Face Map" com animação SVG
 
-### Problem
-Currently, the Home page (`Today.tsx`) and Report page (`Report.tsx`) display static generic images (`heroSkinbella` and `avatarWoman`) in the circular photo areas. The user's selfie, captured during the quiz, is stored in localStorage but never displayed in these locations.
+### O que vamos criar
 
-### Data Flow
-- Quiz captures selfie → stored via `storage.saveSelfie(dataUrl)` in `skinbella.selfies` (array of `{date, url}`)
-- The quiz also stores the selfie in `answers.selfie` before profile generation
-- `storage.getSelfies()` returns the history; we need the latest one
+Um novo tipo de pergunta `face-map` que exibe uma imagem de rosto ao lado das opções. Ao selecionar uma opção, uma linha SVG animada "desenha" do item até a região correspondente no rosto, com um ponto de destaque final — exatamente como no quiz Lovi.
 
-### Changes
+### Arquitetura
 
-**1. Add helper to `src/lib/storage.ts`**
-- Add `getLatestSelfie(): string | null` — returns the most recent selfie URL from the selfie history, or the selfie from quiz answers as fallback.
+```text
+QuestionRenderer
+  └── case 'face-map' → <FaceMapQuestion />
+        ├── SVG com imagem de rosto (feminino/masculino baseado em resposta anterior)
+        ├── Pontos de destaque por região (testa, olhos, nariz, boca, pescoço)
+        ├── Linhas SVG com stroke-dashoffset animation
+        └── Lista de opções (multi-select) à direita
+```
 
-**2. Update `src/pages/app/Today.tsx`**
-- Import `storage.getLatestSelfie()`
-- **Avatar (top-right, line ~129)**: Replace `avatarWoman` with user's selfie when available, fallback to `avatarWoman`
-- **Hero circular photo (line ~192)**: Replace `heroSkinbella` with user's selfie when available, fallback to `heroSkinbella`
+### Etapas de implementação
 
-**3. Update `src/pages/app/Report.tsx`**
-- Import `storage.getLatestSelfie()`
-- **Hero circular photo (line ~276)**: Replace `heroSkinbella` with user's selfie when available, fallback to `heroSkinbella`
+1. **Adicionar tipo `face-map` ao sistema de tipos** (`quizData.ts`)
+   - Adicionar `'face-map'` ao union type `QuestionType`
+   - Adicionar campo opcional `faceRegion` ao `QuizOption` (valores: `whole_face`, `forehead`, `eyebrows`, `eyes`, `nose`, `mouth`, `neck`)
 
-**4. Save quiz selfie to selfie history**
-- In `src/pages/Quiz.tsx`, after generating the profile, also call `storage.saveSelfie()` with the selfie answer so it's available in the history even if the user never manually takes a weekly selfie.
+2. **Criar componente `FaceMapQuestion`** (`src/components/quiz/FaceMapQuestion.tsx`)
+   - Layout: imagem do rosto à esquerda (~40%), opções à direita (~60%)
+   - Imagem do rosto como SVG container com uma foto de referência embutida (ou asset estático)
+   - Para cada opção, definir coordenadas SVG da região facial e o path da linha curva
+   - Animação: `stroke-dasharray: 1; stroke-dashoffset` transição de 1→0 via CSS transition
+   - Ponto circular no final da linha com scale animation
+   - Multi-select: múltiplas linhas podem estar ativas simultaneamente
+   - Cor de destaque: rosa/primary quando selecionado, com contorno na região do rosto
 
-### Visual Result
-- The circular photo spots will display the user's own face (from the quiz selfie) with `object-cover` and `rounded-full` styling — same circular crop as the current generic photo.
-- If no selfie exists, the generic images remain as fallback.
+3. **Registrar no `QuestionRenderer.tsx`**
+   - Adicionar case `'face-map'` apontando para o novo componente
+
+4. **Adicionar assets de rosto**
+   - Usar uma ilustração SVG clean de rosto feminino (estilo line-art/minimalista) como asset
+   - Alternativa: foto com recorte clean como no Lovi (podemos usar uma foto stock placeholder)
+
+5. **Atualizar pergunta "Áreas para melhorar" na predefinição Lovi Skincare**
+   - Alterar type de `multi-chips` para `face-map` na pergunta `areas_melhorar`
+   - Adicionar `faceRegion` a cada opção
+
+6. **Adicionar ao editor de quiz**
+   - Incluir `face-map` na lista de tipos disponíveis no dropdown do Quiz Editor
+
+### Detalhes da animação SVG
+
+- Cada região do rosto tem coordenadas fixas (ex: testa = `{x: 120, y: 80}`)
+- Cada opção na lista tem uma posição Y calculada
+- O path SVG é uma curva Bézier do centro-direito da opção até o ponto facial
+- `pathLength="1"` + `stroke-dasharray="1"` + transição de `stroke-dashoffset: 1 → 0`
+- Duração: 400ms ease-out
+- Ponto final: `scale(0) → scale(1)` com delay de 300ms
+
+### Mapa de regiões faciais (coordenadas relativas ao SVG viewBox)
+
+```text
+whole_face  → contorno geral (borda rosa ao redor)
+forehead    → (160, 60)
+eyebrows    → (160, 105)
+eyes        → (160, 130)
+nose        → (160, 175)
+mouth       → (160, 220)
+neck        → (160, 290)
+```
 
