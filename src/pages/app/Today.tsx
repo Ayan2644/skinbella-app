@@ -1,8 +1,8 @@
 import { storage } from '@/lib/storage';
 import { useNavigate } from 'react-router-dom';
-import { CheckSquare, Sun, Flame, Camera } from 'lucide-react';
+import { CheckSquare, Sun, Flame, Camera, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { OnboardingModal } from '@/components/OnboardingModal';
 
 import cardChecklistBg from '@/assets/card-checklist-bg.jpg';
@@ -63,6 +63,8 @@ const Today = () => {
   const totalCount = safeChecklist.length || 4;
   const checklistPercent = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
   const fileRef    = useRef<HTMLInputElement>(null);
+  const profilePhotoRef = useRef<HTMLInputElement>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(storage.getLatestSelfie());
 
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -91,6 +93,19 @@ const Today = () => {
     reader.readAsDataURL(f);
   };
 
+  const handleProfilePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const url = ev.target?.result as string;
+      storage.saveSelfie(url);
+      setProfilePhoto(url);
+      toast({ title: 'Foto atualizada! 📸', description: 'Sua nova foto de perfil foi salva.' });
+    };
+    reader.readAsDataURL(f);
+  }, [toast]);
+
   const firstName = auth?.name?.split(' ')[0] ?? 'linda';
 
   return (
@@ -117,20 +132,40 @@ const Today = () => {
             </p>
           </div>
 
-          {/* Avatar */}
-          <div
-            className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 mt-0.5"
+          {/* Avatar with edit button */}
+          <button
+            onClick={() => profilePhotoRef.current?.click()}
+            className="relative w-[52px] h-[52px] rounded-full shrink-0 mt-0.5 group"
             style={{
               border: '2.5px solid #FFFFFF',
               boxShadow: '0 4px 14px rgba(44,31,20,0.18)',
             }}
           >
-            <img
-              src={storage.getLatestSelfie() || avatarWoman}
-              alt="Perfil"
-              className="w-full h-full object-cover object-[50%_20%]"
+            <div className="w-full h-full rounded-full overflow-hidden">
+              <img
+                src={profilePhoto || avatarWoman}
+                alt="Perfil"
+                className="w-full h-full object-cover object-[50%_20%]"
+              />
+            </div>
+            <div
+              className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+              style={{
+                background: 'hsl(var(--primary))',
+                border: '2px solid #FFFFFF',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+              }}
+            >
+              <Pencil className="w-2.5 h-2.5 text-primary-foreground" />
+            </div>
+            <input
+              ref={profilePhotoRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleProfilePhotoChange}
             />
-          </div>
+          </button>
         </div>
 
         {/* ── Hero: Idade da Pele ── */}
@@ -189,7 +224,7 @@ const Today = () => {
               }}
             >
               <img
-                src={storage.getLatestSelfie() || heroSkinbella}
+                src={profilePhoto || heroSkinbella}
                 alt=""
                 className="w-full h-full object-cover object-[50%_20%]"
               />
