@@ -273,7 +273,7 @@ const Report = () => {
             boxShadow: '0 8px 20px rgba(46,41,36,0.18)',
           }}
         >
-          <img src={heroSkinbella} alt="" className="w-full h-full object-cover object-[50%_20%]" />
+          <img src={storage.getLatestSelfie() || heroSkinbella} alt="" className="w-full h-full object-cover object-[50%_20%]" />
         </div>
 
         {/* Decorações */}

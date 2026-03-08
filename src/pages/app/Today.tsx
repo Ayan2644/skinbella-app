@@ -189,7 +189,7 @@ const Today = () => {
               }}
             >
               <img
-                src={heroSkinbella}
+                src={storage.getLatestSelfie() || heroSkinbella}
                 alt=""
                 className="w-full h-full object-cover object-[50%_20%]"
               />

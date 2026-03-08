@@ -123,6 +123,14 @@ export const storage = {
   },
   getSelfies: () => get<{ date: string; url: string }[]>(KEYS.selfieHistory) ?? [],
 
+  getLatestSelfie: (): string | null => {
+    const selfies = get<{ date: string; url: string }[]>(KEYS.selfieHistory);
+    if (selfies && selfies.length > 0) return selfies[selfies.length - 1].url;
+    const answers = get<Record<string, unknown>>(KEYS.answers);
+    if (answers && typeof answers.selfie === 'string') return answers.selfie;
+    return null;
+  },
+
   // Routine Steps (BUG FIX)
   getRoutineSteps: (type: 'morning' | 'night') => {
     const key = type === 'morning' ? KEYS.routineStepsMorning : KEYS.routineStepsNight;
