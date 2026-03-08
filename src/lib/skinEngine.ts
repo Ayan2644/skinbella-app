@@ -37,8 +37,8 @@ export function generateProfile(answers: Record<string, any>): SkinProfile {
   if (acucar === 'frequente') habitScore += 1;
   if (skincare === 'nunca') habitScore += 1;
   if (protetor === 'nunca') habitScore += 2; else if (protetor === 'as_vezes') habitScore += 1;
-  // habitScore max ~12, mapped to 3–5 range
-  const offset = Math.min(5, Math.max(3, 3 + Math.round((habitScore / 12) * 2)));
+  // habitScore max ~12, mapped to 3–10 range
+  const offset = Math.min(10, Math.max(3, 3 + Math.round((habitScore / 12) * 7)));
   const skinAge = realAge + offset;
   const ageOffset = offset;
 
