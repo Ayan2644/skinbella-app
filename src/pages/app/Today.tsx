@@ -63,6 +63,8 @@ const Today = () => {
   const totalCount = safeChecklist.length || 4;
   const checklistPercent = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
   const fileRef    = useRef<HTMLInputElement>(null);
+  const profilePhotoRef = useRef<HTMLInputElement>(null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(storage.getLatestSelfie());
 
   const [showOnboarding, setShowOnboarding] = useState(false);
 
