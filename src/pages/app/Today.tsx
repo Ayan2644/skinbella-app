@@ -126,7 +126,7 @@ const Today = () => {
             }}
           >
             <img
-              src={avatarWoman}
+              src={storage.getLatestSelfie() || avatarWoman}
               alt="Perfil"
               className="w-full h-full object-cover object-[50%_20%]"
             />
