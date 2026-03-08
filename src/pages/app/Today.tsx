@@ -224,7 +224,7 @@ const Today = () => {
               }}
             >
               <img
-                src={storage.getLatestSelfie() || heroSkinbella}
+                src={profilePhoto || heroSkinbella}
                 alt=""
                 className="w-full h-full object-cover object-[50%_20%]"
               />
