@@ -3,6 +3,7 @@ const KEYS = {
   answers: 'skinbella.answers',
   auth: 'skinbella.auth',
   checklist: 'skinbella.checklist',
+  checklistDate: 'skinbella.checklist.date',
   streak: 'skinbella.streak',
   streakData: 'skinbella.streak.data',
   routineMorning: 'skinbella.routine.morning',
@@ -63,6 +64,29 @@ export const storage = {
     ];
 
     try {
+      // Reset diário: se mudou o dia, zera os itens concluídos
+      const today = new Date().toDateString();
+      const storedDate = localStorage.getItem(KEYS.checklistDate);
+      if (storedDate !== today) {
+        localStorage.setItem(KEYS.checklistDate, today);
+        const raw = localStorage.getItem(KEYS.checklist);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw);
+            const items = Array.isArray(parsed) ? parsed : (parsed?.items ?? []);
+            const reset = items
+              .filter((i: any) => i && 'id' in i && 'label' in i)
+              .map((i: any) => ({ id: String(i.id), label: String(i.label), done: false }));
+            if (reset.length > 0) {
+              set(KEYS.checklist, reset);
+              return reset;
+            }
+          } catch { /* ignore, fall through to default */ }
+        }
+        set(KEYS.checklist, defaultChecklist);
+        return defaultChecklist;
+      }
+
       const raw = localStorage.getItem(KEYS.checklist);
       if (!raw) {
         set(KEYS.checklist, defaultChecklist);

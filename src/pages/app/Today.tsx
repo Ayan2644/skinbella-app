@@ -1,9 +1,13 @@
 import { storage } from '@/lib/storage';
+import { uploadProfilePhoto, saveProfilePhotoUrl, getProfilePhotoUrl } from '@/lib/photoStorage';
+import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { CheckSquare, Sun, Flame, Camera, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { OnboardingModal } from '@/components/OnboardingModal';
+import { ComboModal } from '@/components/ComboModal';
+import { useComboModal } from '@/hooks/useComboModal';
 
 import cardChecklistBg from '@/assets/card-checklist-bg.jpg';
 import cardRotinaBg    from '@/assets/card-rotina-bg.jpg';
@@ -55,6 +59,7 @@ const Today = () => {
   const auth       = storage.getAuth();
   const navigate   = useNavigate();
   const { toast }  = useToast();
+  const { user }   = useAuth();
   const streak     = storage.getStreak();
   const morningDone = storage.getRoutineStatus('morning');
   const checklist  = storage.getChecklist();
@@ -65,6 +70,14 @@ const Today = () => {
   const fileRef    = useRef<HTMLInputElement>(null);
   const profilePhotoRef = useRef<HTMLInputElement>(null);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(storage.getLatestSelfie());
+
+  // Carrega foto do Supabase ao montar (sobrescreve o localStorage se existir)
+  useEffect(() => {
+    if (!user) return;
+    getProfilePhotoUrl(user.id).then(url => {
+      if (url) setProfilePhoto(url);
+    });
+  }, [user?.id]);
 
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -96,21 +109,33 @@ const Today = () => {
   const handleProfilePhotoChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+
+    // 1. Preview local imediato
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const url = ev.target?.result as string;
-      storage.saveSelfie(url);
-      setProfilePhoto(url);
-      toast({ title: 'Foto atualizada! 📸', description: 'Sua nova foto de perfil foi salva.' });
+      const dataUrl = ev.target?.result as string;
+      setProfilePhoto(dataUrl);
+      storage.saveSelfie(dataUrl);
     };
     reader.readAsDataURL(f);
-  }, [toast]);
+
+    // 2. Upload para Supabase em background
+    if (user) {
+      uploadProfilePhoto(f, user.id)
+        .then(url => saveProfilePhotoUrl(user.id, url).then(() => setProfilePhoto(url)))
+        .catch(err => console.error('[photo] Upload falhou:', err));
+    }
+
+    toast({ title: 'Foto atualizada! 📸', description: 'Sua nova foto de perfil foi salva.' });
+  }, [user, toast]);
 
   const firstName = auth?.name?.split(' ')[0] ?? 'linda';
+  const combo = useComboModal('today', 5000);
 
   return (
     <>
       <OnboardingModal open={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      <ComboModal open={combo.open} onClose={combo.close} />
 
       <section className="space-y-4 pb-6">
 
@@ -127,8 +152,8 @@ const Today = () => {
               Olá, {firstName}{' '}
               <span style={{ color: '#C8913F' }}>✨</span>
             </h1>
-            <p className="text-[13px] mt-0.5" style={{ color: '#8C7B6B' }}>
-              Este é seu painel de cuidados diários
+            <p className="text-[13px] mt-0.5 capitalize" style={{ color: '#8C7B6B' }}>
+              {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
 
@@ -244,31 +269,31 @@ const Today = () => {
 
         {/* ── 2 mini stats: Streak + Rotina ── */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Streak mini */}
+          {/* Tarefas Concluídas mini */}
           <div
             className="rounded-[22px] px-4 py-4 animate-fade-in-up"
             style={{
-              background: 'linear-gradient(135deg, #FDF0C8 0%, #F5CF80 100%)',
-              border: '1px solid #F0D8A8',
+              background: 'linear-gradient(135deg, #E8EFDF 0%, #D0E4C0 100%)',
+              border: '1px solid #C8E0A8',
               boxShadow: '0 6px 18px rgba(44,31,20,0.09)',
               animationDelay: '140ms',
               animationFillMode: 'both',
             }}
           >
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl select-none">🔥</span>
-              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#7A5020' }}>
-                Streak
+              <span className="text-xl select-none">✅</span>
+              <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#3A5A2A' }}>
+                Hoje
               </p>
             </div>
             <p
               className="text-[26px] font-bold leading-none font-['Playfair_Display'] mb-0.5"
               style={{ color: '#2C1F14' }}
             >
-              {streak}
+              {doneCount}
             </p>
             <p className="text-[11px]" style={{ color: '#8C7B6B' }}>
-              {streak === 1 ? 'dia consecutivo' : 'dias consecutivos'}
+              de {totalCount} tarefas
             </p>
           </div>
 
@@ -349,13 +374,13 @@ const Today = () => {
 
             {/* Imagem lateral */}
             <div
-              className="w-[100px] shrink-0 relative pointer-events-none"
+              className="w-[100px] shrink-0 relative pointer-events-none self-stretch"
               style={{ borderRadius: '0 24px 24px 0', overflow: 'hidden' }}
             >
               <img
                 src={cardChecklistBg}
                 alt=""
-                className="w-full h-full object-cover object-center"
+                className="absolute inset-0 w-full h-full object-cover object-center"
               />
               <div
                 className="absolute inset-0"
@@ -422,7 +447,7 @@ const Today = () => {
               <img
                 src={cardRotinaBg}
                 alt=""
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
             </div>
           </div>
@@ -446,42 +471,42 @@ const Today = () => {
               <div className="flex items-center gap-3 mb-2">
                 <div
                   className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
-                  style={{ background: '#FDF0C8' }}
+                  style={{ background: '#E8EFDF' }}
                 >
-                  <Flame className="w-5 h-5" style={{ color: '#C8913F' }} />
+                  <CheckSquare className="w-5 h-5" style={{ color: '#4A5C3A' }} />
                 </div>
                 <div>
                   <p className="text-[17px] font-semibold" style={{ color: '#2C1F14' }}>
-                    Streak
+                    Tarefas Concluídas
                   </p>
                   <p className="text-[12px]" style={{ color: '#8C7B6B' }}>
-                    {streak} {streak === 1 ? 'dia consecutivo' : 'dias consecutivos'}
+                    {doneCount} de {totalCount} hoje
                   </p>
                 </div>
               </div>
 
               <ProgressBar
-                percent={streakPercent}
-                color="#C8913F"
+                percent={checklistPercent}
+                color="#4A5C3A"
                 trackColor="#EDE8E1"
                 height={6}
                 delay={300}
               />
 
               <p className="text-[11px] mt-1.5" style={{ color: '#8C7B6B' }}>
-                Meta: {streakTarget} dias seguidos
+                Meta: concluir todas as {totalCount} tarefas do dia
               </p>
             </div>
 
             {/* Imagem lateral */}
             <div
-              className="w-[110px] shrink-0 relative pointer-events-none"
+              className="w-[110px] shrink-0 relative pointer-events-none self-stretch"
               style={{ borderRadius: '0 24px 24px 0', overflow: 'hidden' }}
             >
               <img
                 src={streakWoman}
                 alt=""
-                className="w-full h-full object-cover object-top"
+                className="absolute inset-0 w-full h-full object-cover object-top"
               />
               <div
                 className="absolute inset-0"

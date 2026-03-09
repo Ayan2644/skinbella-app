@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { storage } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
+import { ComboModal } from '@/components/ComboModal';
+import { useComboModal } from '@/hooks/useComboModal';
 
 /* ─── Helpers de emoji ─── */
 function getItemEmoji(label: string): string {
@@ -76,7 +78,11 @@ const Checklist = () => {
   const dayNumber = today.getDate();
   const monthName = today.toLocaleDateString('pt-BR', { month: 'long' });
 
+  const combo = useComboModal('checklist', 6000);
+
   return (
+    <>
+    <ComboModal open={combo.open} onClose={combo.close} />
     <section className="space-y-4 pb-8">
 
       {/* ── Header: data + streak ── */}
@@ -333,6 +339,7 @@ const Checklist = () => {
       )}
 
     </section>
+    </>
   );
 };
 

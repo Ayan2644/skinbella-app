@@ -1,4 +1,6 @@
 import { storage } from '@/lib/storage';
+import { ComboModal } from '@/components/ComboModal';
+import { useComboModal } from '@/hooks/useComboModal';
 
 interface NutrientRef { nome: string; recomendacao: string; }
 
@@ -97,8 +99,12 @@ const Diet = () => {
     (n: NutrientRef) => n.recomendacao === 'SkinBella Caps'
   );
   const capsTip = buildCapsTip(capsNutrients);
+  // Dispara quando a usuária termina de ler "Evitar" e chega ao card de Caps
+  const combo = useComboModal('diet', 4500);
 
   return (
+    <>
+    <ComboModal open={combo.open} onClose={combo.close} />
     <section className="space-y-4 pb-10">
 
       {/* ── Header contextual ── */}
@@ -165,9 +171,18 @@ const Diet = () => {
             >
               {getPriorizarEmoji(item)}
             </div>
-            <p className="text-[13px] font-medium leading-snug flex-1" style={{ color: '#2C1F14' }}>
-              {item}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-medium leading-snug" style={{ color: '#2C1F14' }}>
+                {item}
+              </p>
+              <button
+                onClick={combo.openModal}
+                className="text-[10px] font-semibold mt-0.5"
+                style={{ color: '#C9A96E' }}
+              >
+                O Caps ajuda a compensar →
+              </button>
+            </div>
             <span className="text-[11px] font-bold shrink-0" style={{ color: '#4A5C3A' }}>✓</span>
           </div>
         ))}
@@ -285,9 +300,10 @@ const Diet = () => {
         </div>
       </div>
 
-      {/* ── Dica final — dinâmica com Caps nutrients ── */}
-      <div
-        className="animate-fade-in-up"
+      {/* ── Dica final — clicável abre ComboModal ── */}
+      <button
+        onClick={combo.openModal}
+        className="w-full text-left animate-fade-in-up active:scale-[0.98] transition-transform"
         style={{
           borderRadius: 20,
           background: 'linear-gradient(135deg, #FDF0C8 0%, #F5E8A8 100%)',
@@ -299,7 +315,7 @@ const Diet = () => {
       >
         <div className="flex gap-3 items-start px-4 py-4">
           <span className="text-xl shrink-0 mt-0.5">💊</span>
-          <div>
+          <div className="flex-1">
             <p className="text-[13px] font-semibold mb-0.5" style={{ color: '#2C1F14' }}>
               Potencialize com SkinBella Caps
             </p>
@@ -309,17 +325,23 @@ const Diet = () => {
           </div>
         </div>
         <div
-          className="flex gap-3 items-start px-4 pb-4"
+          className="flex items-center justify-between px-4 pb-4"
           style={{ marginTop: -4 }}
         >
-          <span className="text-xl shrink-0 opacity-0">💡</span>
           <p className="text-[11px] leading-relaxed" style={{ color: '#9A7040' }}>
-            Dieta + suplemento + sérum tópico = protocolo completo de dentro para fora.
+            Dieta + suplemento + sérum = protocolo completo.
           </p>
+          <span
+            className="text-[11px] font-bold px-3 py-1 rounded-full shrink-0 ml-3"
+            style={{ background: '#C9A96E', color: '#fff' }}
+          >
+            Ver combo →
+          </span>
         </div>
-      </div>
+      </button>
 
     </section>
+    </>
   );
 };
 

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { storage } from '@/lib/storage';
+import { ComboModal } from '@/components/ComboModal';
+import { useComboModal } from '@/hooks/useComboModal';
 
 interface Nutrient {
   nome: string;
@@ -86,7 +88,14 @@ const Nutrients = () => {
 
   const { skinAge, prioridadesTop3, nutrientesTop4 } = profile;
 
+  // Dispara logo após as barras de urgência terminarem de animar
+  // Última barra: delay 400 + 3*120 = 760ms + transição 900ms ≈ 1700ms
+  // +600ms para a usuária absorver os níveis URGENTE antes do popup
+  const combo = useComboModal('nutrients', 2400);
+
   return (
+    <>
+    <ComboModal open={combo.open} onClose={combo.close} />
     <section className="pb-10">
 
       {/* ── Header ── */}
@@ -293,15 +302,16 @@ const Nutrients = () => {
                   </p>
                 </div>
 
-                {/* Produto recomendado */}
-                <div
-                  className="flex items-center justify-between rounded-2xl px-4 py-3"
+                {/* Produto recomendado — clique abre o ComboModal */}
+                <button
+                  onClick={combo.openModal}
+                  className="w-full flex items-center justify-between rounded-2xl px-4 py-3 active:scale-[0.98] transition-transform"
                   style={{
                     background: '#F7F3EE',
                     border: '1px solid #EDE8E1',
                   }}
                 >
-                  <div>
+                  <div className="text-left">
                     <p
                       className="text-[10px] uppercase tracking-wider font-semibold mb-0.5"
                       style={{ color: '#8C7B6B' }}
@@ -321,7 +331,7 @@ const Nutrients = () => {
                   >
                     →
                   </span>
-                </div>
+                </button>
               </div>
             </div>
           );
@@ -329,6 +339,7 @@ const Nutrients = () => {
       </div>
 
     </section>
+    </>
   );
 };
 

@@ -1,4 +1,6 @@
 import { ExternalLink } from 'lucide-react';
+import { ComboModal } from '@/components/ComboModal';
+import { useComboModal } from '@/hooks/useComboModal';
 
 /* ─── Conteúdo da biblioteca ─── */
 const CONTENTS = [
@@ -77,7 +79,11 @@ const CONTENTS = [
 ];
 
 const Library = () => {
+  const combo = useComboModal('library', 5000);
+
   return (
+    <>
+    <ComboModal open={combo.open} onClose={combo.close} />
     <section className="space-y-4 pb-10">
 
       {/* ── Header ── */}
@@ -190,6 +196,7 @@ const Library = () => {
       </div>
 
     </section>
+    </>
   );
 };
 

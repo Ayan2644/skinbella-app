@@ -1,5 +1,9 @@
 import { storage } from '@/lib/storage';
 import { ExternalLink } from 'lucide-react';
+import { KIWIFY_CHECKOUT_URL } from '@/lib/auth';
+import imgSerum from '@/assets/skinbella-caps-serum/Skinbella-Serum-1024x1024.webp';
+import imgCaps  from '@/assets/skinbella-caps-serum/skin bela 1 pote.webp';
+import imgCombo from '@/assets/skinbella-caps-serum/skinbelacapseserum.jpeg';
 
 /* ─── Dados dos produtos — 8 ativos reais de cada fórmula ─── */
 const SERUM = {
@@ -19,13 +23,13 @@ const SERUM = {
     { name: 'Alantoína 0,5%',             benefit: 'Calmante — seguro para todos os tipos de pele' },
   ],
   how: 'Aplique 3–4 gotas no rosto limpo pela manhã e à noite. Pressione suavemente sobre a pele e aguarde 60s antes do hidratante. Pela manhã, finalize com protetor solar FPS 50+.',
-  imageUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&h=400&fit=crop&q=80',
+  imageUrl: imgSerum,
   matchKeywords: [
     'vitamina c', 'niacinamida', 'hialurônico', 'hialuronico',
     'peptídeos', 'matrixyl', 'rosa mosqueta', 'vitamina e',
     'glicerina', 'pantenol', 'alantoína', 'alantoin',
   ],
-  link: '#',
+  link: KIWIFY_CHECKOUT_URL,
 };
 
 const CAPS = {
@@ -45,13 +49,13 @@ const CAPS = {
     { name: 'Silício Orgânico',            benefit: 'Estimula elastina e reconstrói a firmeza' },
   ],
   how: 'Tome 2 cápsulas por dia, preferencialmente com o café da manhã, acompanhadas de água. Para máxima síntese de colágeno, tome junto com a Vitamina C da dieta ou do suplemento.',
-  imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&h=400&fit=crop&q=80',
+  imageUrl: imgCaps,
   matchKeywords: [
     'colágeno', 'colageno', 'biotina', 'zinco',
     'hialurônico', 'hialuronico', 'vitamina e',
     'licopeno', 'silício', 'silicio', 'vitamina c',
   ],
-  link: '#',
+  link: KIWIFY_CHECKOUT_URL,
 };
 
 /* ─── Helpers ─── */
@@ -406,6 +410,79 @@ const Products = () => {
             <p className="text-[11px] font-bold" style={{ color: '#4A5C3A' }}>✨ Resultado</p>
             <p className="text-[10px]" style={{ color: '#6A7C5A' }}>Completo</p>
           </div>
+        </div>
+      </div>
+
+      {/* ── Banner Combo: Protocolo Dupla Ação ── */}
+      <div
+        className="relative overflow-hidden animate-fade-in-up"
+        style={{
+          borderRadius: 22,
+          border: '1px solid #EDE8E1',
+          boxShadow: '0 8px 22px rgba(46,41,36,0.12)',
+          animationDelay: '320ms',
+          animationFillMode: 'both',
+        }}
+      >
+        {/* Hero image */}
+        <div className="relative w-full" style={{ height: 200 }}>
+          <img
+            src={imgCombo}
+            alt="Skinbella Caps + Sérum"
+            className="absolute inset-0 w-full h-full object-cover object-top"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(to bottom, transparent 30%, rgba(255,248,244,0.9) 65%, #FFF8F4 85%)',
+            }}
+          />
+          <span
+            className="absolute top-3 left-1/2 -translate-x-1/2 text-xs font-bold tracking-widest px-3 py-1 rounded-full"
+            style={{ background: '#C9A96E', color: '#fff' }}
+          >
+            ✦ PROTOCOLO DUPLA AÇÃO
+          </span>
+        </div>
+
+        {/* Content */}
+        <div className="px-5 pb-5 -mt-2">
+          <h3
+            className="text-[18px] font-semibold text-center leading-snug mb-1 font-['Playfair_Display']"
+            style={{ color: '#2C1F14' }}
+          >
+            Os dois produtos — uma só decisão
+          </h3>
+          <p className="text-[12px] text-center mb-4" style={{ color: '#8C7B6B' }}>
+            Sérum + Caps juntos pelo preço de um protocolo completo
+          </p>
+
+          {/* Price */}
+          <div className="text-center mb-4">
+            <span className="text-xs line-through" style={{ color: '#aaa' }}>De R$200+</span>
+            <div className="flex items-baseline justify-center gap-2">
+              <span className="text-3xl font-extrabold" style={{ color: '#E8667A' }}>R$199</span>
+              <span className="text-xs" style={{ color: '#888' }}>= R$6,63/dia</span>
+            </div>
+          </div>
+
+          <a
+            href={KIWIFY_CHECKOUT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-white text-[15px] active:scale-[0.97] transition-transform"
+            style={{
+              background: 'linear-gradient(135deg, #E8667A 0%, #C9A96E 100%)',
+              boxShadow: '0 4px 16px rgba(232,102,122,0.35)',
+              textDecoration: 'none',
+            }}
+          >
+            Quero o Protocolo Completo
+            <ExternalLink className="w-4 h-4" />
+          </a>
+          <p className="text-center text-[11px] mt-2" style={{ color: '#bbb' }}>
+            Frete grátis · 30 dias de garantia · Sem risco
+          </p>
         </div>
       </div>
 

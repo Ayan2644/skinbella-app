@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { storage } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Sun, Moon, CheckCircle2 } from 'lucide-react';
+import { ComboModal } from '@/components/ComboModal';
+import { useComboModal } from '@/hooks/useComboModal';
 
 interface SkinProfile {
   rotina: {
@@ -121,8 +123,12 @@ const Routine = () => {
   const progressPercent = steps.length > 0 ? (checkedCount / steps.length) * 100 : 0;
   const allDone = checkedCount === steps.length && steps.length > 0;
   const ringDeg = ringActive ? progressPercent * 3.6 : 0;
+  // Dispara após o anel de progresso animar e a usuária ler os passos
+  const combo = useComboModal('routine', 3500);
 
   return (
+    <>
+    <ComboModal open={combo.open} onClose={combo.close} />
     <section className="pb-10">
 
       {/* ── Header ── */}
@@ -399,12 +405,21 @@ const Routine = () => {
                     {step}
                   </p>
                   {isProductStep && !isChecked && (
-                    <span
-                      className="text-[9px] font-bold uppercase tracking-wider"
-                      style={{ color: '#4A5C3A' }}
-                    >
-                      ✦ produto SkinBella
-                    </span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span
+                        className="text-[9px] font-bold uppercase tracking-wider"
+                        style={{ color: '#4A5C3A' }}
+                      >
+                        ✦ produto SkinBella
+                      </span>
+                      <button
+                        onClick={e => { e.stopPropagation(); combo.openModal(); }}
+                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                        style={{ background: '#E8667A', color: '#fff' }}
+                      >
+                        Ver combo →
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -437,9 +452,10 @@ const Routine = () => {
         </p>
 
         <div className="flex gap-3">
-          {/* SkinBella Sérum */}
-          <div
-            className="flex-1 px-4 py-3.5 rounded-2xl"
+          {/* SkinBella Sérum — clicável abre ComboModal */}
+          <button
+            onClick={combo.openModal}
+            className="flex-1 px-4 py-3.5 rounded-2xl text-left active:scale-[0.97] transition-transform"
             style={{
               background: 'linear-gradient(135deg, #243318 0%, #2f4220 100%)',
               boxShadow: '0 6px 18px rgba(36,51,24,0.25)',
@@ -461,13 +477,14 @@ const Routine = () => {
               className="text-[9px] font-bold uppercase tracking-wider"
               style={{ color: '#a8c898' }}
             >
-              Manhã + Noite
+              Manhã + Noite · <span style={{ color: '#E8667A' }}>Ver combo →</span>
             </p>
-          </div>
+          </button>
 
-          {/* SkinBella Caps — manhã e noite (1 cápsula cada) */}
-          <div
-            className="flex-1 px-4 py-3.5 rounded-2xl"
+          {/* SkinBella Caps — clicável abre ComboModal */}
+          <button
+            onClick={combo.openModal}
+            className="flex-1 px-4 py-3.5 rounded-2xl text-left active:scale-[0.97] transition-transform"
             style={{
               background: 'linear-gradient(135deg, #FDF0C8 0%, #F5CF80 100%)',
               border: '1px solid #F0D8A8',
@@ -490,9 +507,9 @@ const Routine = () => {
               className="text-[9px] font-bold uppercase tracking-wider"
               style={{ color: '#C8913F' }}
             >
-              {tab === 'manha' ? '1 cáp. café da manhã' : '1 cáp. com o jantar'}
+              {tab === 'manha' ? '1 cáp. café da manhã' : '1 cáp. com o jantar'} · <span style={{ color: '#E8667A' }}>Ver combo →</span>
             </p>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -517,6 +534,7 @@ const Routine = () => {
       </button>
 
     </section>
+    </>
   );
 };
 

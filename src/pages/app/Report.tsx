@@ -1,7 +1,11 @@
 import { storage } from '@/lib/storage';
+import { getProfilePhotoUrl } from '@/lib/photoStorage';
+import { useAuth } from '@/hooks/useAuth';
 import { Leaf, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import heroSkinbella from '@/assets/hero-skinbella.jpg';
+import { ComboModal } from '@/components/ComboModal';
+import { useComboModal } from '@/hooks/useComboModal';
 
 /* ─── Mapeamento de labels e emojis ─── */
 const SCORE_META: Record<string, { label: string; emoji: string }> = {
@@ -57,7 +61,7 @@ const SectionLabel = ({ text }: { text: string }) => (
 );
 
 /* ─── Card SkinBella Sérum ─── */
-const SerumCard = ({ ingredients }: { ingredients: string[] }) => (
+const SerumCard = ({ ingredients, onBuy }: { ingredients: string[]; onBuy: () => void }) => (
   <div
     className="animate-fade-in-up"
     style={{
@@ -107,6 +111,7 @@ const SerumCard = ({ ingredients }: { ingredients: string[] }) => (
 
       {/* CTA */}
       <button
+        onClick={onBuy}
         className="w-full py-3.5 rounded-2xl font-semibold text-[15px] active:scale-[0.97] transition-transform duration-150"
         style={{
           background: '#FFFFFF',
@@ -121,7 +126,7 @@ const SerumCard = ({ ingredients }: { ingredients: string[] }) => (
 );
 
 /* ─── Card SkinBella Caps ─── */
-const CapsCard = ({ ingredients }: { ingredients: string[] }) => (
+const CapsCard = ({ ingredients, onBuy }: { ingredients: string[]; onBuy: () => void }) => (
   <div
     className="animate-fade-in-up"
     style={{
@@ -172,6 +177,7 @@ const CapsCard = ({ ingredients }: { ingredients: string[] }) => (
 
       {/* CTA */}
       <button
+        onClick={onBuy}
         className="w-full py-3.5 rounded-2xl font-semibold text-[15px] active:scale-[0.97] transition-transform duration-150"
         style={{
           background: '#2C1F14',
@@ -190,12 +196,22 @@ const Report = () => {
   const profile = storage.getProfile();
   const answers = storage.getAnswers();
   const streak  = storage.getStreak();
+  const { user } = useAuth();
 
   const [ringsActive, setRingsActive] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(storage.getLatestSelfie());
+
   useEffect(() => {
     const t = setTimeout(() => setRingsActive(true), 350);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    getProfilePhotoUrl(user.id).then(url => {
+      if (url) setProfilePhoto(url);
+    });
+  }, [user?.id]);
 
   if (!profile) {
     return (
@@ -228,8 +244,11 @@ const Report = () => {
   if (capsIngredients.length  === 0) capsIngredients.push('Colágeno Hidrolisado', 'Vitamina E', 'Biotina (B7)');
 
   const serumFirst = serumIngredients.length >= capsIngredients.length;
+  const combo = useComboModal('report', 6000);
 
   return (
+    <>
+    <ComboModal open={combo.open} onClose={combo.close} />
     <section className="space-y-4 pb-10">
 
       {/* ── Header ── */}
@@ -273,7 +292,7 @@ const Report = () => {
             boxShadow: '0 8px 20px rgba(46,41,36,0.18)',
           }}
         >
-          <img src={storage.getLatestSelfie() || heroSkinbella} alt="" className="w-full h-full object-cover object-[50%_20%]" />
+          <img src={profilePhoto || heroSkinbella} alt="" className="w-full h-full object-cover object-[50%_20%]" />
         </div>
 
         {/* Decorações */}
@@ -585,17 +604,18 @@ const Report = () => {
 
       {serumFirst ? (
         <>
-          <SerumCard ingredients={serumIngredients} />
-          <CapsCard  ingredients={capsIngredients} />
+          <SerumCard ingredients={serumIngredients} onBuy={combo.openModal} />
+          <CapsCard  ingredients={capsIngredients}  onBuy={combo.openModal} />
         </>
       ) : (
         <>
-          <CapsCard  ingredients={capsIngredients} />
-          <SerumCard ingredients={serumIngredients} />
+          <CapsCard  ingredients={capsIngredients}  onBuy={combo.openModal} />
+          <SerumCard ingredients={serumIngredients} onBuy={combo.openModal} />
         </>
       )}
 
     </section>
+    </>
   );
 };
 
