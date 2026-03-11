@@ -1,10 +1,10 @@
 /**
- * Dev Login - Password login for development/admin
- * Uses real Supabase Auth only.
+ * Dev Login - Password login for admin access.
+ * Blocked in production — use /login with magic link instead.
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,18 +15,24 @@ import { Loader2 } from 'lucide-react';
 const DevLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [email, setEmail] = useState('yan.barcelosbp@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Bloquear em produção — rota só disponível em desenvolvimento
+  if (import.meta.env.PROD) {
+    return <Navigate to="/login" replace />;
+  }
+
   const handleDevLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim() || !password.trim()) return;
     setLoading(true);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: password || 'dev123456',
+        email: email.trim(),
+        password,
       });
 
       if (error) throw error;
@@ -64,7 +70,7 @@ const DevLogin = () => {
           </Button>
         </form>
 
-        <p className="text-center text-xs text-muted-foreground">⚠️ Apenas para desenvolvimento</p>
+        <p className="text-center text-xs text-muted-foreground">⚠️ Apenas para desenvolvimento — bloqueado em produção</p>
       </div>
     </div>
   );

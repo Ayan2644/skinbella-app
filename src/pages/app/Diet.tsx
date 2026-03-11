@@ -93,7 +93,15 @@ const Diet = () => {
     );
   }
 
-  const { dieta, skinAge, prioridadesTop3 } = profile;
+  const { dieta, skinAge = 28, prioridadesTop3 = [] } = profile as any;
+
+  if (!dieta?.priorizar || !dieta?.reduzir || !dieta?.plano) {
+    return (
+      <p className="text-center py-10 text-[14px]" style={{ color: '#8C7B6B' }}>
+        Complete o quiz primeiro.
+      </p>
+    );
+  }
 
   const capsNutrients: NutrientRef[] = (profile.nutrientesTop4 ?? []).filter(
     (n: NutrientRef) => n.recomendacao === 'SkinBella Caps'

@@ -102,7 +102,7 @@ export function getDefaultChildrenForSection(sectionType: string): any[] {
             { emoji: "📸", text: "Acompanhamento com selfie semanal" },
           ],
         }),
-        child("pricing", { originalPrice: "59", price: "29", suffix: "/mês", caption: "Cancele quando quiser • Acesso imediato" }, { textAlign: "center" }),
+        child("pricing", { originalPrice: "39", price: "19", suffix: "/mês", caption: "Cancele quando quiser • Acesso imediato" }, { textAlign: "center" }),
         child("button", { text: "Começar tratamento agora", action: "checkout", icon: "Sparkles" }, { textAlign: "center" }),
         child("trust_badges", {
           items: [
@@ -185,7 +185,7 @@ const defaultContentMap: Record<string, Record<string, any>> = {
   sticky_cta: {
     offerText: "Plano hoje com",
     discountText: "-52%",
-    priceText: "R$ 29/mês",
+    priceText: "R$ 19/mês",
     subtitleText: "Cancele quando quiser",
     buttonText: "Desbloquear",
     buttonAction: "checkout",

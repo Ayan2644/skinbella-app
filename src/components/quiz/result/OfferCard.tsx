@@ -54,8 +54,8 @@ export default function OfferCard({ onAccess }: OfferCardProps) {
 
           {/* Pricing */}
           <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-sm text-muted-foreground line-through">R$ 59/mês</span>
-            <span className="text-[44px] font-bold text-foreground font-display leading-none">R$ 29</span>
+            <span className="text-sm text-muted-foreground line-through">R$ 39/mês</span>
+            <span className="text-[44px] font-bold text-foreground font-display leading-none">R$ 19</span>
             <span className="text-sm text-muted-foreground">/mês</span>
           </div>
 

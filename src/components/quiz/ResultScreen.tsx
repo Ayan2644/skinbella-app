@@ -43,7 +43,7 @@ export default function ResultScreen({ profile, onRedo, onAccess }: ResultScreen
   const renderStickyCta = () => {
     const offerText = ctaContent.offerText || "Plano hoje com";
     const discountText = ctaContent.discountText || "-52%";
-    const priceText = ctaContent.priceText || "R$ 29/mês";
+    const priceText = ctaContent.priceText || "R$ 19/mês";
     const subtitleText = ctaContent.subtitleText || "Cancele quando quiser";
     const buttonText = ctaContent.buttonText || "Desbloquear";
     const badges: string[] = ctaContent.badges || ["Checkout seguro", "Acesso imediato", "Suporte"];

@@ -1,7 +1,8 @@
 import { storage } from '@/lib/storage';
 import { getProfilePhotoUrl } from '@/lib/photoStorage';
 import { useAuth } from '@/hooks/useAuth';
-import { Leaf, Lock } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { Leaf, Lock, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import heroSkinbella from '@/assets/hero-skinbella.jpg';
 import { ComboModal } from '@/components/ComboModal';
@@ -119,7 +120,7 @@ const SerumCard = ({ ingredients, onBuy }: { ingredients: string[]; onBuy: () =>
           boxShadow: '0 6px 18px rgba(0,0,0,0.2)',
         }}
       >
-        Quero o SkinBella Sérum →
+        Ver Protocolo Completo →
       </button>
     </div>
   </div>
@@ -185,7 +186,7 @@ const CapsCard = ({ ingredients, onBuy }: { ingredients: string[]; onBuy: () => 
           boxShadow: '0 6px 18px rgba(44,31,20,0.3)',
         }}
       >
-        Quero o SkinBella Caps →
+        Ver Protocolo Completo →
       </button>
     </div>
   </div>
@@ -193,13 +194,34 @@ const CapsCard = ({ ingredients, onBuy }: { ingredients: string[]; onBuy: () => 
 
 /* ─── Componente principal ─── */
 const Report = () => {
-  const profile = storage.getProfile();
-  const answers = storage.getAnswers();
-  const streak  = storage.getStreak();
   const { user } = useAuth();
+  const streak = storage.getStreak();
 
-  const [ringsActive, setRingsActive] = useState(false);
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(storage.getLatestSelfie());
+  const [profile,      setProfile]      = useState<any>(storage.getProfile());
+  const [answers,      setAnswers]       = useState<any>(storage.getAnswers());
+  const [syncing,      setSyncing]       = useState(!storage.getProfile() && !!user);
+  const [ringsActive,  setRingsActive]   = useState(false);
+  const [profilePhoto, setProfilePhoto]  = useState<string | null>(storage.getLatestSelfie());
+
+  // Se localStorage vazio, tenta restaurar do Supabase
+  useEffect(() => {
+    if (profile || !user) { setSyncing(false); return; }
+
+    supabase
+      .from('quiz_results')
+      .select('answers, scores, skin_age')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.scores && data?.answers) {
+          storage.saveProfile(data.scores as any);
+          storage.saveAnswers(data.answers as any);
+          setProfile(data.scores as any);
+          setAnswers(data.answers as any);
+        }
+        setSyncing(false);
+      });
+  }, [user?.id]);
 
   useEffect(() => {
     const t = setTimeout(() => setRingsActive(true), 350);
@@ -213,15 +235,54 @@ const Report = () => {
     });
   }, [user?.id]);
 
-  if (!profile) {
+  if (syncing) {
     return (
-      <p className="text-center py-10 text-[14px]" style={{ color: '#8C7B6B' }}>
-        Faça o quiz para ver seu relatório.
-      </p>
+      <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <Loader2 className="w-7 h-7 animate-spin" style={{ color: '#C9A96E' }} />
+        <p className="text-[13px]" style={{ color: '#8C7B6B' }}>Carregando seu relatório...</p>
+      </div>
     );
   }
 
-  const realAge        = (answers?.idade as number) ?? 28;
+  if (!profile) {
+    return (
+      <div className="py-6">
+        <a
+          href="/"
+          className="block text-left active:scale-[0.985] transition-transform duration-150"
+          style={{
+            borderRadius: 28,
+            background: 'linear-gradient(135deg, #2f4220 0%, #3a5228 60%, #C9A96E 100%)',
+            boxShadow: '0 12px 36px rgba(30,46,20,0.30)',
+            textDecoration: 'none',
+          }}
+        >
+          <div className="px-6 py-7">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1" style={{ color: '#a8c898' }}>
+              Relatório personalizado
+            </p>
+            <h2
+              className="text-[22px] font-semibold leading-tight font-['Playfair_Display'] mb-3"
+              style={{ color: '#FFFFFF' }}
+            >
+              Seu relatório ainda não foi gerado
+            </h2>
+            <p className="text-[13px] mb-5" style={{ color: '#c8e0b8' }}>
+              Responda o quiz para descobrir a idade da sua pele, seus pontos de atenção e o protocolo ideal para você.
+            </p>
+            <span
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-bold"
+              style={{ background: '#FFFFFF', color: '#2f4220' }}
+            >
+              Fazer meu diagnóstico →
+            </span>
+          </div>
+        </a>
+      </div>
+    );
+  }
+
+  const realAge        = (answers?.['faixa-etaria'] as number) ?? (answers?.idade as number) ?? 28;
   const skinAge        = profile.skinAge;
   const ageGap         = skinAge - realAge;
   const targetDays     = 90;

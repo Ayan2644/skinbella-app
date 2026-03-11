@@ -303,8 +303,8 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
       {activeType === "pricing" && (
         <>
           <div className="flex gap-2">
-            <div className="flex-1"><Label className="text-xs">Preço original</Label><Input value={activeContent.originalPrice || ""} onChange={(e) => updateContent("originalPrice", e.target.value)} className="mt-1 text-xs h-8" placeholder="59" /></div>
-            <div className="flex-1"><Label className="text-xs">Preço atual</Label><Input value={activeContent.price || ""} onChange={(e) => updateContent("price", e.target.value)} className="mt-1 text-xs h-8" placeholder="29" /></div>
+            <div className="flex-1"><Label className="text-xs">Preço original</Label><Input value={activeContent.originalPrice || ""} onChange={(e) => updateContent("originalPrice", e.target.value)} className="mt-1 text-xs h-8" placeholder="39" /></div>
+            <div className="flex-1"><Label className="text-xs">Preço atual</Label><Input value={activeContent.price || ""} onChange={(e) => updateContent("price", e.target.value)} className="mt-1 text-xs h-8" placeholder="19" /></div>
           </div>
           <div><Label className="text-xs">Sufixo</Label><Input value={activeContent.suffix || ""} onChange={(e) => updateContent("suffix", e.target.value)} className="mt-1 text-xs h-8" placeholder="/mês" /></div>
           <div><Label className="text-xs">Legenda</Label><Input value={activeContent.caption || ""} onChange={(e) => updateContent("caption", e.target.value)} className="mt-1 text-xs h-8" /></div>
@@ -472,7 +472,7 @@ export default function BlockProperties({ block, childBlock, onChange, onChangeC
         <>
           <div><Label className="text-xs">Texto da oferta</Label><Input value={activeContent.offerText || ""} onChange={(e) => updateContent("offerText", e.target.value)} className="mt-1 text-xs h-8" placeholder="Plano hoje com" /></div>
           <div><Label className="text-xs">Texto do desconto</Label><Input value={activeContent.discountText || ""} onChange={(e) => updateContent("discountText", e.target.value)} className="mt-1 text-xs h-8" placeholder="-52%" /></div>
-          <div><Label className="text-xs">Preço</Label><Input value={activeContent.priceText || ""} onChange={(e) => updateContent("priceText", e.target.value)} className="mt-1 text-xs h-8" placeholder="R$ 29/mês" /></div>
+          <div><Label className="text-xs">Preço</Label><Input value={activeContent.priceText || ""} onChange={(e) => updateContent("priceText", e.target.value)} className="mt-1 text-xs h-8" placeholder="R$ 19/mês" /></div>
           <div><Label className="text-xs">Subtítulo</Label><Input value={activeContent.subtitleText || ""} onChange={(e) => updateContent("subtitleText", e.target.value)} className="mt-1 text-xs h-8" placeholder="Cancele quando quiser" /></div>
           <div><Label className="text-xs">Texto do botão</Label><Input value={activeContent.buttonText || ""} onChange={(e) => updateContent("buttonText", e.target.value)} className="mt-1 text-xs h-8" placeholder="Desbloquear" /></div>
           <div>

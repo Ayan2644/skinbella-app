@@ -23,6 +23,13 @@ const Login = () => {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+  const [retryAfter, setRetryAfter] = useState(0)
+
+  useEffect(() => {
+    if (retryAfter <= 0) return
+    const t = setInterval(() => setRetryAfter(s => s - 1), 1000)
+    return () => clearInterval(t)
+  }, [retryAfter])
 
   // Redirect if already logged in
   useEffect(() => {
@@ -119,11 +126,22 @@ const Login = () => {
       }
 
       if (!result.success) {
-        toast({
-          title: 'Erro ao enviar link',
-          description: result.error || 'Tente novamente.',
-          variant: 'destructive'
-        })
+        const errMsg = result.error || ''
+        const isRateLimit = errMsg.toLowerCase().includes('rate') || errMsg.toLowerCase().includes('too many') || errMsg.toLowerCase().includes('limit')
+        if (isRateLimit) {
+          setRetryAfter(60)
+          toast({
+            title: 'Aguarde um momento',
+            description: 'Muitas tentativas. Você poderá reenviar em 60 segundos.',
+            variant: 'destructive'
+          })
+        } else {
+          toast({
+            title: 'Erro ao enviar link',
+            description: errMsg || 'Tente novamente.',
+            variant: 'destructive'
+          })
+        }
         setLoading(false)
         return
       }
@@ -269,13 +287,15 @@ const Login = () => {
           <Button
             type="submit"
             className="w-full rounded-2xl h-14 text-base font-semibold shadow-elegant"
-            disabled={loading}
+            disabled={loading || retryAfter > 0}
           >
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 {loginMode === 'password' ? 'Entrando...' : 'Enviando link...'}
               </>
+            ) : retryAfter > 0 ? (
+              `Aguarde ${retryAfter}s para reenviar`
             ) : (
               <>
                 {loginMode === 'password' ? (

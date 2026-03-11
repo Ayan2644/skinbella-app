@@ -1,13 +1,22 @@
+import { useRef, useState, useEffect } from 'react';
 import { storage } from '@/lib/storage';
-import { ExternalLink } from 'lucide-react';
 import { KIWIFY_CHECKOUT_URL } from '@/lib/auth';
-import imgSerum from '@/assets/skinbella-caps-serum/Skinbella-Serum-1024x1024.webp';
-import imgCaps  from '@/assets/skinbella-caps-serum/skin bela 1 pote.webp';
+import { trackFunnelEvent } from '@/lib/funnelTracker';
+import { ComboModal } from '@/components/ComboModal';
+import { useComboModal } from '@/hooks/useComboModal';
+import { ProductEducationCard } from '@/components/products/ProductEducationCard';
+import { SynergySection } from '@/components/products/SynergySection';
+import { InfluencerVideosSection } from '@/components/products/InfluencerVideosSection';
+import { ComboCtaBlock } from '@/components/products/ComboCtaBlock';
+import { ComboStickyCta } from '@/components/products/ComboStickyCta';
+
+import imgSerum from '@/assets/skinbella-caps-serum/Design sem nome (18).png';
+import imgCaps  from '@/assets/skinbella-caps-serum/Design-sem-nome-13.png';
 import imgCombo from '@/assets/skinbella-caps-serum/skinbelacapseserum.jpeg';
 
-/* ─── Dados dos produtos — 8 ativos reais de cada fórmula ─── */
+// ── Dados dos produtos ────────────────────────────────────────────────────────
 const SERUM = {
-  id: 'serum',
+  id: 'serum' as const,
   name: 'SkinBella Sérum',
   tag: 'Uso tópico · Aplicação facial',
   tagline: 'Ação concentrada diretamente na pele',
@@ -29,11 +38,10 @@ const SERUM = {
     'peptídeos', 'matrixyl', 'rosa mosqueta', 'vitamina e',
     'glicerina', 'pantenol', 'alantoína', 'alantoin',
   ],
-  link: KIWIFY_CHECKOUT_URL,
 };
 
 const CAPS = {
-  id: 'caps',
+  id: 'caps' as const,
   name: 'SkinBella Caps',
   tag: 'Suplemento oral · 60 cápsulas',
   tagline: 'Nutrição de dentro para fora',
@@ -55,438 +63,205 @@ const CAPS = {
     'hialurônico', 'hialuronico', 'vitamina e',
     'licopeno', 'silício', 'silicio', 'vitamina c',
   ],
-  link: KIWIFY_CHECKOUT_URL,
 };
 
-/* ─── Helpers ─── */
-function getRecommendedProduct(
-  nutrientesTop4: { nome: string; recomendacao: string }[]
-): 'serum' | 'caps' | null {
-  const serumCount = nutrientesTop4.filter(n => n.recomendacao === 'SkinBella Sérum').length;
-  const capsCount  = nutrientesTop4.filter(n => n.recomendacao === 'SkinBella Caps').length;
-  if (serumCount > capsCount) return 'serum';
-  if (capsCount > serumCount) return 'caps';
-  return 'serum'; // empate → sérum em destaque
-}
+// ── Vídeos das influenciadoras ────────────────────────────────────────────────
+const INFLUENCER_VIDEOS = [
+  { id: 't7HiVlUpvKc', title: 'SkinBella Caps para rejuvenescimento' },
+  { id: 'U-Ov3mhPak0', title: 'Serum + Caps funciona mesmo — Relato Real' },
+  { id: 'YkgOPxIKobM', title: 'O melhor que já usei — Skinbella Serum' },
+  { id: 'XBbyr_nKukw', title: 'Ela recomenda o Serum antes da maquiagem' },
+  { id: 'no91evcuWek', title: 'Teste Skinbella Serum + Caps — NutraAds' },
+];
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function getMatchedIngredients(
-  productKeywords: string[],
-  nutrientesTop4: { nome: string }[]
+  keywords: string[],
+  nutrientes: { nome: string }[]
 ): string[] {
-  return nutrientesTop4
-    .filter(n => productKeywords.some(kw => n.nome.toLowerCase().includes(kw)))
+  return nutrientes
+    .filter(n => keywords.some(kw => n.nome.toLowerCase().includes(kw)))
     .map(n => n.nome);
 }
 
-/* ─── Sub-componente: card de produto ─── */
-interface ProductCardProps {
-  product: typeof SERUM;
-  isHighlighted: boolean;
-  matchedIngredients: string[];
-  delay: number;
+function getRecommendedFirst(
+  nutrientes: { nome: string; recomendacao: string }[]
+): 'serum' | 'caps' {
+  const capsCount = nutrientes.filter(n => n.recomendacao === 'SkinBella Caps').length;
+  const serumCount = nutrientes.filter(n => n.recomendacao === 'SkinBella Sérum').length;
+  return capsCount > serumCount ? 'caps' : 'serum';
 }
 
-const ProductCard = ({ product: p, isHighlighted, matchedIngredients, delay }: ProductCardProps) => {
-  const isDark = p.id === 'serum';
-
-  return (
-    <div
-      className="overflow-hidden animate-fade-in-up"
-      style={{
-        borderRadius: 28,
-        background: isDark
-          ? 'linear-gradient(145deg, #243318 0%, #2f4220 60%, #3a5228 100%)'
-          : 'linear-gradient(145deg, #FDF0C8 0%, #F5CF80 60%, #EDB84A 100%)',
-        boxShadow: isDark
-          ? '0 16px 40px rgba(36,51,24,0.35)'
-          : '0 14px 36px rgba(200,145,63,0.28)',
-        border: isDark ? 'none' : '1px solid #F0D8A8',
-        animationDelay: `${delay}ms`,
-        animationFillMode: 'both',
-      }}
-    >
-      {/* Imagem de capa */}
-      <div className="relative w-full overflow-hidden" style={{ height: 160 }}>
-        <img
-          src={p.imageUrl}
-          alt={p.name}
-          className="w-full h-full object-cover"
-          onError={e => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-        {/* Gradiente sobre a imagem */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: isDark
-              ? 'linear-gradient(to bottom, rgba(36,51,24,0.2) 0%, rgba(36,51,24,0.85) 100%)'
-              : 'linear-gradient(to bottom, rgba(253,240,200,0.1) 0%, rgba(237,184,74,0.8) 100%)',
-          }}
-        />
-
-        {/* Badges sobre a imagem */}
-        <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
-          {isHighlighted && (
-            <span
-              className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full"
-              style={{
-                background: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(44,31,20,0.15)',
-                color: isDark ? '#d0e4b8' : '#7A5020',
-              }}
-            >
-              ✦ Mais indicado para você
-            </span>
-          )}
-          <span
-            className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full"
-            style={{
-              background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(44,31,20,0.1)',
-              color: isDark ? '#b8d8a0' : '#5A3810',
-            }}
-          >
-            {p.id === 'serum' ? '🌿 Uso tópico' : '💊 Suplemento'}
-          </span>
-        </div>
-      </div>
-
-      {/* Conteúdo */}
-      <div className="px-6 py-5">
-        {/* Nome + tagline */}
-        <p
-          className="text-[11px] font-semibold uppercase tracking-wider mb-1"
-          style={{ color: isDark ? '#a8c898' : '#9A7040' }}
-        >
-          {p.tagline}
-        </p>
-        <h2
-          className="text-[24px] font-semibold font-['Playfair_Display'] mb-1"
-          style={{ color: isDark ? '#FFFFFF' : '#2C1F14' }}
-        >
-          {p.name}
-        </h2>
-        <p
-          className="text-[11px] mb-4"
-          style={{ color: isDark ? '#88a878' : '#9A7040' }}
-        >
-          {p.tag}
-        </p>
-
-        <p
-          className="text-[13px] leading-relaxed mb-5"
-          style={{ color: isDark ? '#c8e0b8' : '#5A3810' }}
-        >
-          {p.desc}
-        </p>
-
-        {/* Ingredientes ativos */}
-        <div className="mb-5">
-          <p
-            className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3"
-            style={{ color: isDark ? '#88a878' : '#9A7040' }}
-          >
-            Ativos principais
-          </p>
-          <div className="space-y-2.5">
-            {p.ingredients.map((ing, idx) => {
-              const isMatch = matchedIngredients.some(m =>
-                m.toLowerCase().includes(ing.name.toLowerCase().split(' ')[0])
-              );
-              return (
-                <div key={idx} className="flex items-start gap-3">
-                  <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                    style={{
-                      background: isMatch
-                        ? (isDark ? 'rgba(160,220,130,0.25)' : 'rgba(74,92,58,0.15)')
-                        : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(44,31,20,0.08)'),
-                    }}
-                  >
-                    <span
-                      className="text-[10px] font-bold"
-                      style={{ color: isDark ? '#d0e4b8' : '#7A5020' }}
-                    >
-                      ✓
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <span
-                      className="text-[13px] font-semibold"
-                      style={{ color: isDark ? '#e0f0d0' : '#2C1F14' }}
-                    >
-                      {ing.name}
-                    </span>
-                    {isMatch && (
-                      <span
-                        className="ml-2 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full"
-                        style={{
-                          background: isDark ? 'rgba(160,220,130,0.2)' : '#E8EFDF',
-                          color: isDark ? '#a0dc82' : '#4A5C3A',
-                        }}
-                      >
-                        ✦ indicado para você
-                      </span>
-                    )}
-                    <p
-                      className="text-[11px] mt-0.5"
-                      style={{ color: isDark ? '#a8c898' : '#7A5020' }}
-                    >
-                      {ing.benefit}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Como usar */}
-        <div
-          className="px-4 py-3 mb-5"
-          style={{
-            borderRadius: 14,
-            background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(44,31,20,0.07)',
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(44,31,20,0.1)'}`,
-          }}
-        >
-          <p
-            className="text-[10px] font-bold uppercase tracking-wider mb-1"
-            style={{ color: isDark ? '#88a878' : '#9A7040' }}
-          >
-            💡 Como usar
-          </p>
-          <p className="text-[12px] leading-relaxed" style={{ color: isDark ? '#c8e0b8' : '#5A3810' }}>
-            {p.how}
-          </p>
-        </div>
-
-        {/* CTA */}
-        <a
-          href={p.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-semibold text-[15px] active:scale-[0.97] transition-transform duration-150"
-          style={{
-            background: isDark ? '#FFFFFF' : '#2C1F14',
-            color: isDark ? '#243318' : '#FFFFFF',
-            boxShadow: isDark
-              ? '0 6px 18px rgba(0,0,0,0.25)'
-              : '0 6px 18px rgba(44,31,20,0.3)',
-            textDecoration: 'none',
-          }}
-        >
-          Comprar {p.name}
-          <ExternalLink className="w-4 h-4" />
-        </a>
-      </div>
-    </div>
-  );
-};
-
-/* ─── Componente principal ─── */
+// ── Componente principal ──────────────────────────────────────────────────────
 const Products = () => {
-  const profile = storage.getProfile();
+  const profile    = storage.getProfile();
   const nutrientes = profile?.nutrientesTop4 ?? [];
   const prioridades = profile?.prioridadesTop3 ?? [];
-
-  const highlightedId = profile ? getRecommendedProduct(nutrientes) : 'serum';
+  const prioridade1 = prioridades[0] ?? 'sua pele';
 
   const serumMatches = getMatchedIngredients(SERUM.matchKeywords, nutrientes);
   const capsMatches  = getMatchedIngredients(CAPS.matchKeywords,  nutrientes);
+  const firstProduct = profile ? getRecommendedFirst(nutrientes) : 'serum';
+  const orderedProducts = firstProduct === 'caps'
+    ? [{ product: CAPS, matches: capsMatches }, { product: SERUM, matches: serumMatches }]
+    : [{ product: SERUM, matches: serumMatches }, { product: CAPS, matches: capsMatches }];
 
-  /* Produto mais indicado fica primeiro */
-  const orderedProducts = highlightedId === 'caps'
-    ? [
-        { product: CAPS,  isHighlighted: true,  matches: capsMatches,  delay: 100 },
-        { product: SERUM, isHighlighted: false,  matches: serumMatches, delay: 180 },
-      ]
-    : [
-        { product: SERUM, isHighlighted: true,  matches: serumMatches, delay: 100 },
-        { product: CAPS,  isHighlighted: false, matches: capsMatches,  delay: 180 },
-      ];
+  // ── IntersectionObserver para sticky CTA ───────────────────────────────────
+  const comboCtaRef  = useRef<HTMLDivElement>(null);
+  const synergyRef   = useRef<HTMLDivElement>(null);
+  const scrolledRef  = useRef(false);
+  const [isComboVisible, setIsComboVisible] = useState(false);
+  const [hasScrolled,    setHasScrolled]    = useState(false);
+  const sectionScrolledFired = useRef(false);
+
+  useEffect(() => {
+    // Tracking: página visualizada
+    trackFunnelEvent('products_page_viewed', {
+      metadata: { hasPerfil: !!profile, prioridade1 },
+    });
+  }, []);
+
+  useEffect(() => {
+    // Sticky: detectar scroll mínimo
+    const onScroll = () => {
+      if (!scrolledRef.current && window.scrollY > 200) {
+        scrolledRef.current = true;
+        setHasScrolled(true);
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    // Observer no CTA principal (some o sticky quando visível)
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsComboVisible(entry.isIntersecting),
+      { threshold: 0.2 }
+    );
+    if (comboCtaRef.current) observer.observe(comboCtaRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    // Observer na seção de sinergia (dispara product_section_scrolled 1x)
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !sectionScrolledFired.current) {
+          sectionScrolledFired.current = true;
+          trackFunnelEvent('product_section_scrolled', {
+            metadata: { prioridade1 },
+          });
+        }
+      },
+      { threshold: 0.3 }
+    );
+    if (synergyRef.current) observer.observe(synergyRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // ── ComboModal popup ────────────────────────────────────────────────────────
+  const combo = useComboModal('products', 5000);
+
+  const handleComboCtaClick = () => {
+    trackFunnelEvent('combo_cta_clicked', { metadata: { source: 'inline', prioridade1 } });
+  };
+
+  const handleComboCstatickyClick = () => {
+    trackFunnelEvent('combo_cta_sticky_clicked', { metadata: { source: 'sticky', prioridade1 } });
+  };
+
+  const showSticky = hasScrolled && !isComboVisible;
 
   return (
-    <section className="space-y-5 pb-10">
+    <>
+      <section className="space-y-5 pb-24">
 
-      {/* ── Header ── */}
-      <div
-        className="animate-fade-in"
-        style={{ animationFillMode: 'both' }}
-      >
-        <p className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1" style={{ color: '#8C7B6B' }}>
-          SkinBella
-        </p>
-        <h1
-          className="text-[26px] font-semibold leading-tight font-['Playfair_Display']"
-          style={{ color: '#2C1F14' }}
-        >
-          Produtos
-        </h1>
-        <p className="text-[13px] mt-0.5" style={{ color: '#8C7B6B' }}>
-          Formulados para o seu perfil de pele
-        </p>
-      </div>
-
-      {/* ── Banner de contexto (se tiver perfil) ── */}
-      {profile && (
-        <div
-          className="flex items-start gap-3 px-4 py-3.5 animate-fade-in-up"
-          style={{
-            borderRadius: 18,
-            background: '#E8EFDF',
-            border: '1px solid #d0e4c0',
-            animationDelay: '40ms',
-            animationFillMode: 'both',
-          }}
-        >
-          <span className="text-base shrink-0 mt-0.5">✦</span>
-          <div>
-            <p className="text-[12px] font-semibold" style={{ color: '#2C1F14' }}>
-              Selecionados para suas prioridades
-            </p>
-            <p className="text-[11px] mt-0.5" style={{ color: '#4A5C3A' }}>
-              {prioridades.join(' · ')}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── Cards dos produtos ── */}
-      {orderedProducts.map(({ product, isHighlighted, matches, delay }) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          isHighlighted={isHighlighted}
-          matchedIngredients={matches}
-          delay={delay}
-        />
-      ))}
-
-      {/* ── Combinação sugerida ── */}
-      <div
-        className="px-5 py-5 animate-fade-in-up"
-        style={{
-          borderRadius: 22,
-          background: 'linear-gradient(135deg, #f8f3ec 0%, #ede5d8 100%)',
-          border: '1px solid #EDE8E1',
-          boxShadow: '0 8px 22px rgba(46,41,36,0.09)',
-          animationDelay: '280ms',
-          animationFillMode: 'both',
-        }}
-      >
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">💡</span>
-          <h3
-            className="text-[16px] font-semibold font-['Playfair_Display']"
-            style={{ color: '#2C1F14' }}
-          >
-            Combinação ideal
-          </h3>
-        </div>
-        <p className="text-[13px] leading-relaxed mb-4" style={{ color: '#8C7B6B' }}>
-          Para resultados mais completos, use o <strong style={{ color: '#2C1F14' }}>Sérum</strong> pela manhã (ação tópica) e as <strong style={{ color: '#2C1F14' }}>Caps</strong> no café da manhã (ação interna). Os ativos se complementam e potencializam o resultado.
-        </p>
-        <div className="flex items-center gap-3">
-          <div
-            className="flex-1 px-3 py-2 rounded-xl text-center"
-            style={{ background: '#2f4220' }}
-          >
-            <p className="text-[11px] font-bold" style={{ color: '#d0e4b8' }}>🌿 Sérum</p>
-            <p className="text-[10px]" style={{ color: '#a8c898' }}>Manhã</p>
-          </div>
-          <span className="text-lg" style={{ color: '#8C7B6B' }}>+</span>
-          <div
-            className="flex-1 px-3 py-2 rounded-xl text-center"
-            style={{ background: '#F5CF80' }}
-          >
-            <p className="text-[11px] font-bold" style={{ color: '#7A5020' }}>💊 Caps</p>
-            <p className="text-[10px]" style={{ color: '#9A7040' }}>Café da manhã</p>
-          </div>
-          <span style={{ color: '#8C7B6B' }}>=</span>
-          <div
-            className="flex-1 px-3 py-2 rounded-xl text-center"
-            style={{ background: '#E8EFDF' }}
-          >
-            <p className="text-[11px] font-bold" style={{ color: '#4A5C3A' }}>✨ Resultado</p>
-            <p className="text-[10px]" style={{ color: '#6A7C5A' }}>Completo</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Banner Combo: Protocolo Dupla Ação ── */}
-      <div
-        className="relative overflow-hidden animate-fade-in-up"
-        style={{
-          borderRadius: 22,
-          border: '1px solid #EDE8E1',
-          boxShadow: '0 8px 22px rgba(46,41,36,0.12)',
-          animationDelay: '320ms',
-          animationFillMode: 'both',
-        }}
-      >
-        {/* Hero image */}
-        <div className="relative w-full" style={{ height: 200 }}>
-          <img
-            src={imgCombo}
-            alt="Skinbella Caps + Sérum"
-            className="absolute inset-0 w-full h-full object-cover object-top"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'linear-gradient(to bottom, transparent 30%, rgba(255,248,244,0.9) 65%, #FFF8F4 85%)',
-            }}
-          />
-          <span
-            className="absolute top-3 left-1/2 -translate-x-1/2 text-xs font-bold tracking-widest px-3 py-1 rounded-full"
-            style={{ background: '#C9A96E', color: '#fff' }}
-          >
-            ✦ PROTOCOLO DUPLA AÇÃO
-          </span>
-        </div>
-
-        {/* Content */}
-        <div className="px-5 pb-5 -mt-2">
-          <h3
-            className="text-[18px] font-semibold text-center leading-snug mb-1 font-['Playfair_Display']"
-            style={{ color: '#2C1F14' }}
-          >
-            Os dois produtos — uma só decisão
-          </h3>
-          <p className="text-[12px] text-center mb-4" style={{ color: '#8C7B6B' }}>
-            Sérum + Caps juntos pelo preço de um protocolo completo
+        {/* ── Header ── */}
+        <div className="animate-fade-in" style={{ animationFillMode: 'both' }}>
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1" style={{ color: '#8C7B6B' }}>
+            SkinBella
           </p>
+          <h1 className="text-[26px] font-semibold leading-tight font-['Playfair_Display']" style={{ color: '#2C1F14' }}>
+            Seu protocolo para{' '}
+            <span style={{ color: '#C9A96E' }}>{prioridade1}</span>
+          </h1>
+          <p className="text-[13px] mt-0.5" style={{ color: '#8C7B6B' }}>
+            Formulado para o seu perfil de pele
+          </p>
+        </div>
 
-          {/* Price */}
-          <div className="text-center mb-4">
-            <span className="text-xs line-through" style={{ color: '#aaa' }}>De R$200+</span>
-            <div className="flex items-baseline justify-center gap-2">
-              <span className="text-3xl font-extrabold" style={{ color: '#E8667A' }}>R$199</span>
-              <span className="text-xs" style={{ color: '#888' }}>= R$6,63/dia</span>
+        {/* ── Banner de perfil ── */}
+        {profile && prioridades.length > 0 && (
+          <div
+            className="flex items-start gap-3 px-4 py-3.5 animate-fade-in-up"
+            style={{
+              borderRadius: 18,
+              background: '#E8EFDF',
+              border: '1px solid #d0e4c0',
+              animationDelay: '40ms',
+              animationFillMode: 'both',
+            }}
+          >
+            <span className="text-base shrink-0 mt-0.5">✦</span>
+            <div>
+              <p className="text-[12px] font-semibold" style={{ color: '#2C1F14' }}>
+                Ativos selecionados para suas prioridades
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: '#4A5C3A' }}>
+                {prioridades.join(' · ')}
+              </p>
             </div>
           </div>
+        )}
 
-          <a
-            href={KIWIFY_CHECKOUT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-white text-[15px] active:scale-[0.97] transition-transform"
-            style={{
-              background: 'linear-gradient(135deg, #E8667A 0%, #C9A96E 100%)',
-              boxShadow: '0 4px 16px rgba(232,102,122,0.35)',
-              textDecoration: 'none',
-            }}
-          >
-            Quero o Protocolo Completo
-            <ExternalLink className="w-4 h-4" />
-          </a>
-          <p className="text-center text-[11px] mt-2" style={{ color: '#bbb' }}>
-            Frete grátis · 30 dias de garantia · Sem risco
-          </p>
+        {/* ── Cards educacionais dos produtos ── */}
+        {orderedProducts.map(({ product, matches }, idx) => (
+          <ProductEducationCard
+            key={product.id}
+            id={product.id}
+            name={product.name}
+            tag={product.tag}
+            tagline={product.tagline}
+            desc={product.desc}
+            ingredients={product.ingredients}
+            how={product.how}
+            imageUrl={product.imageUrl}
+            matchedIngredients={matches}
+            animationDelay={80 + idx * 80}
+          />
+        ))}
+
+        {/* ── Seção de sinergia ── */}
+        <div ref={synergyRef}>
+          <SynergySection prioridade={prioridade1} animationDelay={260} />
         </div>
-      </div>
 
-    </section>
+        {/* ── Influenciadoras ── */}
+        <InfluencerVideosSection videos={INFLUENCER_VIDEOS} animationDelay={320} />
+
+        {/* ── CTA Combo — único ponto de venda ── */}
+        <ComboCtaBlock
+          ref={comboCtaRef}
+          prioridade={prioridade1}
+          imageUrl={imgCombo}
+          checkoutUrl={KIWIFY_CHECKOUT_URL}
+          onCtaClick={handleComboCtaClick}
+          animationDelay={380}
+        />
+
+      </section>
+
+      {/* ── Sticky CTA ── */}
+      <ComboStickyCta
+        visible={showSticky}
+        checkoutUrl={KIWIFY_CHECKOUT_URL}
+        onCtaClick={handleComboCstatickyClick}
+      />
+
+      {/* ── ComboModal popup ── */}
+      <ComboModal open={combo.open} onClose={combo.close} />
+    </>
   );
 };
 

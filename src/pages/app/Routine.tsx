@@ -93,7 +93,7 @@ const Routine = () => {
 
   const theme = TAB_THEME[tab];
   const storageType = tab === 'manha' ? 'morning' : 'night';
-  const steps: string[] = tab === 'manha' ? profile.rotina.manha : profile.rotina.noite;
+  const steps: string[] = tab === 'manha' ? (profile.rotina?.manha ?? []) : (profile.rotina?.noite ?? []);
   const isDone = storage.getRoutineStatus(storageType);
 
   // Nutrientes por produto para o card informativo

@@ -29,7 +29,16 @@ export function setFunnelPreset(presetId: string) {
 
 /** Track a funnel event (fire-and-forget, never blocks UI) */
 export function trackFunnelEvent(
-  eventType: 'quiz_started' | 'question_answered' | 'quiz_completed' | 'result_viewed' | 'cta_clicked',
+  eventType:
+    | 'quiz_started'
+    | 'question_answered'
+    | 'quiz_completed'
+    | 'result_viewed'
+    | 'cta_clicked'
+    | 'products_page_viewed'
+    | 'product_section_scrolled'
+    | 'combo_cta_clicked'
+    | 'combo_cta_sticky_clicked',
   extra?: { questionIndex?: number; questionId?: string; metadata?: Record<string, any> }
 ) {
   const payload = {

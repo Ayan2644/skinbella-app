@@ -16,6 +16,11 @@ interface FunnelMetrics {
   ctaClicked: number;
   signups: number;
   paid: number;
+  productsPageViewed: number;
+  productSectionScrolled: number;
+  comboCTAClicked: number;
+  comboCTAStickyClicked: number;
+  comboPurchased: number;
 }
 
 interface PresetInfo {
@@ -75,6 +80,11 @@ const Funnel = () => {
         ctaClicked: counts['cta_clicked'] || 0,
         signups,
         paid,
+        productsPageViewed: counts['products_page_viewed'] || 0,
+        productSectionScrolled: counts['product_section_scrolled'] || 0,
+        comboCTAClicked: counts['combo_cta_clicked'] || 0,
+        comboCTAStickyClicked: counts['combo_cta_sticky_clicked'] || 0,
+        comboPurchased: counts['combo_purchased'] || 0,
       };
     },
     refetchInterval: 30000,
@@ -271,6 +281,37 @@ const Funnel = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Products Page Funnel */}
+      {metrics && (metrics.productsPageViewed > 0 || metrics.comboCTAClicked > 0) && (
+        <div>
+          <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            <MousePointerClick className="w-5 h-5 text-primary" />
+            Funil de Produtos
+          </h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              { label: 'Viram Página Produtos', value: metrics.productsPageViewed },
+              { label: 'Rolaram até Produto', value: metrics.productSectionScrolled },
+              { label: 'CTA Combo (principal)', value: metrics.comboCTAClicked },
+              { label: 'CTA Combo (sticky)', value: metrics.comboCTAStickyClicked },
+              { label: 'Compraram Combo', value: metrics.comboPurchased },
+            ].map((item) => {
+              const base = metrics.productsPageViewed || 1;
+              const pct = Math.round((item.value / base) * 100);
+              return (
+                <Card key={item.label} className="rounded-2xl border-border/30">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-1">{item.label}</p>
+                    <p className="text-2xl font-bold text-foreground">{item.value}</p>
+                    <p className="text-xs text-muted-foreground">{pct}% dos que viram</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       )}
 

@@ -82,10 +82,16 @@ const Today = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    const done =
-      localStorage.getItem('onboarding_completed') === 'true' ||
-      sessionStorage.getItem('onboarding_completed') === 'true';
-    if (!done) setShowOnboarding(true);
+    const completed = localStorage.getItem('onboarding_completed') === 'true';
+    if (completed) return;
+
+    const today = new Date().toDateString();
+    const lastShown = localStorage.getItem('onboarding_last_shown');
+    if (lastShown === today) return;
+
+    // Salva a data antes de abrir — não reaparece mais hoje mesmo com "Ver depois"
+    localStorage.setItem('onboarding_last_shown', today);
+    setShowOnboarding(true);
   }, []);
 
   const routineSteps      = profile?.rotina?.manha?.length ?? 4;
@@ -129,7 +135,9 @@ const Today = () => {
     toast({ title: 'Foto atualizada! 📸', description: 'Sua nova foto de perfil foi salva.' });
   }, [user, toast]);
 
-  const firstName = auth?.name?.split(' ')[0] ?? 'linda';
+  // Nome: preferência ao user_metadata do Supabase (populado pelo webhook Kiwify)
+  const supabaseName = user?.user_metadata?.full_name as string | undefined;
+  const firstName = (supabaseName ?? auth?.name ?? '').split(' ')[0] || 'linda';
   const combo = useComboModal('today', 5000);
 
   return (
@@ -192,6 +200,42 @@ const Today = () => {
             />
           </button>
         </div>
+
+        {/* ── Card: Complete o quiz (sem perfil) ── */}
+        {!profile && (
+          <button
+            onClick={() => navigate('/')}
+            className="w-full text-left active:scale-[0.985] transition-transform duration-150 animate-fade-in-up"
+            style={{
+              borderRadius: 28,
+              background: 'linear-gradient(135deg, #2f4220 0%, #3a5228 60%, #C9A96E 100%)',
+              boxShadow: '0 12px 36px rgba(30,46,20,0.30)',
+              animationDelay: '60ms',
+              animationFillMode: 'both',
+            }}
+          >
+            <div className="px-6 py-6">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] mb-1" style={{ color: '#a8c898' }}>
+                Diagnóstico personalizado
+              </p>
+              <h2
+                className="text-[22px] font-semibold leading-tight font-['Playfair_Display'] mb-3"
+                style={{ color: '#FFFFFF' }}
+              >
+                Descubra a idade real da sua pele
+              </h2>
+              <p className="text-[13px] mb-4" style={{ color: '#c8e0b8' }}>
+                Responda o quiz de 2 minutos e receba seu protocolo personalizado com base no seu perfil de pele.
+              </p>
+              <span
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-bold"
+                style={{ background: '#FFFFFF', color: '#2f4220' }}
+              >
+                Fazer meu diagnóstico →
+              </span>
+            </div>
+          </button>
+        )}
 
         {/* ── Hero: Idade da Pele ── */}
         {profile && (

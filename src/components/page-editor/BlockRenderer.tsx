@@ -411,7 +411,7 @@ export default function BlockRenderer({ block, profile, onAction }: BlockRendere
                   <span className="text-destructive font-bold">{content.discountText || "-52%"}</span>
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {content.priceText || "R$ 29/mês"} • {content.subtitleText || "Cancele quando quiser"}
+                  {content.priceText || "R$ 19/mês"} • {content.subtitleText || "Cancele quando quiser"}
                 </p>
               </div>
               <Button onClick={onCheckout} className="rounded-2xl h-11 px-5 text-sm font-semibold shadow-elegant flex-shrink-0">

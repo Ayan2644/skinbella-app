@@ -315,3 +315,18 @@
     box-shadow: 0 14px 40px -22px hsl(220 10% 18% / 0.26);
   }
 }
+
+/* ── Carousel infinito de vídeos ── */
+@keyframes carousel-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.carousel-track {
+  animation: carousel-scroll 40s linear infinite;
+  will-change: transform;
+}
+
+.carousel-track.paused {
+  animation-play-state: paused;
+}

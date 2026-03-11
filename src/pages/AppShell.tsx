@@ -1,8 +1,10 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Home, FileText, Droplets, Sun, CheckSquare, Apple, BookOpen, ShoppingBag, HelpCircle, LogOut, Menu, X, Shield, LayoutDashboard, Users, CreditCard, BarChart3, Bell, Sparkles, MoreHorizontal, PenTool, Layers } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { storage } from '@/lib/storage';
+import { supabase } from '@/lib/supabase';
 
 const navItems = [
   { path: '/app', label: 'Hoje', icon: Home },
@@ -37,6 +39,46 @@ const AppShell = () => {
   const location = useLocation();
   const { user, signOut: authSignOut, isAdmin } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Sync perfil quiz com Supabase (proteção contra perda de localStorage)
+  useEffect(() => {
+    if (!user) return;
+
+    const syncProfile = async () => {
+      const localProfile = storage.getProfile();
+      const localAnswers = storage.getAnswers();
+
+      if (localProfile && localAnswers) {
+        // localStorage tem dados → salvar no Supabase (upsert seguro)
+        supabase.from('quiz_results').upsert(
+          {
+            user_id: user.id,
+            answers: localAnswers as any,
+            scores: localProfile as any,
+            skin_age: localProfile.skinAge,
+          },
+          { onConflict: 'user_id' }
+        ).then(({ error }) => {
+          if (error) console.warn('[AppShell] quiz_results upsert:', error.message);
+        });
+      } else {
+        // localStorage vazio → tentar restaurar do Supabase
+        const { data } = await supabase
+          .from('quiz_results')
+          .select('answers, scores, skin_age')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (data?.scores && data?.answers) {
+          storage.saveProfile(data.scores as any);
+          storage.saveAnswers(data.answers as any);
+          console.info('[AppShell] Perfil restaurado do Supabase');
+        }
+      }
+    };
+
+    syncProfile();
+  }, [user?.id]);
 
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app';

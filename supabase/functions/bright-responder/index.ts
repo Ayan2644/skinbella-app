@@ -167,7 +167,10 @@ async function handlePurchaseApproved(supabaseAdmin: any, payload: any) {
       kiwify_subscription_id: kiwifySubId,
       status: 'active',
       plan_name: product?.name || product?.product_name || 'SkinBella App',
-      amount_cents: payment?.amount ? Math.round(payment.amount * 100) : (payment?.amount_cents || 1700),
+      // Kiwify envia payment.amount em reais (ex: 199.00) → converter para centavos
+      // Fallback seguro: 19900 = R$199/mês (preço do plano SkinBella)
+      amount_cents: payment?.amount_cents
+        || (payment?.amount ? Math.round(Number(payment.amount) * 100) : 19900),
       started_at: subscription?.started_at || sale?.approved_date || new Date().toISOString(),
       expires_at: subscription?.expires_at || null
     }, {

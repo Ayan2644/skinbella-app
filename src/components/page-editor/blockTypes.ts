@@ -309,7 +309,7 @@ export const CHILD_BLOCK_TYPES: readonly ChildBlockDef[] = [
     label: "Preço",
     icon: DollarSign,
     category: "conversion",
-    defaultContent: { originalPrice: "59", price: "29", suffix: "/mês", caption: "Cancele quando quiser • Acesso imediato" },
+    defaultContent: { originalPrice: "39", price: "19", suffix: "/mês", caption: "Cancele quando quiser • Acesso imediato" },
     defaultStyles: { textAlign: "center", padding: "12px 0" },
   },
   {
@@ -432,7 +432,7 @@ export const BLOCK_TYPES = [
     defaultContent: {
       offerText: "Plano hoje com",
       discountText: "-52%",
-      priceText: "R$ 29/mês",
+      priceText: "R$ 19/mês",
       subtitleText: "Cancele quando quiser",
       buttonText: "Desbloquear",
       buttonAction: "checkout",

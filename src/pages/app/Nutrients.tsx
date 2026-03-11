@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { storage } from '@/lib/storage';
+import { generateProfile } from '@/lib/skinEngine';
 import { ComboModal } from '@/components/ComboModal';
 import { useComboModal } from '@/hooks/useComboModal';
 
@@ -74,7 +75,6 @@ function getUrgencyStyle(urgencia: number): { label: string; color: string; bg: 
 }
 
 const Nutrients = () => {
-  const profile = storage.getProfile() as SkinProfile | null;
   const [barsActive, setBarsActive] = useState(false);
 
   useEffect(() => {
@@ -82,11 +82,22 @@ const Nutrients = () => {
     return () => clearTimeout(t);
   }, []);
 
+  // Carrega perfil; se skinAge estiver ausente (dados antigos), regera do quiz
+  let profile = storage.getProfile() as SkinProfile | null;
+  if (profile && !profile.skinAge) {
+    const answers = storage.getAnswers();
+    if (answers) {
+      const recomputed = generateProfile(answers);
+      storage.saveProfile(recomputed);
+      profile = recomputed;
+    }
+  }
+
   if (!profile) {
     return <p className="text-muted-foreground">Complete o quiz primeiro.</p>;
   }
 
-  const { skinAge, prioridadesTop3, nutrientesTop4 } = profile;
+  const { skinAge, prioridadesTop3 = [], nutrientesTop4 = [] } = profile as any;
 
   // Dispara logo após as barras de urgência terminarem de animar
   // Última barra: delay 400 + 3*120 = 760ms + transição 900ms ≈ 1700ms
